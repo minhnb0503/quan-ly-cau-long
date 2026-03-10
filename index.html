@@ -124,19 +124,19 @@
   </div>
 
   <script>
-    // ⚠️ TÔI ĐÃ GẮN SẴN LINK CỦA BẠN VÀO ĐÂY RỒI:
+    // Link Web App Google Script đã được gắn chuẩn xác
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjtK_J7IBw6kSD37uUR2b5QgRXb0fLydwalEZ0QxpaJ_pbu5qv0_kdpt-mCYLSeykyZw/exec";
 
-    // Set ngày hôm nay mặc định
+    // Khởi tạo ngày hôm nay
     document.addEventListener("DOMContentLoaded", function() {
         var today = new Date();
         var local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
         document.getElementById('dateInput').value = local.toISOString().split('T')[0];
     });
 
-    // Hàm tự động thêm dấu chấm cho tiền
+    // Hàm định dạng tiền tệ có dấu chấm
     function formatCurrency(input) {
-      let value = input.value.replace(/\\D/g, ''); 
+      let value = input.value.replace(/\\D/g, ''); // Bỏ ký tự không phải là số
       if (value !== "") {
         input.value = parseInt(value, 10).toLocaleString('vi-VN');
       } else {
@@ -151,10 +151,11 @@
       
       var rawDate = document.getElementById('dateInput').value;
       if(!rawDate) { alert("Vui lòng chọn ngày hợp lệ!"); return; }
+      
       var parts = rawDate.split('-');
       var dateStr = parts[2] + '/' + parts[1] + '/' + parts[0];
 
-      // Lấy dữ liệu và loại bỏ dấu chấm ở ô tiền trước khi gửi
+      // Gỡ bỏ dấu chấm để hệ thống tính toán được số chuẩn
       var rawSan = document.getElementById('tienSan').value.replace(/\\./g, '');
       var rawCau = document.getElementById('tienCau').value.replace(/\\./g, '');
 
@@ -189,6 +190,7 @@
         btn.innerText = "Cập Nhật Lại Dữ Liệu";
 
         if(result.status === "success") {
+          // Xử lý text để hiển thị đẹp trên Web
           var htmlFormat = result.report.replace(/\\*/g, '')
                                      .replace(/<b>/g, '<strong>')
                                      .replace(/<\\/b>/g, '</strong>')
