@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Quản Lý Cầu Lông</title>
+  <style>
+    :root { --primary: #b71c1c; --bg: #f2f2f7; --surface: #ffffff; --text: #1c1c1e; --border: #e5e5ea; --gray: #8e8e93; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif; background-color: var(--bg); padding: 16px; color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+    .container { max-width: 480px; margin: 0 auto; background: transparent; padding-bottom: 40px; }
+    
+    h2 { text-align: center; color: var(--primary); margin: 10px 0 24px 0; font-size: 24px; font-weight: 700; }
+    
+    .card { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    
+    .input-group { margin-bottom: 16px; }
+    .input-group:last-child { margin-bottom: 0; }
+    label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    input[type="number"], input[type="date"] { 
+      width: 100%; padding: 14px 16px; background-color: var(--bg); border: 1px solid transparent; 
+      border-radius: 12px; box-sizing: border-box; font-size: 17px; font-family: inherit;
+      color: var(--text); outline: none; transition: 0.2s; appearance: none; -webkit-appearance: none;
+    }
+    input[type="date"] { background-color: var(--surface); border: 1px solid var(--border); display: block; min-height: 50px; }
+    input[type="number"]:focus, input[type="date"]:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 3px rgba(183, 28, 28, 0.1); }
+    
+    .row { display: flex; gap: 12px; }
+    .col { flex: 1; }
+    
+    .player-list { padding: 0; }
+    .player-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .player-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .player-item:first-child { padding-top: 0; }
+    .player-name { font-size: 17px; font-weight: 500; }
+    
+    .switch { position: relative; display: inline-block; width: 51px; height: 31px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e9e9ea; transition: .3s; border-radius: 31px; }
+    .slider:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .slider { background-color: #34c759; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    button { margin-top: 10px; width: 100%; padding: 18px; background-color: var(--primary); color: white; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(183, 28, 28, 0.25); }
+    button:active { transform: scale(0.97); background-color: #9a1717; }
+    
+    #loader { display: none; text-align: center; margin-top: 20px; font-weight: 500; color: var(--gray); font-size: 15px;}
+    .spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;}
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    #resultBox { display: none; margin-top: 20px; background: #e8f5e9; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 2px solid #4caf50; }
+    #resultBox h3 { color: #2e7d32; margin-top: 0; text-align: center; font-size: 18px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 15px; margin-bottom: 15px; }
+    #resultContent { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; color: #333; line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🏸 Bảng Tính Tiền</h2>
+    
+    <div class="card">
+      <div class="input-group">
+        <label>📅 Ngày đánh</label>
+        <input type="date" id="dateInput" required>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>💎 Tiền Sân (VNĐ)</label>
+          <input type="number" id="tienSan" placeholder="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="col">
+          <label>🏸 Tiền Cầu (VNĐ)</label>
+          <input type="number" id="tienCau" placeholder="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>👥 Đội Hình Cố Định</label>
+      <div class="player-list">
+        <div class="player-item">
+          <span class="player-name">Minh</span>
+          <label class="switch"><input type="checkbox" id="p_Minh" checked><span class="slider"></span></label>
+        </div>
+        <div class="player-item">
+          <span class="player-name">Thảo</span>
+          <label class="switch"><input type="checkbox" id="p_Thao" checked><span class="slider"></span></label>
+        </div>
+        <div class="player-item">
+          <span class="player-name">Tú</span>
+          <label class="switch"><input type="checkbox" id="p_Tu" checked><span class="slider"></span></label>
+        </div>
+        <div class="player-item">
+          <span class="player-name">Quân</span>
+          <label class="switch"><input type="checkbox" id="p_Quan" checked><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>🤝 Khách Giao Lưu</label>
+      <div class="row">
+        <div class="col">
+          <input type="number" id="namGL" placeholder="Số nam" value="0" min="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="col">
+          <input type="number" id="nuGL" placeholder="Số nữ" value="0" min="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+      </div>
+    </div>
+
+    <button id="btnSubmit" onclick="submitForm()">Lưu & Báo Cáo Telegram</button>
+    
+    <div id="loader"><div class="spinner"></div> Đang đồng bộ hệ thống...</div>
+
+    <div id="resultBox">
+      <h3>✅ HOÀN TẤT TÍNH TOÁN</h3>
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ QUAN TRỌNG NHẤT LÀ DÒNG DƯỚI ĐÂY:
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjtK_J7IBw6kSD37uUR2b5QgRXb0fLydwalEZ0QxpaJ_pbu5qv0_kdpt-mCYLSeykyZw/exec";
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var today = new Date();
+        var local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+        document.getElementById('dateInput').value = local.toISOString().split('T')[0];
+    });
+
+    async function submitForm() {
+      var btn = document.getElementById('btnSubmit');
+      var loader = document.getElementById('loader');
+      var resultBox = document.getElementById('resultBox');
+      
+      var rawDate = document.getElementById('dateInput').value;
+      if(!rawDate) { alert("Vui lòng chọn ngày hợp lệ!"); return; }
+      
+      var parts = rawDate.split('-');
+      var dateStr = parts[2] + '/' + parts[1] + '/' + parts[0];
+
+      var payload = {
+        source: "github_web",
+        date: dateStr,
+        san: document.getElementById('tienSan').value || 0,
+        cau: document.getElementById('tienCau').value || 0,
+        minh: document.getElementById('p_Minh').checked ? 1 : 0,
+        thao: document.getElementById('p_Thao').checked ? 1 : 0,
+        tu: document.getElementById('p_Tu').checked ? 1 : 0,
+        quan: document.getElementById('p_Quan').checked ? 1 : 0,
+        namGL: document.getElementById('namGL').value || 0,
+        nuGL: document.getElementById('nuGL').value || 0
+      };
+
+      btn.style.display = 'none';
+      resultBox.style.display = 'none';
+      loader.style.display = 'block';
+
+      try {
+        let response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        let result = await response.json();
+        
+        loader.style.display = 'none';
+        btn.style.display = 'block';
+        btn.innerText = "Cập Nhật Lại Dữ Liệu";
+
+        if(result.status === "success") {
+          var htmlFormat = result.report.replace(/\\*/g, '')
+                                     .replace(/<b>/g, '<strong>')
+                                     .replace(/<\\/b>/g, '</strong>')
+                                     .replace(/\\n/g, '<br>');
+          
+          document.getElementById('resultContent').innerHTML = htmlFormat;
+          resultBox.style.display = 'block';
+          setTimeout(function() { resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+        } else {
+          alert("Lỗi từ máy chủ: " + result.message);
+        }
+      } catch (err) {
+        alert("Lỗi mạng! Vui lòng thử lại. Chi tiết: " + err.message);
+        loader.style.display = 'none'; 
+        btn.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
