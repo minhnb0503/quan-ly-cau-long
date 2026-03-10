@@ -123,7 +123,7 @@
   </div>
 
   <script>
-    // Link API chuẩn xác của bạn
+    // Link Web App đã được gắn sẵn
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjtK_J7IBw6kSD37uUR2b5QgRXb0fLydwalEZ0QxpaJ_pbu5qv0_kdpt-mCYLSeykyZw/exec";
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -145,7 +145,6 @@
       return parseInt(n).toLocaleString('vi-VN') + " đ";
     }
 
-    // BỘ NÃO TÍNH TOÁN CẤY TRỰC TIẾP VÀO TRÌNH DUYỆT (TỐC ĐỘ 0.001s)
     function calculateLocally(data) {
       let tienSan = parseInt(data.san) || 0;
       let tienCau = parseInt(data.cau) || 0;
@@ -163,7 +162,6 @@
         return report + "📭 Chưa có người chơi.";
       }
 
-      // CÔNG THỨC KHỚP VỚI BACKEND (Bảo trì bởi Gemini)
       let offset = (cM * 25000) + (cGF * 5000) + (cGM * 30000);
       let base = Math.max(0, totalCost - offset) / totalP;
       let pF = Math.ceil(base / 1000) * 1000;
@@ -185,6 +183,11 @@
     }
 
     function submitForm() {
+      if (APPS_SCRIPT_URL.includes("DÁN_LINK")) {
+        alert("🛑 Bạn quên chưa dán Link Web App mới vào code GitHub rồi kìa!");
+        return;
+      }
+
       var btn = document.getElementById('btnSubmit');
       var resultBox = document.getElementById('resultBox');
       var syncStatus = document.getElementById('syncStatus');
@@ -210,7 +213,6 @@
         nuGL: document.getElementById('nuGL').value ? parseInt(document.getElementById('nuGL').value) : 0
       };
 
-      // TÍNH TOÁN LOCAL (HIỂN THỊ NGAY TRONG 0.001 GIÂY)
       var instantReport = calculateLocally(payload);
       document.getElementById('resultContent').innerHTML = instantReport;
       resultBox.style.display = 'block';
@@ -218,7 +220,6 @@
       btn.style.display = 'none';
       resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      // ĐỒNG BỘ NGẦM LÊN SHEET VÀ TELEGRAM
       syncStatus.innerHTML = '<div class="spinner"></div> Đang gửi báo cáo lên Telegram & Sheet...';
       syncStatus.style.display = 'block';
       syncStatus.style.color = '#f57c00';
