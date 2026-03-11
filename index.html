@@ -24,6 +24,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Chống Zoom & Highlight của Safari */
     button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
@@ -39,30 +40,52 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* === GIAO DIỆN MOBILE TRÀN VIỀN (NHƯ CŨ, ĐẸP XUẤT SẮC) === */
+    /* CONTAINER CHÍNH */
     .app-glass {
       width: 100%; max-width: 450px; height: 100%;
       display: flex; flex-direction: column;
-      padding: 24px 20px calc(110px + env(safe-area-inset-bottom, 20px));
+      padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 20px));
       position: relative;
     }
 
-    /* === GIAO DIỆN KHI XOAY NGANG HOẶC DÙNG MÁY TÍNH === */
-    @media (min-width: 500px) {
+    /* BỐ CỤC CHIA ĐÔI KHI MÀN HÌNH NGANG / DESKTOP (Responsive) */
+    .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+    .left-col { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 90px; }
+    .left-col::-webkit-scrollbar { display: none; }
+    .right-col { display: none; } /* Ẩn cột phải trên Mobile */
+
+    @media (min-width: 768px), (orientation: landscape) and (min-width: 600px) {
       body { padding: 20px; }
       .app-glass {
-        height: calc(100dvh - 40px); /* Không chạm mép màn hình */
-        max-height: 850px;
-        background: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 36px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        max-width: 950px; height: calc(100dvh - 40px); max-height: 800px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        padding: 30px;
       }
+      .main-wrapper { flex-direction: row; gap: 30px; }
+      .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.08); }
+      
+      /* Hiện cột phải trên Desktop */
+      .right-col {
+        display: flex; flex-direction: column; flex: 1;
+        background: rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 24px;
+        position: relative; overflow-y: auto; border: 1px solid var(--glass-border);
+      }
+      .right-col::-webkit-scrollbar { display: none; }
+
+      /* Tắt chế độ cố định đáy của nút bấm, trả về luồng tự nhiên */
+      .action-zone { position: static !important; background: transparent !important; padding: 20px 0 0 0 !important; border: none !important; backdrop-filter: none !important; }
+      
+      /* Ghi đè Modal Mobile thành Cột cố định Desktop */
+      .sheet-overlay { position: static !important; background: transparent !important; padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; display: block !important; backdrop-filter: none !important;}
+      .sheet-card { transform: none !important; opacity: 1 !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; max-width: 100% !important; }
+      .btn-close { display: none !important; }
     }
 
     /* HEADER & DATE */
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
-    .app-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .app-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
     
     .date-chip {
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
@@ -70,10 +93,7 @@
       position: relative; display: flex; align-items: center; justify-content: center;
     }
     #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; }
-    .date-chip input[type="date"] { 
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-      opacity: 0; cursor: pointer; font-size: 16px !important; 
-    }
+    .date-chip input[type="date"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px !important; }
 
     /* TABS */
     .fluid-tabs {
@@ -81,7 +101,7 @@
       border-radius: 100px; padding: 4px; margin-bottom: 20px; flex-shrink: 0;
     }
     .tab {
-      flex: 1; text-align: center; padding: 12px 0; font-size: 15px; font-weight: 600;
+      flex: 1; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600;
       color: var(--text-sub); cursor: pointer; position: relative; z-index: 2; transition: color 0.3s ease;
     }
     .tab.active { color: var(--text-main); }
@@ -95,7 +115,7 @@
     .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
     .money-input-group {
       background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
-      border-radius: 24px; padding: 14px 20px; box-shadow: var(--shadow-soft);
+      border-radius: 20px; padding: 14px 20px; box-shadow: var(--shadow-soft);
       display: flex; flex-direction: column; align-items: center; transition: border-color 0.2s ease;
       position: relative;
     }
@@ -114,7 +134,7 @@
 
     .money-input-group input {
       width: 100%; border: none; background: transparent; outline: none; text-align: center;
-      font-family: 'Be Vietnam Pro', sans-serif; font-size: 30px; font-weight: 800; color: var(--text-main);
+      font-family: 'Be Vietnam Pro', sans-serif; font-size: 28px; font-weight: 800; color: var(--text-main);
       font-variant-numeric: tabular-nums;
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
@@ -125,16 +145,12 @@
     .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; }
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
-    .cau-col input { font-size: 22px !important; color: var(--accent) !important; }
+    .cau-col input { font-size: 20px !important; color: var(--accent) !important; }
     .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; }
     #cauTotalIndicator { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 100px;}
 
-    /* VÙNG THÀNH VIÊN */
-    .members-zone { 
-      display: flex; flex-direction: column; flex: 1; justify-content: flex-start;
-      overflow-y: auto; padding-bottom: 10px; 
-    }
-    .members-zone::-webkit-scrollbar { display: none; }
+    /* THÀNH VIÊN */
+    .members-zone { display: flex; flex-direction: column; flex: 1; justify-content: flex-start; }
     
     .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .fixed-team-wrapper.hidden { grid-template-rows: 0fr; }
@@ -145,7 +161,7 @@
     .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 20px;}
     .player-tag {
       background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border); color: var(--text-sub);
-      padding: 10px 20px; border-radius: 100px; font-size: 15px; font-weight: 600;
+      padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 600;
       transition: all 0.2s ease; cursor: pointer;
     }
     .player-tag.active { background: var(--text-main); color: #fff; border-color: var(--text-main); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); }
@@ -160,33 +176,34 @@
     .guest-label { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
     .guest-stepper { display: flex; align-items: center; background: rgba(0,0,0,0.04); border-radius: 100px; padding: 4px; }
     .step-btn {
-      width: 36px; height: 36px; border-radius: 50%; border: none; background: #fff;
-      font-size: 20px; font-weight: 600; color: var(--text-main); cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff;
+      font-size: 18px; font-weight: 600; color: var(--text-main); cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.1s; display: flex; justify-content: center; align-items: center;
     }
     .step-btn:active { transform: scale(0.85); background: #e2e8f0; }
-    
     .guest-val { 
-      width: 44px; text-align: center; font-size: 18px; font-weight: 700; border: none; background: transparent; outline:none; 
+      width: 40px; text-align: center; font-size: 16px; font-weight: 700; border: none; background: transparent; outline:none; 
       font-family: 'Be Vietnam Pro', sans-serif; color: var(--text-main); font-variant-numeric: tabular-nums;
     }
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ TĨNH Ở ĐÁY */
+    /* NÚT CHỐT SỔ ĐƯỢC GẮN VÀO ĐÁY MOBILE */
     .action-zone {
-      position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+      position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       left: 20px; right: 20px; z-index: 50;
+      background: linear-gradient(180deg, rgba(253, 251, 251, 0) 0%, rgba(245, 247, 250, 1) 40%);
+      padding-top: 30px; /* Làm hiệu ứng gradient mờ ở đáy */
     }
     .btn-massive {
-      width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 24px;
-      padding: 20px; font-size: 17px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
-      box-shadow: 0 10px 30px var(--accent-hover); transition: transform 0.2s;
+      width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
+      padding: 18px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
+      box-shadow: 0 10px 25px var(--accent-hover); transition: transform 0.2s;
       display: flex; justify-content: center; align-items: center; gap: 10px;
     }
     .btn-massive:active { transform: scale(0.95); }
 
-    /* BIÊN LAI HÓA ĐƠN */
+    /* BIÊN LAI HÓA ĐƠN (Popup trên Mobile, Cột hiển thị trên Desktop) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -202,28 +219,24 @@
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
-    /* Fix căn giữa biên lai nếu dùng máy tính */
-    @media (min-width: 500px) {
-      .sheet-overlay { align-items: center; }
-      .sheet-card { transform: translateY(50px) scale(0.95); opacity: 0; }
-      .sheet-overlay.show .sheet-card { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    .receipt-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 24px;}
-    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; align-items: center;}
-    .receipt-item strong { font-size: 17px; font-variant-numeric: tabular-nums;}
+    .receipt-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 20px;}
+    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; align-items: center;}
+    .receipt-item strong { font-size: 16px; font-variant-numeric: tabular-nums;}
     .receipt-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
     
     .btn-close {
       width: 100%; background: #f1f5f9; color: var(--text-main); margin-top: 10px;
-      padding: 18px; border-radius: 20px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s;
+      padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s;
     }
     .btn-close:active { transform: scale(0.96); background: #e2e8f0;}
 
-    #syncStatus { text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
-    .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    
+    /* Chữ giữ chỗ cho màn hình Desktop */
+    .desktop-placeholder { text-align: center; color: var(--text-sub); font-size: 15px; font-weight: 500; margin-top: 50px;}
   </style>
 </head>
 <body>
@@ -237,106 +250,114 @@
       </div>
     </div>
 
-    <div class="fluid-tabs">
-      <div class="tab-indicator" id="tabIndicator"></div>
-      <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
-      <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
-    </div>
-
-    <div class="money-display-zone">
-      <div class="money-input-group">
-        <div class="money-header">
-           <span class="money-label">TỔNG TIỀN SÂN</span>
+    <div class="main-wrapper">
+      
+      <div class="left-col">
+        <div class="fluid-tabs">
+          <div class="tab-indicator" id="tabIndicator"></div>
+          <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
+          <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
         </div>
-        <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
-      </div>
 
-      <div class="money-input-group" style="padding-bottom: 16px;">
-        <div class="money-header">
-           <span class="money-label">TIỀN CẦU</span>
-           <div class="switch-small-wrap">
-             <span>CHI TIẾT</span>
-             <label class="switch-small">
-               <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
-               <span class="slider-small"></span>
-             </label>
-           </div>
-        </div>
-        
-        <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
-          <div class="mode-inner" style="opacity: 1;">
-            <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
+        <div class="money-display-zone">
+          <div class="money-input-group">
+            <div class="money-header">
+               <span class="money-label">TỔNG TIỀN SÂN</span>
+            </div>
+            <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
           </div>
-        </div>
 
-        <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
-          <div class="mode-inner" style="opacity: 0;">
-            <div class="cau-detail-flex">
-              <div class="cau-col">
-                <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
-              </div>
-              <div class="divider-vert"></div>
-              <div class="cau-col">
-                <span>SỐ QUẢ ĐÁNH</span>
-                <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
+          <div class="money-input-group" style="padding-bottom: 16px;">
+            <div class="money-header">
+               <span class="money-label">TIỀN CẦU</span>
+               <div class="switch-small-wrap">
+                 <span>CHI TIẾT</span>
+                 <label class="switch-small">
+                   <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                   <span class="slider-small"></span>
+                 </label>
+               </div>
+            </div>
+            
+            <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
+              <div class="mode-inner" style="opacity: 1;">
+                <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
               </div>
             </div>
-            <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+
+            <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
+              <div class="mode-inner" style="opacity: 0;">
+                <div class="cau-detail-flex">
+                  <div class="cau-col">
+                    <span>GIÁ 1 TÚP (12 QUẢ)</span>
+                    <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
+                  </div>
+                  <div class="divider-vert"></div>
+                  <div class="cau-col">
+                    <span>SỐ QUẢ ĐÁNH</span>
+                    <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
+                  </div>
+                </div>
+                <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="members-zone">
+          <div class="fixed-team-wrapper" id="fixedTeamWrap">
+            <div class="fixed-team-inner">
+              <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
+              <div class="tags-grid">
+                <div class="player-tag active" id="tag-Minh" onclick="toggleTag(this)">Minh</div>
+                <div class="player-tag active" id="tag-Thao" onclick="toggleTag(this)">Thảo</div>
+                <div class="player-tag active" id="tag-Tu" onclick="toggleTag(this)">Tú</div>
+                <div class="player-tag active" id="tag-Quan" onclick="toggleTag(this)">Quân</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guest-container" id="guestWrap">
+            <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
+            <div class="guest-row">
+              <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
+              <div class="guest-stepper">
+                <button class="step-btn" onclick="stepVal('namGL', -1)">-</button>
+                <input type="number" class="guest-val" id="namGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
+                <button class="step-btn" onclick="stepVal('namGL', 1)">+</button>
+              </div>
+            </div>
+            <div class="guest-row">
+              <span class="guest-label">👩🏻‍💼 Số Nữ</span>
+              <div class="guest-stepper">
+                <button class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
+                <input type="number" class="guest-val" id="nuGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
+                <button class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="members-zone">
-      <div class="fixed-team-wrapper" id="fixedTeamWrap">
-        <div class="fixed-team-inner">
-          <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
-          <div class="tags-grid">
-            <div class="player-tag active" id="tag-Minh" onclick="toggleTag(this)">Minh</div>
-            <div class="player-tag active" id="tag-Thao" onclick="toggleTag(this)">Thảo</div>
-            <div class="player-tag active" id="tag-Tu" onclick="toggleTag(this)">Tú</div>
-            <div class="player-tag active" id="tag-Quan" onclick="toggleTag(this)">Quân</div>
+      <div class="right-col">
+        <div class="sheet-overlay" id="resultSheet">
+          <div class="sheet-card">
+            <div class="receipt-title">Biên Lai Cầu Lông 🎉</div>
+            <div id="syncStatus">Trạng thái đồng bộ...</div>
+            <div id="receiptContent">
+              <div class="desktop-placeholder" id="placeholderText">👈 Nhập thông tin và bấm "Phân Bổ Chi Phí" để xem biên lai.</div>
+            </div>
+            <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
           </div>
         </div>
       </div>
-
-      <div class="guest-container" id="guestWrap">
-        <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
-        <div class="guest-row">
-          <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
-          <div class="guest-stepper">
-            <button class="step-btn" onclick="stepVal('namGL', -1)">-</button>
-            <input type="number" class="guest-val" id="namGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
-            <button class="step-btn" onclick="stepVal('namGL', 1)">+</button>
-          </div>
-        </div>
-        <div class="guest-row">
-          <span class="guest-label">👩🏻‍💼 Số Nữ</span>
-          <div class="guest-stepper">
-            <button class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
-            <input type="number" class="guest-val" id="nuGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
-            <button class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="action-zone">
+    </div> <div class="action-zone">
       <button class="btn-massive" onclick="processData()">
         <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
         Phân Bổ Chi Phí
       </button>
     </div>
-  </div>
 
-  <div class="sheet-overlay" id="resultSheet">
-    <div class="sheet-card">
-      <div class="receipt-title">Biên Lai Cầu Lông 🎉</div>
-      <div id="syncStatus">Trạng thái đồng bộ...</div>
-      <div id="receiptContent"></div>
-      <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
-    </div>
   </div>
 
   <script>
@@ -363,6 +384,9 @@
           updateDateDisplay(e.target.value); 
           e.target.blur();
         });
+
+        // Ẩn syncStatus ban đầu
+        document.getElementById('syncStatus').style.display = 'none';
     });
 
     function switchTab(selected) {
@@ -395,15 +419,11 @@
       let inner2 = m2.querySelector('.mode-inner');
 
       if(isCauDetailMode) {
-        m1.style.gridTemplateRows = '0fr';
-        inner1.style.opacity = '0';
-        m2.style.gridTemplateRows = '1fr';
-        inner2.style.opacity = '1';
+        m1.style.gridTemplateRows = '0fr'; inner1.style.opacity = '0';
+        m2.style.gridTemplateRows = '1fr'; inner2.style.opacity = '1';
       } else {
-        m2.style.gridTemplateRows = '0fr';
-        inner2.style.opacity = '0';
-        m1.style.gridTemplateRows = '1fr';
-        inner1.style.opacity = '1';
+        m2.style.gridTemplateRows = '0fr'; inner2.style.opacity = '0';
+        m1.style.gridTemplateRows = '1fr'; inner1.style.opacity = '1';
       }
     }
 
@@ -437,7 +457,6 @@
       let dateStr = dateRaw.split('-').reverse().join('/');
       
       let san = parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) || 0;
-      
       let cau = 0;
       if (isCauDetailMode) {
         let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
@@ -446,7 +465,6 @@
       } else {
         cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
       }
-      
       let totalCost = san + cau;
 
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
@@ -459,7 +477,6 @@
         <div class="receipt-item"><span><strong>TỔNG CHI PHÍ:</strong></span> <strong style="color:var(--accent); font-size: 20px;">${formatMoney(totalCost)}</strong></div>
         <div class="divider"></div>
       `;
-
       let teleStr = `<b>🏸 BẢNG TÍNH ${mode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\n💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}\n------------------\n`;
 
       if (mode === 'away') {
@@ -479,7 +496,6 @@
           html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`;
           teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
         }
-
       } else {
         let minh = document.getElementById('tag-Minh').classList.contains('active') ? 1 : 0;
         let thao = document.getElementById('tag-Thao').classList.contains('active') ? 1 : 0;
@@ -493,7 +509,6 @@
         let offset = (cM * 25000) + (nuGL * 5000) + (namGL * 30000);
         let base = Math.max(0, totalCost - offset) / totalP;
         let pF = Math.ceil(base / 1000) * 1000;
-
         let pNu = pF; let pNam = pF + 25000; let pNamGL = pF + 30000; let pNuGL = pF + 5000;
 
         if(minh) { html += `<div class="receipt-item"><span>Minh</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
@@ -516,6 +531,7 @@
       document.getElementById('resultSheet').classList.add('show');
       
       let statusEl = document.getElementById('syncStatus');
+      statusEl.style.display = 'block';
       statusEl.style.color = '#6366f1';
       statusEl.innerText = 'Đang chuyển phát nhanh cho Bot...';
 
