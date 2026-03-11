@@ -386,7 +386,6 @@
       }
     }
 
-    // LOGIC TÍNH TIỀN CẦU CHUẨN XÁC: (Giá 1 túp / 12) * Số quả
     function updateCauTotal() {
       let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
       let soQua = parseInt(document.getElementById('slCau').value) || 0;
@@ -452,11 +451,11 @@
         let pNu = pF; let pNam = pF + 20000;
 
         if(namGL) {
-          html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNam * namGL)}</strong><div class="receipt-sub">${formatMoney(pNam)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`;
           teleStr += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\n`;
         }
         if(nuGL) {
-          html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNu * nuGL)}</strong><div class="receipt-sub">${formatMoney(pNu)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`;
           teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
         }
 
@@ -483,11 +482,11 @@
         
         if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
         if(namGL) { 
-          html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNamGL * namGL)}</strong><div class="receipt-sub">${formatMoney(pNamGL)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`;
           teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b>\n`; 
         }
         if(nuGL) { 
-          html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNuGL * nuGL)}</strong><div class="receipt-sub">${formatMoney(pNuGL)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`;
           teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b>\n`; 
         }
       }
