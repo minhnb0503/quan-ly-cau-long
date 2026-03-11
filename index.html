@@ -39,7 +39,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* CONTAINER CHÍNH TRÊN MOBILE CẦM DỌC */
+    /* === 1. GIAO DIỆN MOBILE DỌC (CƠ BẢN) === */
     .app-glass {
       width: 100%; max-width: 450px; height: 100%;
       display: flex; flex-direction: column;
@@ -48,46 +48,47 @@
     }
 
     .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-    .left-col { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 110px; position: relative;}
-    .left-col::-webkit-scrollbar { display: none; }
+    .left-col { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding-bottom: 90px; position: relative;}
     .right-col { display: none; } 
-
-    /* Khối bọc nội dung Form (Sẽ chẻ làm 2 khi xoay ngang) */
     .form-content-grid { display: flex; flex-direction: column; }
 
-    /* === 1. ĐẶC TRỊ ĐIỆN THOẠI XOAY NGANG (CHỐNG CHE NÚT & CHIA 2 CỘT FORM) === */
+
+    /* === 2. GIAO DIỆN ĐIỆN THOẠI XOAY NGANG (DÀN HẾT TOÀN MÀN HÌNH) === */
     @media (max-height: 500px) and (orientation: landscape) {
-      .app-glass { padding: 15px max(20px, env(safe-area-inset-left)) 0 !important; }
+      body { padding: 0; }
+      .app-glass {
+        max-width: 100% !important; /* PHÁ BỎ GIỚI HẠN 450PX, DÀN RA 2 BÊN */
+        border-radius: 0;
+        /* Né tai thỏ iPhone */
+        padding: 15px max(20px, env(safe-area-inset-left)) 10px max(20px, env(safe-area-inset-right)) !important;
+      }
+      .left-col {
+        overflow-y: auto !important; /* Bật cuộn mượt mà */
+        padding-bottom: 20px !important;
+      }
+      .members-zone { overflow-y: visible !important; flex: none !important; }
       
-      /* Chẻ 2 cột cho phần nhập liệu để tận dụng chiều ngang, giảm cuộn */
+      /* Chia 2 cột thênh thang */
       .form-content-grid {
         display: grid !important;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        gap: 20px;
         align-items: start;
       }
       
-      /* Xóa khoảng trống khổng lồ ở đáy */
-      .left-col { padding-bottom: 20px !important; }
-      
-      /* Gỡ nút khỏi trạng thái bay lơ lửng, đưa vào luồng hiển thị cuối cùng */
+      /* Gắn nút chốt sổ ở cuối cùng, không bay lơ lửng */
       .action-zone {
         position: static !important; 
-        padding: 15px 0 0 0 !important;
         background: transparent !important;
+        padding: 20px 0 10px 0 !important;
       }
-      
-      /* Thu gọn margin để tối ưu diện tích */
-      .header-bar { margin-bottom: 12px; }
-      .fluid-tabs { margin-bottom: 12px; }
-      
-      /* Căn giữa Popup Biên Lai cho đẹp */
-      .sheet-overlay { align-items: center !important; }
-      .sheet-card { border-radius: 24px !important; max-height: 90vh; overflow-y: auto; }
+      .header-bar { margin-bottom: 15px; }
+      .fluid-tabs { margin-bottom: 15px; }
     }
 
-    /* === 2. GIAO DIỆN DESKTOP / IPAD (Giữ nguyên chia 2 cột to) === */
-    @media (min-width: 1024px), (min-width: 768px) and (min-height: 600px) {
+
+    /* === 3. GIAO DIỆN DESKTOP / MÁY TÍNH BẢNG === */
+    @media (min-width: 768px) and (min-height: 501px) {
       body { padding: 20px; }
       .app-glass {
         max-width: 950px; height: calc(100dvh - 40px); max-height: 800px;
@@ -98,7 +99,6 @@
       }
       .main-wrapper { flex-direction: row; gap: 30px; }
       .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.08); overflow: hidden;}
-      
       .right-col {
         display: flex; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 24px;
@@ -114,7 +114,6 @@
     /* HEADER & DATE */
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
     .app-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-    
     .date-chip {
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
       border-radius: 30px; padding: 8px 16px; box-shadow: var(--shadow-soft);
@@ -178,7 +177,11 @@
     #cauTotalIndicator { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 100px;}
 
     /* THÀNH VIÊN */
-    .members-zone { display: flex; flex-direction: column; justify-content: flex-start; }
+    .members-zone { 
+      display: flex; flex-direction: column; flex: 1; justify-content: flex-start;
+      overflow-y: auto; padding-bottom: 10px; 
+    }
+    .members-zone::-webkit-scrollbar { display: none; }
     
     .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .fixed-team-wrapper.hidden { grid-template-rows: 0fr; }
@@ -195,7 +198,7 @@
     .player-tag.active { background: var(--text-main); color: #fff; border-color: var(--text-main); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); }
 
     /* KHÁCH GIAO LƯU */
-    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; padding-bottom: 10px;}
+    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; padding-bottom: 20px;}
     .guest-row {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
@@ -216,7 +219,7 @@
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ (MOBILE DỌC = LƠ LỬNG) */
+    /* NÚT CHỐT SỔ (MẶC ĐỊNH TRÊN MOBILE DỌC LÀ LƠ LỬNG) */
     .action-zone {
       position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       left: 20px; right: 20px; z-index: 50;
@@ -231,7 +234,7 @@
     }
     .btn-massive:active { transform: scale(0.95); }
 
-    /* BẢNG BIÊN LAI (MODAL TRÊN MOBILE, CỘT TRÊN PC) */
+    /* BẢNG BIÊN LAI CÓ BẢO MẬT NỘI BỘ */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -244,8 +247,14 @@
       padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px)); 
       transform: translateY(120%); transition: 0.4s var(--smooth-curve);
       box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+      max-height: 90vh; overflow-y: auto; /* Đảm bảo biên lai scroll được trên máy ngang */
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
+    
+    @media (max-height: 500px) and (orientation: landscape) {
+      .sheet-overlay { align-items: center; }
+      .sheet-card { border-radius: 24px; max-height: 85vh; }
+    }
 
     .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .receipt-title { font-size: 20px; font-weight: 800; margin: 0; }
@@ -390,9 +399,7 @@
           </button>
         </div>
 
-      </div>
-
-      <div class="right-col">
+      </div> <div class="right-col">
         <div class="sheet-overlay" id="resultSheet">
           <div class="sheet-card">
             
