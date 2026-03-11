@@ -7,115 +7,289 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   
-  <title>Quản Lý Cầu Lông</title>
+  <title>Quản Lý Cầu Lông V2</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    :root { --primary: #b71c1c; --bg: #f2f2f7; --surface: #ffffff; --text: #1c1c1e; --border: #e5e5ea; --gray: #8e8e93; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif; background-color: var(--bg); padding: 16px; color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
-    .container { max-width: 480px; margin: 0 auto; background: transparent; padding-bottom: 40px; }
-    
-    h2 { text-align: center; color: var(--primary); margin: 10px 0 24px 0; font-size: 24px; font-weight: 700; }
-    
-    .card { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-    
-    .input-group { margin-bottom: 16px; }
-    .input-group:last-child { margin-bottom: 0; }
-    label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 13px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    input[type="text"], input[type="number"], input[type="date"] { 
-      width: 100%; padding: 14px 16px; background-color: var(--bg); border: 1px solid transparent; 
-      border-radius: 12px; box-sizing: border-box; font-size: 17px; font-family: inherit;
-      color: var(--text); outline: none; transition: 0.2s; appearance: none; -webkit-appearance: none;
+    :root { 
+      --primary: #007AFF; /* Apple Blue */
+      --secondary: #FF3B30; /* Red */
+      --bg-body: #F5F5F7; 
+      --surface: #FFFFFF; 
+      --text-main: #1D1D1F; 
+      --text-sub: #86868B; 
+      --border: #E5E5EA;
+      --shadow: 0 8px 30px rgba(0,0,0,0.06);
     }
-    input[type="date"] { background-color: var(--surface); border: 1px solid var(--border); display: block; min-height: 50px; }
-    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 3px rgba(183, 28, 28, 0.1); }
+
+    * { box-sizing: border-box; }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background-color: var(--bg-body); 
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 20px 16px; 
+      -webkit-font-smoothing: antialiased; 
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container { 
+      width: 100%; 
+      max-width: 500px; /* Tối ưu cho Mobile & Tablet, gọn gàng trên Desktop */
+      padding-bottom: 50px; 
+    }
     
-    .row { display: flex; gap: 12px; }
-    .col { flex: 1; }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 { 
+      font-size: 28px; 
+      font-weight: 800; 
+      letter-spacing: -0.5px; 
+      margin: 0; 
+      color: var(--text-main); 
+    }
+
+    .header p {
+      margin: 5px 0 0 0;
+      color: var(--text-sub);
+      font-size: 14px;
+      font-weight: 500;
+    }
     
-    .player-list { padding: 0; }
-    .player-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
-    .player-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .player-item:first-child { padding-top: 0; }
-    .player-name { font-size: 17px; font-weight: 500; }
+    /* Box chứa nội dung mang phong cách Glassmorphism / Modern Card */
+    .card { 
+      background: var(--surface); 
+      border-radius: 24px; 
+      padding: 24px; 
+      margin-bottom: 20px; 
+      box-shadow: var(--shadow); 
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-group { margin-bottom: 20px; }
+    .input-group:last-child { margin-bottom: 0; }
     
-    .switch { position: relative; display: inline-block; width: 51px; height: 31px; }
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; display: flex; flex-direction: column; }
+    
+    label { 
+      font-size: 14px; 
+      font-weight: 600; 
+      margin-bottom: 8px; 
+      color: var(--text-main); 
+    }
+    
+    /* Form Inputs tinh tế */
+    input[type="text"], input[type="number"], input[type="date"] { 
+      width: 100%; 
+      padding: 16px; 
+      background-color: #F5F5F9; 
+      border: 1px solid transparent; 
+      border-radius: 16px; 
+      font-size: 16px; 
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text-main); 
+      outline: none; 
+      transition: all 0.2s ease; 
+      appearance: none; 
+      -webkit-appearance: none;
+    }
+    
+    input[type="date"] { 
+      background-color: transparent; 
+      border: 1px solid var(--border); 
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus { 
+      background-color: #fff; 
+      border-color: var(--primary); 
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1); 
+    }
+    
+    input::placeholder { color: #A1A1A6; font-weight: 400; }
+
+    /* Switch Toggle phong cách iOS */
+    .player-list { display: flex; flex-direction: column; gap: 16px; }
+    .player-item { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 12px 16px;
+      background: #F8F8F9;
+      border-radius: 16px;
+      transition: 0.2s;
+    }
+    .player-item:hover { background: #F0F0F3; }
+    .player-name { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px;}
+    
+    .switch { position: relative; display: inline-block; width: 50px; height: 30px; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e9e9ea; transition: .3s; border-radius: 31px; }
-    .slider:before { position: absolute; content: ""; height: 27px; width: 27px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    input:checked + .slider { background-color: #34c759; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E5E5EA; transition: .3s; border-radius: 30px; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: white; transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+    input:checked + .slider { background-color: #34C759; }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    button { margin-top: 10px; width: 100%; padding: 18px; background-color: var(--primary); color: white; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(183, 28, 28, 0.25); }
-    button:active { transform: scale(0.97); background-color: #9a1717; }
+    /* Nút bấm Call-To-Action */
+    .btn-submit { 
+      width: 100%; 
+      padding: 18px; 
+      background: linear-gradient(135deg, var(--primary) 0%, #005ce6 100%);
+      color: white; 
+      border: none; 
+      border-radius: 20px; 
+      font-size: 17px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+      box-shadow: 0 10px 20px rgba(0, 122, 255, 0.25); 
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-submit:active { transform: scale(0.96); box-shadow: 0 5px 10px rgba(0, 122, 255, 0.2); }
     
-    #resultBox { display: none; margin-top: 20px; background: #e8f5e9; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 2px solid #4caf50; }
-    #resultBox h3 { color: #2e7d32; margin-top: 0; text-align: center; font-size: 18px; border-bottom: 1px dashed #a5d6a7; padding-bottom: 15px; margin-bottom: 15px; }
-    #resultContent { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; color: #333; line-height: 1.8; }
+    /* Box kết quả tối ưu hiển thị nhanh */
+    #resultBox { 
+      display: none; 
+      margin-top: 24px; 
+      background: #F4FBF5; 
+      border-radius: 24px; 
+      padding: 24px; 
+      box-shadow: 0 8px 24px rgba(52, 199, 89, 0.15); 
+      border: 1px solid #D1EED8; 
+    }
+    #resultBox h3 { 
+      color: #19873A; 
+      margin: 0 0 16px 0; 
+      text-align: center; 
+      font-size: 16px; 
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
     
-    #syncStatus { display: none; text-align: center; margin-top: 15px; font-size: 14px; color: #f57c00; font-weight: 500; padding: 10px; background: #fff3e0; border-radius: 8px; border: 1px dashed #ffb74d;}
-    .spinner { border: 2px solid rgba(255,152,0,0.2); border-left-color: #f57c00; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px;}
+    #resultContent { 
+      font-size: 15px; 
+      color: var(--text-main); 
+      line-height: 1.8; 
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+    }
+    
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* Hiệu ứng load mượt mà */
+    #syncStatus { 
+      display: none; text-align: center; margin-top: 20px; font-size: 14px; 
+      font-weight: 600; padding: 14px; border-radius: 16px; transition: 0.3s;
+    }
+    .status-sending { background: #F6F8FD; color: var(--primary); border: 1px solid #D4E4FC; }
+    .status-success { background: #F4FBF5; color: #19873A; border: 1px solid #D1EED8; }
+    .status-error { background: #FFF4F4; color: var(--secondary); border: 1px solid #FFE2E2; }
+    
+    .spinner { 
+      border: 2px solid rgba(0, 122, 255, 0.2); border-left-color: var(--primary); 
+      border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; 
+      display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* SVG Icons */
+    .icon { width: 18px; height: 18px; fill: currentColor; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🏸 Bảng Tính Tiền</h2>
+  <div class="app-container">
+    <div class="header">
+      <h1>Cầu Lông Tracker</h1>
+      <p>Quản lý chi phí nhanh gọn, chính xác</p>
+    </div>
     
     <div class="card">
+      <div class="section-title">📅 Thời gian & Chi phí</div>
       <div class="input-group">
-        <label>📅 Ngày đánh</label>
         <input type="date" id="dateInput" required>
       </div>
       <div class="row">
         <div class="col">
-          <label>💎 Tiền Sân (VNĐ)</label>
+          <label>💎 Tiền Sân</label>
           <input type="text" id="tienSan" placeholder="VD: 300.000" inputmode="numeric" oninput="formatCurrency(this)">
         </div>
         <div class="col">
-          <label>🏸 Tiền Cầu (VNĐ)</label>
+          <label>🏸 Tiền Cầu</label>
           <input type="text" id="tienCau" placeholder="VD: 360.000" inputmode="numeric" oninput="formatCurrency(this)">
         </div>
       </div>
     </div>
 
     <div class="card">
-      <label>👥 Đội Hình Cố Định</label>
+      <div class="section-title">👥 Đội hình cố định</div>
       <div class="player-list">
         <div class="player-item">
-          <span class="player-name">Minh</span>
+          <span class="player-name">🤵🏻‍♂️ Minh</span>
           <label class="switch"><input type="checkbox" id="p_Minh" checked><span class="slider"></span></label>
         </div>
         <div class="player-item">
-          <span class="player-name">Thảo</span>
+          <span class="player-name">👩🏻‍💼 Thảo</span>
           <label class="switch"><input type="checkbox" id="p_Thao" checked><span class="slider"></span></label>
         </div>
         <div class="player-item">
-          <span class="player-name">Tú</span>
+          <span class="player-name">🤵🏻‍♂️ Tú</span>
           <label class="switch"><input type="checkbox" id="p_Tu" checked><span class="slider"></span></label>
         </div>
         <div class="player-item">
-          <span class="player-name">Quân</span>
+          <span class="player-name">🤵🏻‍♂️ Quân</span>
           <label class="switch"><input type="checkbox" id="p_Quan" checked><span class="slider"></span></label>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <label>🤝 Khách Giao Lưu</label>
+      <div class="section-title">🤝 Khách giao lưu</div>
       <div class="row">
         <div class="col">
-          <input type="number" id="namGL" placeholder="Số nam" min="0" inputmode="numeric" pattern="[0-9]*">
+          <label>Nam</label>
+          <input type="number" id="namGL" placeholder="Số lượng" min="0" inputmode="numeric" pattern="[0-9]*">
         </div>
         <div class="col">
-          <input type="number" id="nuGL" placeholder="Số nữ" min="0" inputmode="numeric" pattern="[0-9]*">
+          <label>Nữ</label>
+          <input type="number" id="nuGL" placeholder="Số lượng" min="0" inputmode="numeric" pattern="[0-9]*">
         </div>
       </div>
     </div>
 
-    <button id="btnSubmit" onclick="submitForm()">Lưu & Báo Cáo Telegram</button>
+    <button class="btn-submit" id="btnSubmit" onclick="submitForm()">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      Chốt sổ & Gửi Telegram
+    </button>
     
     <div id="resultBox">
-      <h3>✅ HOÀN TẤT TÍNH TOÁN</h3>
+      <h3><svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> HOÀN TẤT TÍNH TOÁN</h3>
       <div id="resultContent"></div>
     </div>
     
@@ -123,15 +297,17 @@
   </div>
 
   <script>
-    // Link Web App đã được gắn sẵn
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjtK_J7IBw6kSD37uUR2b5QgRXb0fLydwalEZ0QxpaJ_pbu5qv0_kdpt-mCYLSeykyZw/exec";
+    // Link Web App chuẩn của bạn
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2KNf2aWbSj4tZjku2qAZOcELjsmtD-oOTs_z0CSX-m6rTdM-f8ZTVJ-0hLbCYHnIsyA/exec";
 
+    // Khởi tạo ngày hôm nay
     document.addEventListener("DOMContentLoaded", function() {
         var today = new Date();
         var local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
         document.getElementById('dateInput').value = local.toISOString().split('T')[0];
     });
 
+    // Định dạng tiền tệ realtime
     function formatCurrency(input) {
       let value = input.value.replace(/\D/g, ''); 
       if (value !== "") {
@@ -140,11 +316,9 @@
         input.value = "";
       }
     }
+    function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " đ"; }
 
-    function formatMoney(n) {
-      return parseInt(n).toLocaleString('vi-VN') + " đ";
-    }
-
+    // Logic tính toán trực tiếp trên trình duyệt
     function calculateLocally(data) {
       let tienSan = parseInt(data.san) || 0;
       let tienCau = parseInt(data.cau) || 0;
@@ -156,11 +330,11 @@
       let cGF = data.nuGL;                      
 
       let totalP = cM + cF + cGM + cGF;
-      let report = `📊 <strong>BẢNG TÍNH TIỀN NGÀY ${data.date}</strong><br>💎 Sân: ${formatMoney(tienSan)} | 🏸 Cầu: ${formatMoney(tienCau)}<br>------------------<br>`;
+      let report = `<strong>BẢNG TÍNH NGÀY ${data.date}</strong><br>
+                    <span style="color:#86868b; font-size:13px">Sân: ${formatMoney(tienSan)} | Cầu: ${formatMoney(tienCau)}</span>
+                    <div class="divider"></div>`;
 
-      if (totalP === 0) {
-        return report + "📭 Chưa có người chơi.";
-      }
+      if (totalP === 0) return report + "📭 Chưa có người chơi.";
 
       let offset = (cM * 25000) + (cGF * 5000) + (cGM * 30000);
       let base = Math.max(0, totalCost - offset) / totalP;
@@ -171,22 +345,21 @@
       let priceNamGL = pF + 30000;
       let priceNuGL = pF + 5000;
 
-      if(data.minh > 0) report += `👤 Minh: 1 suất x ${formatMoney(priceNam)} = <strong>${formatMoney(priceNam)}</strong><br>`; else report += `❌ Minh: Nghỉ (0 suất)<br>`;
-      if(data.thao > 0) report += `👤 Thảo: 1 suất x ${formatMoney(priceNu)} = <strong>${formatMoney(priceNu)}</strong><br>`; else report += `❌ Thảo: Nghỉ (0 suất)<br>`;
-      if(data.tu > 0) report += `👤 Tú: 1 suất x ${formatMoney(priceNam)} = <strong>${formatMoney(priceNam)}</strong><br>`; else report += `❌ Tú: Nghỉ (0 suất)<br>`;
-      if(data.quan > 0) report += `👤 Quân: 1 suất x ${formatMoney(priceNam)} = <strong>${formatMoney(priceNam)}</strong><br>`; else report += `❌ Quân: Nghỉ (0 suất)<br>`;
-
-      if(data.namGL > 0) report += `👤 Nam Giao Lưu: ${data.namGL} suất x ${formatMoney(priceNamGL)} = <strong>${formatMoney(priceNamGL * data.namGL)}</strong><br>`;
-      if(data.nuGL > 0) report += `👤 Nữ Giao Lưu: ${data.nuGL} suất x ${formatMoney(priceNuGL)} = <strong>${formatMoney(priceNuGL * data.nuGL)}</strong><br>`;
+      if(data.minh > 0) report += `🤵🏻‍♂️ Minh: <strong>${formatMoney(priceNam)}</strong><br>`; 
+      if(data.thao > 0) report += `👩🏻‍💼 Thảo: <strong>${formatMoney(priceNu)}</strong><br>`; 
+      if(data.tu > 0) report += `🤵🏻‍♂️ Tú: <strong>${formatMoney(priceNam)}</strong><br>`; 
+      if(data.quan > 0) report += `🤵🏻‍♂️ Quân: <strong>${formatMoney(priceNam)}</strong><br>`; 
+      
+      if(data.namGL > 0 || data.nuGL > 0) report += `<div class="divider"></div>`;
+      if(data.namGL > 0) report += `👤 Nam GL (${data.namGL}): <strong>${formatMoney(priceNamGL * data.namGL)}</strong> <span style="font-size:12px;color:#86868b">(${formatMoney(priceNamGL)}/ng)</span><br>`;
+      if(data.nuGL > 0) report += `👤 Nữ GL (${data.nuGL}): <strong>${formatMoney(priceNuGL * data.nuGL)}</strong> <span style="font-size:12px;color:#86868b">(${formatMoney(priceNuGL)}/ng)</span><br>`;
 
       return report;
     }
 
+    // Xử lý gửi dữ liệu
     function submitForm() {
-      if (APPS_SCRIPT_URL.includes("DÁN_LINK")) {
-        alert("🛑 Bạn quên chưa dán Link Web App mới vào code GitHub rồi kìa!");
-        return;
-      }
+      if (APPS_SCRIPT_URL.includes("DÁN_LINK")) { alert("🛑 Chưa dán Link Web App vào code kìa!"); return; }
 
       var btn = document.getElementById('btnSubmit');
       var resultBox = document.getElementById('resultBox');
@@ -197,14 +370,11 @@
       var parts = rawDate.split('-');
       var dateStr = parts[2] + '/' + parts[1] + '/' + parts[0];
 
-      var rawSan = document.getElementById('tienSan').value.replace(/\./g, '');
-      var rawCau = document.getElementById('tienCau').value.replace(/\./g, '');
-
       var payload = {
         source: "github_web",
         date: dateStr,
-        san: rawSan ? parseInt(rawSan) : 0,
-        cau: rawCau ? parseInt(rawCau) : 0,
+        san: document.getElementById('tienSan').value.replace(/\./g, '') ? parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) : 0,
+        cau: document.getElementById('tienCau').value.replace(/\./g, '') ? parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) : 0,
         minh: document.getElementById('p_Minh').checked ? 1 : 0,
         thao: document.getElementById('p_Thao').checked ? 1 : 0,
         tu: document.getElementById('p_Tu').checked ? 1 : 0,
@@ -213,18 +383,21 @@
         nuGL: document.getElementById('nuGL').value ? parseInt(document.getElementById('nuGL').value) : 0
       };
 
-      var instantReport = calculateLocally(payload);
-      document.getElementById('resultContent').innerHTML = instantReport;
-      resultBox.style.display = 'block';
+      // TÍNH TOÁN VÀ HIỂN THỊ TỨC THÌ LÊN BẢNG ĐẸP MẮT
+      var instantReportHTML = calculateLocally(payload);
+      document.getElementById('resultContent').innerHTML = instantReportHTML;
       
+      // Tạo bản text thuần để đẩy sang Telegram
+      payload.reportText = instantReportHTML.replace(/<br>/g, "\n").replace(/<[^>]+>/g, '');
+
+      resultBox.style.display = 'block';
       btn.style.display = 'none';
       resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      syncStatus.innerHTML = '<div class="spinner"></div> Đang gửi báo cáo lên Telegram & Sheet...';
+      // CẬP NHẬT TRẠNG THÁI GỬI TIN
+      syncStatus.className = 'status-sending';
+      syncStatus.innerHTML = '<div class="spinner"></div> Đang bắn tín hiệu lên Telegram...';
       syncStatus.style.display = 'block';
-      syncStatus.style.color = '#f57c00';
-      syncStatus.style.background = '#fff3e0';
-      syncStatus.style.borderColor = '#ffb74d';
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -233,27 +406,21 @@
       })
       .then(response => response.json())
       .then(result => {
-        btn.style.display = 'block';
-        btn.innerText = "Cập Nhật Lại Dữ Liệu";
+        btn.style.display = 'flex';
+        btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Cập Nhật Lại Dữ Liệu';
         
         if(result.status === "success") {
-          syncStatus.innerHTML = '✅ Đã lưu Sheet & gửi Telegram thành công!';
-          syncStatus.style.color = '#2e7d32';
-          syncStatus.style.background = '#e8f5e9';
-          syncStatus.style.borderColor = '#a5d6a7';
+          syncStatus.className = 'status-success';
+          syncStatus.innerHTML = '✨ Tin nhắn đã hạ cánh an toàn vào nhóm!';
         } else {
-          syncStatus.innerHTML = '❌ Lỗi đồng bộ: ' + result.message;
-          syncStatus.style.color = '#c62828';
-          syncStatus.style.background = '#ffebee';
-          syncStatus.style.borderColor = '#ef9a9a';
+          syncStatus.className = 'status-error';
+          syncStatus.innerHTML = '❌ Báo lỗi: ' + result.message;
         }
       })
       .catch(err => {
-        btn.style.display = 'block';
-        syncStatus.innerHTML = '❌ Lỗi mạng: Không thể gửi Telegram.';
-        syncStatus.style.color = '#c62828';
-        syncStatus.style.background = '#ffebee';
-        syncStatus.style.borderColor = '#ef9a9a';
+        btn.style.display = 'flex';
+        syncStatus.className = 'status-error';
+        syncStatus.innerHTML = '❌ Lỗi mạng: Bắn tin Telegram thất bại.';
       });
     }
   </script>
