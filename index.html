@@ -18,14 +18,13 @@
       --text-sub: #64748b;
       --accent: #6366f1; 
       --accent-hover: #4f46e5;
-      --shadow-soft: 0 8px 32px rgba(30, 41, 59, 0.08);
+      --shadow-soft: 0 12px 40px rgba(30, 41, 59, 0.08);
       --smooth-curve: cubic-bezier(0.32, 0.72, 0, 1); 
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Khóa cấm zoom trên toàn trang nhưng PHẢI tha cho thẻ input type="date" */
-    button, a, input[type="text"], input[type="number"], .step-btn, .tab, .player-tag, .toggle-cau-btn {
+    button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
       user-select: none;
@@ -36,34 +35,45 @@
       background: var(--bg-gradient);
       color: var(--text-main);
       display: flex; justify-content: center; align-items: center;
-      height: 100dvh; overflow: hidden;
+      min-height: 100dvh; /* Cho phép co dãn theo thiết bị */
+      overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      padding: 20px; /* Đệm cho giao diện Desktop */
     }
 
+    /* GIAO DIỆN DẠNG THẺ (CARD WIDGET) DÀNH CHO CẢ PC & MOBILE */
     .app-glass {
-      width: 100%; max-width: 400px; height: 100%;
+      width: 100%; max-width: 420px; 
+      max-height: calc(100dvh - 40px); /* Không vượt quá màn hình */
+      background: rgba(255, 255, 255, 0.4); /* Nền kính nhẹ cho Desktop */
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 36px;
+      box-shadow: var(--shadow-soft);
       display: flex; flex-direction: column;
-      padding: 24px 20px calc(110px + env(safe-area-inset-bottom, 20px));
       position: relative;
+      overflow: hidden; /* Cắt phần cuộn thừa */
     }
+
+    /* Phần cuộn bên trong khung (Giúp nút bấm luôn nằm dưới cùng) */
+    .scroll-content {
+      flex: 1; overflow-y: auto;
+      padding: 24px 20px 10px 20px;
+    }
+    .scroll-content::-webkit-scrollbar { display: none; }
 
     /* HEADER & DATE */
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-shrink: 0; }
     .app-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
     
     .date-chip {
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
-      border-radius: 30px; padding: 8px 16px; box-shadow: var(--shadow-soft);
+      border-radius: 30px; padding: 8px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
       position: relative; display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
     }
-    #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; position: relative; z-index: 1; }
-    
-    /* FIX LỖI SAFARI BẤM NGÀY: Đưa z-index lên 10 và thả tự do touch-action */
+    #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; }
     .date-chip input[type="date"] { 
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
       opacity: 0; cursor: pointer; font-size: 16px !important; 
-      z-index: 10; touch-action: auto !important; 
     }
 
     /* TABS */
@@ -86,7 +96,7 @@
     .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
     .money-input-group {
       background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
-      border-radius: 24px; padding: 14px 20px; box-shadow: var(--shadow-soft);
+      border-radius: 24px; padding: 14px 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.02);
       display: flex; flex-direction: column; align-items: center; transition: border-color 0.2s ease;
       position: relative;
     }
@@ -121,11 +131,7 @@
     #cauTotalIndicator { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 100px;}
 
     /* VÙNG THÀNH VIÊN */
-    .members-zone { 
-      display: flex; flex-direction: column; flex: 1; justify-content: flex-start;
-      overflow-y: auto; padding-bottom: 10px; 
-    }
-    .members-zone::-webkit-scrollbar { display: none; }
+    .members-zone { display: flex; flex-direction: column; }
     
     .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .fixed-team-wrapper.hidden { grid-template-rows: 0fr; }
@@ -142,7 +148,7 @@
     .player-tag.active { background: var(--text-main); color: #fff; border-color: var(--text-main); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); }
 
     /* KHÁCH GIAO LƯU */
-    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; }
+    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; padding-bottom: 20px;}
     .guest-row {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
@@ -164,14 +170,17 @@
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ */
+    /* NÚT CHỐT SỔ ĐƯỢC GẮN VÀO CHÂN KHUNG TRÊN MỌI THIẾT BỊ */
     .action-zone {
-      position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 20px));
-      left: 20px; right: 20px; z-index: 50;
+      padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 0px)) 20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.6);
+      z-index: 50;
     }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 24px;
-      padding: 20px; font-size: 17px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
+      padding: 18px; font-size: 17px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
       box-shadow: 0 10px 30px var(--accent-hover); transition: transform 0.2s;
       display: flex; justify-content: center; align-items: center; gap: 10px;
     }
@@ -182,16 +191,21 @@
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       z-index: 100; opacity: 0; pointer-events: none; transition: 0.4s ease;
-      display: flex; justify-content: center; align-items: flex-end; padding: 16px;
+      display: flex; justify-content: center; align-items: center; /* Desktop: Nằm giữa */
+      padding: 16px;
     }
+    @media (max-width: 500px) {
+      .sheet-overlay { align-items: flex-end; /* Mobile: Nằm dưới cùng */ }
+    }
+    
     .sheet-overlay.show { opacity: 1; pointer-events: auto; }
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
       padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px)); 
-      transform: translateY(120%); transition: 0.4s var(--smooth-curve);
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+      transform: translateY(50px) scale(0.95); transition: 0.4s var(--smooth-curve);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15); opacity: 0;
     }
-    .sheet-overlay.show .sheet-card { transform: translateY(0); }
+    .sheet-overlay.show .sheet-card { transform: translateY(0) scale(1); opacity: 1; }
 
     .receipt-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 24px;}
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; align-items: center;}
@@ -213,100 +227,101 @@
 <body>
 
   <div class="app-glass">
-    <div class="header-bar">
-      <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
-      <div class="date-chip" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
-        <span id="displayDate">00/00/0000</span>
-        <input type="date" id="dateInput" required>
-      </div>
-    </div>
-
-    <div class="fluid-tabs">
-      <div class="tab-indicator" id="tabIndicator"></div>
-      <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
-      <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
-    </div>
-
-    <div class="money-display-zone">
-      <div class="money-input-group">
-        <div class="money-header">
-           <span class="money-label">TỔNG TIỀN SÂN</span>
+    
+    <div class="scroll-content">
+      <div class="header-bar">
+        <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
+        <div class="date-chip">
+          <span id="displayDate">00/00/0000</span>
+          <input type="date" id="dateInput" required>
         </div>
-        <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
       </div>
 
-      <div class="money-input-group" style="padding-bottom: 16px;">
-        <div class="money-header">
-           <span class="money-label">TIỀN CẦU</span>
-           <div class="switch-small-wrap">
-             <span>CHI TIẾT</span>
-             <label class="switch-small">
-               <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
-               <span class="slider-small"></span>
-             </label>
-           </div>
-        </div>
-        
-        <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
-          <div class="mode-inner" style="opacity: 1;">
-            <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
+      <div class="fluid-tabs">
+        <div class="tab-indicator" id="tabIndicator"></div>
+        <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
+        <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
+      </div>
+
+      <div class="money-display-zone">
+        <div class="money-input-group">
+          <div class="money-header">
+            <span class="money-label">TỔNG TIỀN SÂN</span>
           </div>
+          <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
         </div>
 
-        <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
-          <div class="mode-inner" style="opacity: 0;">
-            <div class="cau-detail-flex">
-              <div class="cau-col">
-                <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
-              </div>
-              <div class="divider-vert"></div>
-              <div class="cau-col">
-                <span>SỐ QUẢ ĐÁNH</span>
-                <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
-              </div>
+        <div class="money-input-group" style="padding-bottom: 16px;">
+          <div class="money-header">
+            <span class="money-label">TIỀN CẦU</span>
+            <div class="switch-small-wrap">
+              <span>CHI TIẾT</span>
+              <label class="switch-small">
+                <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                <span class="slider-small"></span>
+              </label>
             </div>
-            <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+          </div>
+          
+          <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
+            <div class="mode-inner" style="opacity: 1;">
+              <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
+            </div>
+          </div>
+
+          <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
+            <div class="mode-inner" style="opacity: 0;">
+              <div class="cau-detail-flex">
+                <div class="cau-col">
+                  <span>GIÁ 1 TÚP (12 QUẢ)</span>
+                  <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
+                </div>
+                <div class="divider-vert"></div>
+                <div class="cau-col">
+                  <span>SỐ QUẢ ĐÁNH</span>
+                  <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
+                </div>
+              </div>
+              <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="members-zone">
-      <div class="fixed-team-wrapper" id="fixedTeamWrap">
-        <div class="fixed-team-inner">
-          <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
-          <div class="tags-grid">
-            <div class="player-tag active" id="tag-Minh" onclick="toggleTag(this)">Minh</div>
-            <div class="player-tag active" id="tag-Thao" onclick="toggleTag(this)">Thảo</div>
-            <div class="player-tag active" id="tag-Tu" onclick="toggleTag(this)">Tú</div>
-            <div class="player-tag active" id="tag-Quan" onclick="toggleTag(this)">Quân</div>
+      <div class="members-zone">
+        <div class="fixed-team-wrapper" id="fixedTeamWrap">
+          <div class="fixed-team-inner">
+            <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
+            <div class="tags-grid">
+              <div class="player-tag active" id="tag-Minh" onclick="toggleTag(this)">Minh</div>
+              <div class="player-tag active" id="tag-Thao" onclick="toggleTag(this)">Thảo</div>
+              <div class="player-tag active" id="tag-Tu" onclick="toggleTag(this)">Tú</div>
+              <div class="player-tag active" id="tag-Quan" onclick="toggleTag(this)">Quân</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guest-container" id="guestWrap">
+          <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
+          <div class="guest-row">
+            <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
+            <div class="guest-stepper">
+              <button class="step-btn" onclick="stepVal('namGL', -1)">-</button>
+              <input type="number" class="guest-val" id="namGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
+              <button class="step-btn" onclick="stepVal('namGL', 1)">+</button>
+            </div>
+          </div>
+          <div class="guest-row">
+            <span class="guest-label">👩🏻‍💼 Số Nữ</span>
+            <div class="guest-stepper">
+              <button class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
+              <input type="number" class="guest-val" id="nuGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
+              <button class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="guest-container" id="guestWrap">
-        <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
-        <div class="guest-row">
-          <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
-          <div class="guest-stepper">
-            <button class="step-btn" onclick="stepVal('namGL', -1)">-</button>
-            <input type="number" class="guest-val" id="namGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
-            <button class="step-btn" onclick="stepVal('namGL', 1)">+</button>
-          </div>
-        </div>
-        <div class="guest-row">
-          <span class="guest-label">👩🏻‍💼 Số Nữ</span>
-          <div class="guest-stepper">
-            <button class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
-            <input type="number" class="guest-val" id="nuGL" value="0" min="0" inputmode="numeric" onblur="validateInput(this)">
-            <button class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="action-zone">
+    </div> <div class="action-zone">
       <button class="btn-massive" onclick="processData()">
         <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
         Phân Bổ Chi Phí
