@@ -3,342 +3,345 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Cầu Lông Tracker</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    /* BẢNG MÀU APPLE & BENTO UI */
     :root { 
-      --bg: #F2F2F7; 
+      --bg: #F5F5F9; 
       --surface: #FFFFFF; 
-      --text: #1C1C1E; 
-      --subtext: #8E8E93;
-      --accent: #000000;
-      --blue: #0A7AFF;
-      --green: #34C759;
-      --gray-light: #E5E5EA;
-      --pill-bg: #F2F2F7;
+      --text-main: #1C1C1E; 
+      --text-sub: #8E8E93;
+      --primary: #007AFF;
+      --primary-light: #E5F0FF;
+      --border: #E5E5EA;
+      --shadow: 0 4px 24px rgba(0,0,0,0.04);
     }
 
-    /* ÉP BUỘC 1 FRAME - KHÔNG CUỘN */
-    html, body {
-      height: 100dvh; 
-      margin: 0; 
-      padding: 0;
-      overflow: hidden; 
-      background-color: var(--bg);
+    * { box-sizing: border-box; }
+
+    body {
       font-family: 'Inter', sans-serif;
-      color: var(--text);
+      background-color: var(--bg);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px 16px;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
 
-    .app-frame {
+    .app-container {
       width: 100%;
-      max-width: 430px; /* Chuẩn kích thước Mobile */
-      height: 100%;
-      max-height: 850px;
-      padding: 16px;
-      box-sizing: border-box;
+      max-width: 420px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
     /* HEADER */
-    .header { text-align: center; padding: 5px 0 10px 0; }
-    .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+    .header { text-align: center; margin-bottom: 8px; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
 
-    /* BENTO BOX (CÁC KHỐI VUÔNG VỨC) */
-    .row { display: flex; gap: 12px; flex: 0 0 auto; }
-    .box {
+    /* SEGMENTED CONTROL (TABS CHUYỂN CHẾ ĐỘ) */
+    .tabs-container {
+      background: #E3E3E8;
+      border-radius: 14px;
+      padding: 4px;
+      display: flex;
+      position: relative;
+    }
+    .tab {
+      flex: 1; text-align: center; padding: 10px 0;
+      font-size: 15px; font-weight: 600; color: var(--text-sub);
+      cursor: pointer; position: relative; z-index: 2; transition: 0.3s;
+    }
+    .tab.active { color: var(--text-main); }
+    .tab-slider {
+      position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+      background: var(--surface); border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12); transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 1;
+    }
+
+    /* CARDS CHUNG */
+    .card {
       background: var(--surface);
       border-radius: 20px;
-      padding: 16px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
     }
 
-    .box-title { font-size: 11px; text-transform: uppercase; color: var(--subtext); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;}
+    .card-title {
+      font-size: 12px; text-transform: uppercase; font-weight: 700;
+      color: var(--text-sub); margin-bottom: 12px; letter-spacing: 0.5px;
+    }
+
+    .row { display: flex; gap: 16px; }
+    .col { flex: 1; }
 
     /* INPUTS */
+    .input-wrapper { background: var(--bg); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px;}
+    .input-wrapper:last-child { margin-bottom: 0; }
+    .input-wrapper label { display: block; font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
+    
     input[type="text"], input[type="number"], input[type="date"] {
-      width: 100%; border: none; outline: none; background: transparent;
-      font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700; color: var(--text);
-      padding: 0; margin: 0;
+      width: 100%; border: none; background: transparent; outline: none;
+      font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: var(--primary);
     }
-    input[type="date"] { color: var(--blue); }
+    input[type="date"] { color: var(--text-main); }
     input::placeholder { color: #C7C7CC; }
 
-    /* KHỐI SÂN KHÁCH ĐẶC BIỆT */
-    .box-guest-mode {
-      background: #E5F0FF; color: var(--blue); align-items: center; flex-direction: row; justify-content: space-between;
+    /* ĐỘI CỐ ĐỊNH - NÚT BẤM HIỆN ĐẠI MÀU SÁNG */
+    .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .player-btn {
+      background: var(--bg); color: var(--text-sub); border: 2px solid transparent;
+      border-radius: 14px; padding: 14px 0; text-align: center;
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;
     }
-    .box-guest-mode .box-title { margin: 0; color: var(--blue); }
-    
-    /* TOGGLE SWITCH APPLE */
-    .switch { position: relative; display: inline-block; width: 44px; height: 26px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #B0D0FF; transition: .3s; border-radius: 26px; }
-    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input:checked + .slider { background-color: var(--blue); }
-    input:checked + .slider:before { transform: translateX(18px); }
-
-    /* NÚT CHỌN ĐỘI HÌNH CỐ ĐỊNH (PILL BUTTONS) */
-    .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .pill {
-      flex: 1; min-width: 45%; text-align: center; padding: 12px 0; border-radius: 14px;
-      font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s;
-      background: var(--pill-bg); color: var(--subtext); border: 2px solid transparent;
+    .player-btn.active {
+      background: var(--primary-light); color: var(--primary); border-color: var(--primary);
     }
-    .pill.active { background: var(--text); color: var(--surface); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 
-    /* KHÁCH GIAO LƯU INPUT */
-    .guest-input-wrap { display: flex; justify-content: space-between; align-items: center; background: var(--pill-bg); border-radius: 14px; padding: 4px 12px; }
-    .guest-input-wrap span { font-weight: 600; font-size: 15px;}
-    .guest-input-wrap input { text-align: right; width: 40px; font-size: 18px; }
+    /* GIAO LƯU INPUTS */
+    .gl-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .gl-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .gl-label { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+    .gl-input { background: var(--bg); border-radius: 10px; width: 60px; padding: 8px; text-align: center; font-size: 16px;}
 
-    /* NÚT CHỐT SỔ TO BẢN KHÔNG CUỘN */
+    /* NÚT CHỐT SỔ */
     .btn-submit {
-      margin-top: auto; /* Đẩy nút xuống dưới cùng của frame */
-      background: var(--text); color: var(--surface); width: 100%; padding: 20px;
-      border: none; border-radius: 20px; font-size: 18px; font-weight: 800;
-      cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: 0.2s;
-      display: flex; justify-content: center; align-items: center; gap: 8px;
+      width: 100%; background: var(--text-main); color: var(--surface);
+      padding: 18px; border-radius: 18px; border: none; font-size: 17px; font-weight: 700;
+      margin-top: 10px; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: 0.2s;
     }
-    .btn-submit:active { transform: scale(0.97); }
+    .btn-submit:active { transform: scale(0.96); }
 
-    /* MODAL POPUP (Overlay che màn hình thay vì cuộn) */
+    /* MODAL HÓA ĐƠN */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
       display: flex; justify-content: center; align-items: flex-end;
-      opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+      opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1000;
     }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     
     .modal-card {
-      background: var(--surface); width: 100%; height: 85%;
-      border-radius: 32px 32px 0 0; padding: 30px 24px;
-      transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; flex-direction: column;
+      background: var(--surface); width: 100%; max-width: 450px;
+      border-radius: 30px 30px 0 0; padding: 30px 24px;
+      transform: translateY(100%); transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
     .modal-overlay.show .modal-card { transform: translateY(0); }
 
-    .receipt-header { text-align: center; margin-bottom: 20px; }
-    .receipt-title { font-size: 22px; font-weight: 800; }
-    .receipt-sub { color: var(--subtext); font-size: 14px; font-weight: 600; margin-top: 5px; }
+    .receipt-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 20px; color: var(--primary);}
+    .receipt-content { background: var(--bg); padding: 20px; border-radius: 16px; font-size: 15px; line-height: 1.8; margin-bottom: 20px;}
+    .divider { border-bottom: 1px dashed #C7C7CC; margin: 12px 0; }
     
-    .receipt-content { flex: 1; overflow-y: auto; font-size: 16px; line-height: 2; color: var(--text); background: #F8F8F9; padding: 20px; border-radius: 20px;}
-    .divider { border-bottom: 1px dashed #C7C7CC; margin: 15px 0; }
-    
-    .modal-btn-close {
-      margin-top: 20px; background: var(--bg); color: var(--text); width: 100%; padding: 18px;
-      border: none; border-radius: 20px; font-size: 17px; font-weight: 700; cursor: pointer;
+    .btn-close {
+      width: 100%; background: #E5E5EA; color: var(--text-main);
+      padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 16px; cursor: pointer;
     }
 
-    .sync-status { text-align: center; font-size: 14px; font-weight: 600; padding-top: 15px; color: var(--blue); display: none; }
+    #syncStatus { text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 15px; display: none; color: var(--primary); }
   </style>
 </head>
 <body>
 
-  <div class="app-frame">
+  <div class="app-container">
     <div class="header">
       <h1>Cầu Lông Tracker</h1>
     </div>
 
-    <div class="row">
-      <div class="box">
-        <span class="box-title">Thời gian</span>
+    <div class="tabs-container">
+      <div class="tab-slider" id="tabSlider"></div>
+      <div class="tab active" id="tabHome" onclick="switchMode('home')">Sân Nhà</div>
+      <div class="tab" id="tabAway" onclick="switchMode('away')">Sân Khách</div>
+    </div>
+
+    <div class="card">
+      <div class="input-wrapper">
+        <label>📅 THỜI GIAN</label>
         <input type="date" id="dateInput" required>
       </div>
-      <div class="box box-guest-mode">
-        <span class="box-title">ĐI SÂN KHÁCH<br><span style="font-size: 9px; text-transform:none; color:#8baaf3;">(Nam +20k)</span></span>
-        <label class="switch"><input type="checkbox" id="sanKhachToggle"><span class="slider"></span></label>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="box">
-        <span class="box-title">Tiền Sân</span>
-        <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
-      </div>
-      <div class="box">
-        <span class="box-title">Tiền Cầu</span>
-        <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
-      </div>
-    </div>
-
-    <div class="box">
-      <span class="box-title">Đội Hình Cố Định</span>
-      <div class="pill-group">
-        <div class="pill active" id="pill-Minh" onclick="togglePill(this)">Minh</div>
-        <div class="pill active" id="pill-Thao" onclick="togglePill(this)">Thảo</div>
-        <div class="pill active" id="pill-Tu" onclick="togglePill(this)">Tú</div>
-        <div class="pill active" id="pill-Quan" onclick="togglePill(this)">Quân</div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="box" style="padding: 12px;">
-        <span class="box-title" style="margin-bottom: 5px;">Nam Giao Lưu</span>
-        <div class="guest-input-wrap">
-          <span>🤵🏻‍♂️</span><input type="number" id="namGL" placeholder="0" min="0" inputmode="numeric">
+      <div class="row">
+        <div class="col input-wrapper">
+          <label>💎 TIỀN SÂN</label>
+          <input type="text" id="tienSan" placeholder="0" inputmode="numeric" oninput="formatCurrency(this)">
         </div>
-      </div>
-      <div class="box" style="padding: 12px;">
-        <span class="box-title" style="margin-bottom: 5px;">Nữ Giao Lưu</span>
-        <div class="guest-input-wrap">
-          <span>👩🏻‍💼</span><input type="number" id="nuGL" placeholder="0" min="0" inputmode="numeric">
+        <div class="col input-wrapper">
+          <label>🏸 TIỀN CẦU</label>
+          <input type="text" id="tienCau" placeholder="0" inputmode="numeric" oninput="formatCurrency(this)">
         </div>
       </div>
     </div>
 
-    <button class="btn-submit" onclick="submitForm()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      CHỐT SỔ & GỬI AI
-    </button>
+    <div class="card" id="fixedTeamCard">
+      <div class="card-title">Đội Hình Cố Định</div>
+      <div class="team-grid">
+        <div class="player-btn active" id="btn-Minh" onclick="togglePlayer(this)">🤵🏻‍♂️ Minh</div>
+        <div class="player-btn active" id="btn-Thao" onclick="togglePlayer(this)">👩🏻‍💼 Thảo</div>
+        <div class="player-btn active" id="btn-Tu" onclick="togglePlayer(this)">🤵🏻‍♂️ Tú</div>
+        <div class="player-btn active" id="btn-Quan" onclick="togglePlayer(this)">🤵🏻‍♂️ Quân</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" id="guestTitle">Khách Giao Lưu</div>
+      <div class="gl-row">
+        <div class="gl-label">🤵🏻‍♂️ Số Nam</div>
+        <input type="number" class="gl-input" id="namGL" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="gl-row">
+        <div class="gl-label">👩🏻‍💼 Số Nữ</div>
+        <input type="number" class="gl-input" id="nuGL" placeholder="0" min="0" inputmode="numeric">
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="processData()">GỬI BÁO CÁO & CHIA TIỀN</button>
   </div>
 
   <div class="modal-overlay" id="resultModal">
     <div class="modal-card">
-      <div class="receipt-header">
-        <div class="receipt-title">🧾 Hóa Đơn Chia Tiền</div>
-        <div class="receipt-sub" id="receiptDate"></div>
-      </div>
-      
-      <div class="receipt-content" id="resultContent">
-        </div>
-      
-      <div class="sync-status" id="syncStatus">Trạng thái đồng bộ...</div>
-      
-      <button class="modal-btn-close" onclick="closeModal()">ĐÓNG LẠI</button>
+      <div class="receipt-title" id="receiptTitle">🧾 BẢNG CHIA TIỀN</div>
+      <div id="syncStatus">⏳ Đang gửi tin nhắn cho AI...</div>
+      <div class="receipt-content" id="receiptContent"></div>
+      <button class="btn-close" onclick="closeModal()">ĐÓNG</button>
     </div>
   </div>
 
   <script>
-    // Link Web App đã được cập nhật chuẩn xác!
+    // LINK WEB APP V2.3 CỦA BẠN ĐÃ ĐƯỢC LẮP
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2KNf2aWbSj4tZjku2qAZOcELjsmtD-oOTs_z0CSX-m6rTdM-f8ZTVJ-0hLbCYHnIsyA/exec";
 
-    // Khởi tạo ngày
+    let currentMode = 'home';
+
+    // Set ngày hôm nay
     document.addEventListener("DOMContentLoaded", () => {
         let today = new Date();
         let local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
         document.getElementById('dateInput').value = local.toISOString().split('T')[0];
     });
 
-    // Xử lý nút bấm Đội hình
-    function togglePill(el) { el.classList.toggle('active'); }
+    // CHUYỂN ĐỔI CHẾ ĐỘ SÂN NHÀ / SÂN KHÁCH MƯỢT MÀ
+    function switchMode(mode) {
+      currentMode = mode;
+      let slider = document.getElementById('tabSlider');
+      let tabHome = document.getElementById('tabHome');
+      let tabAway = document.getElementById('tabAway');
+      let fixedTeamCard = document.getElementById('fixedTeamCard');
+      let guestTitle = document.getElementById('guestTitle');
 
-    // Format tiền
+      if (mode === 'home') {
+        slider.style.transform = 'translateX(0)';
+        tabHome.classList.add('active'); tabAway.classList.remove('active');
+        fixedTeamCard.style.display = 'block'; // Hiện đội cố định
+        guestTitle.innerText = "Khách Giao Lưu";
+      } else {
+        slider.style.transform = 'translateX(100%)';
+        tabAway.classList.add('active'); tabHome.classList.remove('active');
+        fixedTeamCard.style.display = 'none'; // Ẩn hoàn toàn đội cố định
+        guestTitle.innerText = "Tổng Số Người Chơi (Chia đều, Nam +20k)";
+      }
+    }
+
+    function togglePlayer(btn) { btn.classList.toggle('active'); }
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " đ"; }
-
-    // Đóng Popup
     function closeModal() { document.getElementById('resultModal').classList.remove('show'); }
 
-    function submitForm() {
+    // XỬ LÝ TOÀN BỘ LOGIC
+    function processData() {
       let dateRaw = document.getElementById('dateInput').value;
+      if(!dateRaw) { alert("Vui lòng chọn ngày!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
+      
       let san = parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) || 0;
       let cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
-      
-      // Lấy trạng thái từ các nút Pill
-      let minh = document.getElementById('pill-Minh').classList.contains('active') ? 1 : 0;
-      let thao = document.getElementById('pill-Thao').classList.contains('active') ? 1 : 0;
-      let tu = document.getElementById('pill-Tu').classList.contains('active') ? 1 : 0;
-      let quan = document.getElementById('pill-Quan').classList.contains('active') ? 1 : 0;
-      
+      let totalCost = san + cau;
+
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
-      
-      let isSanKhach = document.getElementById('sanKhachToggle').checked;
 
-      let totalP = minh + thao + tu + quan + namGL + nuGL;
-      let totalCost = san + cau;
-      let cM = minh + tu + quan; // Nam cố định
-      let cF = thao;             // Nữ cố định
-      
-      let pNam, pNu, pNamGL, pNuGL;
+      let webHTML = `<strong>💎 Sân: ${formatMoney(san)}<br>🏸 Cầu: ${formatMoney(cau)}</strong><div class="divider"></div>`;
+      let teleMsg = `<b>📊 BẢNG TÍNH ${currentMode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\n💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}\n------------------\n`;
 
-      // 🧠 LÕI TÍNH TOÁN KÉP
-      if (isSanKhach) {
-        // LUỒNG 1: SÂN KHÁCH (Chia đều, Nam hơn Nữ 20k)
-        let totalMen = cM + namGL;
-        let offset = totalMen * 20000;
-        let base = Math.max(0, totalCost - offset) / (totalP || 1);
+      if (currentMode === 'away') {
+        // TÍNH TOÁN SÂN KHÁCH (CHỈ LẤY INPUT NAM/NỮ, BỎ QUA CỐ ĐỊNH)
+        let totalP = namGL + nuGL;
+        if (totalP === 0) { alert("Vui lòng nhập số người chơi ở Sân Khách!"); return; }
+
+        let offset = namGL * 20000;
+        let base = Math.max(0, totalCost - offset) / totalP;
         let pF = Math.ceil(base / 1000) * 1000;
-        
-        pNu = pF;         pNuGL = pF;
-        pNam = pF + 20000; pNamGL = pF + 20000;
+        let pNu = pF;
+        let pNam = pF + 20000;
+
+        document.getElementById('receiptTitle').innerText = "🧾 SÂN KHÁCH - " + dateStr;
+        if(namGL > 0) {
+          webHTML += `🤵🏻‍♂️ Nam (${namGL} người): <strong>${formatMoney(pNam * namGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNam)}/ng)</span><br>`;
+          teleMsg += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\n`;
+        }
+        if(nuGL > 0) {
+          webHTML += `👩🏻‍💼 Nữ (${nuGL} người): <strong>${formatMoney(pNu * nuGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNu)}/ng)</span><br>`;
+          teleMsg += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
+        }
+
       } else {
-        // LUỒNG 2: SÂN NHÀ (Logic Cũ)
-        let offset = (cM * 25000) + (nuGL * 5000) + (namGL * 30000);
-        let base = Math.max(0, totalCost - offset) / (totalP || 1);
-        let pF = Math.ceil(base / 1000) * 1000;
+        // TÍNH TOÁN SÂN NHÀ (CÓ ĐỘI CỐ ĐỊNH)
+        let minh = document.getElementById('btn-Minh').classList.contains('active') ? 1 : 0;
+        let thao = document.getElementById('btn-Thao').classList.contains('active') ? 1 : 0;
+        let tu = document.getElementById('btn-Tu').classList.contains('active') ? 1 : 0;
+        let quan = document.getElementById('btn-Quan').classList.contains('active') ? 1 : 0;
+
+        let cM = minh + tu + quan; 
+        let totalP = cM + thao + namGL + nuGL;
         
-        pNu = pF;          pNuGL = pF + 5000;
-        pNam = pF + 25000; pNamGL = pF + 30000;
+        if (totalP === 0) { alert("Chưa có người chơi nào!"); return; }
+
+        let offset = (cM * 25000) + (nuGL * 5000) + (namGL * 30000);
+        let base = Math.max(0, totalCost - offset) / totalP;
+        let pF = Math.ceil(base / 1000) * 1000;
+
+        let pNu = pF; let pNam = pF + 25000; let pNamGL = pF + 30000; let pNuGL = pF + 5000;
+
+        document.getElementById('receiptTitle').innerText = "🧾 SÂN NHÀ - " + dateStr;
+        
+        if(minh) { webHTML += `🤵🏻‍♂️ Minh: <strong>${formatMoney(pNam)}</strong><br>`; teleMsg += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`; }
+        if(thao) { webHTML += `👩🏻‍💼 Thảo: <strong>${formatMoney(pNu)}</strong><br>`; teleMsg += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`; }
+        if(tu) { webHTML += `🤵🏻‍♂️ Tú: <strong>${formatMoney(pNam)}</strong><br>`; teleMsg += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`; }
+        if(quan) { webHTML += `🤵🏻‍♂️ Quân: <strong>${formatMoney(pNam)}</strong><br>`; teleMsg += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`; }
+        
+        if(namGL || nuGL) { webHTML += `<div class="divider"></div>`; teleMsg += `------------------\n`; }
+        if(namGL) { webHTML += `👤 Nam GL (${namGL}): <strong>${formatMoney(pNamGL * namGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNamGL)}/ng)</span><br>`; teleMsg += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b>\n`; }
+        if(nuGL) { webHTML += `👤 Nữ GL (${nuGL}): <strong>${formatMoney(pNuGL * nuGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNuGL)}/ng)</span><br>`; teleMsg += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b>\n`; }
       }
 
-      // XÂY DỰNG GIAO DIỆN MODAL
-      let modeText = isSanKhach ? `<span style="color:#0A7AFF; font-size: 13px;">(Chế độ Giao lưu Sân Khách)</span>` : "";
-      document.getElementById('receiptDate').innerHTML = `Ngày ${dateStr} ${modeText}`;
-
-      let webHTML = `<strong>💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}</strong><div class="divider"></div>`;
-      if (totalP === 0) webHTML += "📭 Chưa có người chơi nào.";
-      else {
-        if(minh) webHTML += `🤵🏻‍♂️ Minh: <strong>${formatMoney(pNam)}</strong><br>`; 
-        if(thao) webHTML += `👩🏻‍💼 Thảo: <strong>${formatMoney(pNu)}</strong><br>`; 
-        if(tu) webHTML += `🤵🏻‍♂️ Tú: <strong>${formatMoney(pNam)}</strong><br>`; 
-        if(quan) webHTML += `🤵🏻‍♂️ Quân: <strong>${formatMoney(pNam)}</strong><br>`; 
-        if(namGL || nuGL) webHTML += `<div class="divider"></div>`;
-        if(namGL) webHTML += `👤 Nam GL (${namGL}): <strong>${formatMoney(pNamGL * namGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNamGL)}/ng)</span><br>`;
-        if(nuGL) webHTML += `👤 Nữ GL (${nuGL}): <strong>${formatMoney(pNuGL * nuGL)}</strong> <span style="font-size:12px;color:#8e8e93">(${formatMoney(pNuGL)}/ng)</span><br>`;
-      }
-      document.getElementById('resultContent').innerHTML = webHTML;
-
-      // HIỂN THỊ MODAL LÊN ĐÈ LÊN MÀN HÌNH
+      // HIỆN MODAL HÓA ĐƠN
+      document.getElementById('receiptContent').innerHTML = webHTML;
       document.getElementById('resultModal').classList.add('show');
       
       let syncStatus = document.getElementById('syncStatus');
       syncStatus.style.display = 'block';
-      syncStatus.style.color = '#0A7AFF';
-      syncStatus.innerHTML = '⏳ Đang nhờ AI soạn tin nhắn...';
+      syncStatus.style.color = '#007AFF';
+      syncStatus.innerHTML = '⏳ Đang ném hóa đơn cho AI Telegram...';
 
-      // SOẠN TIN NHẮN TEXT CHO TELEGRAM
-      let teleTitle = isSanKhach ? `<b>📊 BẢNG TÍNH SÂN KHÁCH (${dateStr})</b>` : `<b>📊 BẢNG TÍNH NGÀY ${dateStr}</b>`;
-      let teleMsg = `${teleTitle}\n💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}\n------------------\n`;
-      if (totalP === 0) teleMsg += "📭 Chưa có người chơi.";
-      else {
-        if(minh) teleMsg += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`; 
-        if(thao) teleMsg += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`; 
-        if(tu) teleMsg += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`; 
-        if(quan) teleMsg += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`; 
-        if(namGL || nuGL) teleMsg += `------------------\n`;
-        if(namGL) teleMsg += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b>\n`;
-        if(nuGL) teleMsg += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b>\n`;
-      }
-
-      var payload = { source: "github_web", reportText: teleMsg };
-
+      // BẮN DATA SANG APPS SCRIPT
       fetch(APPS_SCRIPT_URL, {
-        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload)
+        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ source: "github_web", reportText: teleMsg })
       }).then(r => r.json()).then(res => {
         if(res.status === "success") {
-          syncStatus.style.color = '#34C759'; syncStatus.innerHTML = '✨ Đã gửi báo cáo cho bạn qua tin nhắn riêng!';
+          syncStatus.style.color = '#34C759'; syncStatus.innerHTML = '✨ AI đã nhận và nhắn tin cho bạn!';
         } else {
           syncStatus.style.color = '#FF3B30'; syncStatus.innerHTML = '❌ Lỗi: ' + res.message;
         }
       }).catch(err => {
-        syncStatus.style.color = '#FF3B30'; syncStatus.innerHTML = '❌ Lỗi mạng: Cáp quang chập chờn.';
+        syncStatus.style.color = '#FF3B30'; syncStatus.innerHTML = '❌ Lỗi mạng: Không gửi được Telegram.';
       });
     }
   </script>
