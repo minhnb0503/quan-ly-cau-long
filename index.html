@@ -55,7 +55,6 @@
       position: relative; overflow: hidden;
     }
 
-    /* Xóa bỏ overflow: hidden gây cắt bóng ở các khối con */
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-bottom: 100px; position: relative;}
     .form-content-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; }
@@ -68,13 +67,16 @@
     
     .right-col { display: none; } 
 
-    /* === 2. GIAO DIỆN ĐIỆN THOẠI XOAY NGANG === */
+    /* === 2. ĐẶC TRỊ LỖI CẮT BÓNG ĐA HƯỚNG MÀN HÌNH XOAY NGANG (CHỐNG CẮT LẸM 100%) === */
     @media (max-height: 500px) and (orientation: landscape) {
       body { padding: 0; align-items: flex-start; }
       
       .app-glass {
         max-width: 100% !important; height: 100dvh !important; border-radius: 0; box-shadow: none;
-        padding: 15px max(20px, env(safe-area-inset-left)) 15px max(20px, env(safe-area-inset-right)) !important;
+        
+        /* FIX CHỐNG CẮT LẸM 1: Cập nhật vùng đệm an toàn hệ thống ở ĐÁY màn hình ngang */
+        padding: 15px max(20px, env(safe-area-inset-left)) max(15px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right)) !important;
+        
         overflow-y: auto !important; display: block !important;
       }
       
@@ -88,10 +90,10 @@
       
       .left-col { padding-bottom: 0 !important; }
       
-      /* Padding cực lớn ở đáy và hai bên để chứa cái bóng, CHỐNG CẮT LẸM 100% */
+      /* FIX CHỐNG CẮT LẸM 2: Tăng vùng đệm dưới lên 100px để hứng trọn cái bóng, tuyệt đối không bị cắt */
       .action-zone {
         position: static !important; background: transparent !important;
-        padding: 20px 8px 30px 8px !important;
+        padding: 20px 8px 100px 8px !important; 
       }
       
       .header-bar { margin-bottom: 15px; }
@@ -242,13 +244,12 @@
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === VÙNG NÚT CHỐT SỔ ĐƯỢC TẠO VÙNG ĐỆM AN TOÀN CHỐNG CẮT LẸM === */
+    /* NÚT CHỐT SỔ */
     .action-zone {
       position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px));
       left: 12px; right: 12px; z-index: 50;
       background: linear-gradient(180deg, rgba(253, 251, 251, 0) 0%, rgba(245, 247, 250, 1) 40%);
-      /* Đệm sâu 24px ở đáy để hứng trọn cái bóng, tuyệt đối không bị cắt */
-      padding: 30px 8px 24px 8px; 
+      padding-top: 30px; 
     }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
