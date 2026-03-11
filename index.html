@@ -24,7 +24,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
+    /* Khóa cấm zoom trên toàn trang nhưng PHẢI tha cho thẻ input type="date" */
+    button, a, input[type="text"], input[type="number"], .step-btn, .tab, .player-tag, .toggle-cau-btn {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
       user-select: none;
@@ -54,11 +55,15 @@
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
       border-radius: 30px; padding: 8px 16px; box-shadow: var(--shadow-soft);
       position: relative; display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
     }
-    #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; }
+    #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; position: relative; z-index: 1; }
+    
+    /* FIX LỖI SAFARI BẤM NGÀY: Đưa z-index lên 10 và thả tự do touch-action */
     .date-chip input[type="date"] { 
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
       opacity: 0; cursor: pointer; font-size: 16px !important; 
+      z-index: 10; touch-action: auto !important; 
     }
 
     /* TABS */
@@ -210,7 +215,7 @@
   <div class="app-glass">
     <div class="header-bar">
       <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
-      <div class="date-chip">
+      <div class="date-chip" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
         <span id="displayDate">00/00/0000</span>
         <input type="date" id="dateInput" required>
       </div>
