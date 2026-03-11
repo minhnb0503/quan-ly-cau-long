@@ -24,7 +24,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    button, a, input, .step-btn, .tab, .player-tag {
+    button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
       user-select: none;
@@ -42,7 +42,7 @@
     .app-glass {
       width: 100%; max-width: 400px; height: 100%;
       display: flex; flex-direction: column;
-      padding: 24px 20px calc(100px + env(safe-area-inset-bottom, 20px));
+      padding: 24px 20px calc(110px + env(safe-area-inset-bottom, 20px));
       position: relative;
     }
 
@@ -56,7 +56,6 @@
       position: relative; display: flex; align-items: center; justify-content: center;
     }
     #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; }
-    /* Fix Zoom Safari: Bắt buộc font-size 16px */
     .date-chip input[type="date"] { 
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
       opacity: 0; cursor: pointer; font-size: 16px !important; 
@@ -90,7 +89,6 @@
     .money-header { display: flex; justify-content: center; width: 100%; align-items: center; margin-bottom: 4px; position: relative;}
     .money-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;}
     
-    /* NÚT GẠT ĐỔI KIỂU CẦU NHO NHỎ XINH XINH Ở GÓC PHẢI */
     .switch-small-wrap { position: absolute; right: 0; top: -2px; display: flex; align-items: center; gap: 6px; }
     .switch-small-wrap span { font-size: 10px; font-weight: 700; color: var(--text-sub); }
     .switch-small { position: relative; display: inline-block; width: 34px; height: 20px; }
@@ -107,25 +105,23 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* HIỆU ỨNG GRID MORPH CHO PHẦN ĐỔI CHẾ ĐỘ CẦU */
     .mode-grid { display: grid; width: 100%; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .mode-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s ease; }
     
     .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; }
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
-    .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase;}
+    .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
     .cau-col input { font-size: 22px !important; color: var(--accent) !important; }
     .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; }
     #cauTotalIndicator { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 100px;}
 
-    /* VÙNG THÀNH VIÊN CÓ THỂ CUỘN NHẸ */
+    /* VÙNG THÀNH VIÊN */
     .members-zone { 
       display: flex; flex-direction: column; flex: 1; justify-content: flex-start;
       overflow-y: auto; padding-bottom: 10px; 
     }
     .members-zone::-webkit-scrollbar { display: none; }
     
-    /* HIỆU ỨNG LƯỚI GRID MORPHING (SÂN NHÀ/KHÁCH) */
     .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .fixed-team-wrapper.hidden { grid-template-rows: 0fr; }
     .fixed-team-inner { min-height: 0; overflow: hidden; transition: opacity 0.3s ease-out; }
@@ -163,7 +159,7 @@
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ KHÓA CỨNG Ở ĐÁY */
+    /* NÚT CHỐT SỔ */
     .action-zone {
       position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 20px));
       left: 20px; right: 20px; z-index: 50;
@@ -256,12 +252,12 @@
           <div class="mode-inner" style="opacity: 0;">
             <div class="cau-detail-flex">
               <div class="cau-col">
-                <span>GIÁ 1 TÚP / QUẢ</span>
+                <span>GIÁ 1 TÚP (12 QUẢ)</span>
                 <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
               </div>
               <div class="divider-vert"></div>
               <div class="cau-col">
-                <span>SỐ LƯỢNG</span>
+                <span>SỐ QUẢ ĐÁNH</span>
                 <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
               </div>
             </div>
@@ -323,13 +319,11 @@
   </div>
 
   <script>
-    // Link Web App chuẩn xác
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2KNf2aWbSj4tZjku2qAZOcELjsmtD-oOTs_z0CSX-m6rTdM-f8ZTVJ-0hLbCYHnIsyA/exec";
     
     let mode = 'home';
     let isCauDetailMode = false;
 
-    // Xử lý Ngày tháng (Hiển thị DD/MM/YYYY đẹp mắt)
     function updateDateDisplay(val) {
       if(!val) return;
       let parts = val.split('-'); 
@@ -344,14 +338,12 @@
         dateInput.value = dateStr;
         updateDateDisplay(dateStr); 
         
-        // Khi chọn xong lịch, làm mờ input để tránh lỗi kẹt bàn phím iOS
         dateInput.addEventListener('change', (e) => { 
           updateDateDisplay(e.target.value); 
           e.target.blur();
         });
     });
 
-    // CHUYỂN TABS SÂN NHÀ / KHÁCH
     function switchTab(selected) {
       if (mode === selected) return;
       mode = selected;
@@ -374,7 +366,6 @@
       }
     }
 
-    // TÍNH NĂNG MỚI: ĐỔI KIỂU TÍNH TIỀN CẦU (MƯỢT MÀ BẰNG GRID)
     function toggleCauMode() {
       isCauDetailMode = document.getElementById('cauToggleSwitch').checked;
       let m1 = document.getElementById('cauMode1Wrap');
@@ -395,10 +386,12 @@
       }
     }
 
+    // LOGIC TÍNH TIỀN CẦU CHUẨN XÁC: (Giá 1 túp / 12) * Số quả
     function updateCauTotal() {
-      let gia = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
-      let sl = parseInt(document.getElementById('slCau').value) || 0;
-      document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(gia * sl);
+      let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
+      let soQua = parseInt(document.getElementById('slCau').value) || 0;
+      let thanhTien = Math.round((giaTup / 12) * soQua);
+      document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(thanhTien);
     }
 
     function toggleTag(el) { el.classList.toggle('active'); }
@@ -418,7 +411,6 @@
 
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
-    // XỬ LÝ TOÁN HỌC & ĐẨY DATA
     function processData() {
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
@@ -426,12 +418,11 @@
       
       let san = parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) || 0;
       
-      // Lấy tiền Cầu dựa theo chế độ
       let cau = 0;
       if (isCauDetailMode) {
-        let gia = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
-        let sl = parseInt(document.getElementById('slCau').value) || 0;
-        cau = gia * sl;
+        let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
+        let soQua = parseInt(document.getElementById('slCau').value) || 0;
+        cau = Math.round((giaTup / 12) * soQua);
       } else {
         cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
       }
@@ -441,7 +432,6 @@
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
 
-      // XÂY DỰNG CHI TIẾT HÓA ĐƠN TRÊN WEB (CHẺ RÕ TIỀN SÂN/CẦU)
       let html = `
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">🏸 Tiền Cầu:</span> <strong>${formatMoney(cau)}</strong></div>
