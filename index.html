@@ -24,165 +24,157 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Khóa chặn toàn bộ hiệu ứng zoom, nháy của Safari */
+    button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: transparent !important;
+      user-select: none;
+    }
+
     body {
       font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-gradient);
       color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100dvh;
-      overflow: hidden;
+      display: flex; justify-content: center; align-items: center;
+      height: 100dvh; overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Đệm đáy cao lên để không bao giờ bị dính vào thanh URL của Safari */
     .app-glass {
       width: 100%; max-width: 400px; height: 100%;
       display: flex; flex-direction: column;
-      padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 20px));
+      padding: 24px 20px calc(110px + env(safe-area-inset-bottom, 20px));
       position: relative;
     }
 
-    /* HEADER */
+    /* HEADER & DATE */
     .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
     .app-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
     
-    /* CUSTOM DATE CHIP */
     .date-chip {
-      background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border); border-radius: 30px;
-      padding: 8px 16px; box-shadow: var(--shadow-soft);
+      background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
+      border-radius: 30px; padding: 8px 16px; box-shadow: var(--shadow-soft);
       position: relative; display: flex; align-items: center; justify-content: center;
     }
-    #displayDate {
-      font-family: 'Be Vietnam Pro', sans-serif; font-weight: 700; color: var(--accent); font-size: 14px;
-      pointer-events: none; 
-    }
-    .date-chip input[type="date"] {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer; 
+    #displayDate { font-weight: 700; color: var(--accent); font-size: 14px; pointer-events: none; }
+    
+    /* FONT-SIZE BẮT BUỘC 16PX ĐỂ KHÔNG BỊ GIẬT MÀN HÌNH TRÊN IPHONE */
+    .date-chip input[type="date"] { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+      opacity: 0; cursor: pointer; font-size: 16px !important; 
     }
 
-    /* FLUID TABS */
+    /* TABS CHUYỂN ĐỔI */
     .fluid-tabs {
       display: flex; position: relative; background: rgba(0,0,0,0.04);
-      border-radius: 100px; padding: 4px; margin-bottom: 24px; flex-shrink: 0;
+      border-radius: 100px; padding: 4px; margin-bottom: 20px; flex-shrink: 0;
     }
     .tab {
       flex: 1; text-align: center; padding: 12px 0; font-size: 15px; font-weight: 600;
-      color: var(--text-sub); cursor: pointer; position: relative; z-index: 2;
-      transition: color 0.3s ease;
+      color: var(--text-sub); cursor: pointer; position: relative; z-index: 2; transition: color 0.3s ease;
     }
     .tab.active { color: var(--text-main); }
     .tab-indicator {
       position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
       background: #fff; border-radius: 100px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      transition: transform 0.5s var(--smooth-curve); z-index: 1;
+      transition: transform 0.4s var(--smooth-curve); z-index: 1;
     }
 
-    /* TIỀN BẠC HIỂN THỊ TO */
+    /* VÙNG NHẬP TIỀN BẠC CHỐNG RUNG LẮC */
     .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
     .money-input-group {
-      background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border); border-radius: 24px; padding: 12px 24px;
-      box-shadow: var(--shadow-soft); display: flex; flex-direction: column; align-items: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
+      border-radius: 24px; padding: 12px 24px; box-shadow: var(--shadow-soft);
+      display: flex; flex-direction: column; align-items: center; transition: border-color 0.2s ease;
+      position: relative;
     }
-    .money-input-group:focus-within { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.3); }
-    .money-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;}
+    .money-input-group:focus-within { border-color: rgba(99, 102, 241, 0.4); }
+    .money-header { display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 4px; }
+    .money-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; margin: 0 auto;}
+    
+    /* Nút Đổi kiểu nhập cầu */
+    .toggle-cau-btn {
+      position: absolute; right: 16px; top: 12px; background: rgba(99, 102, 241, 0.1); 
+      color: var(--accent); border: none; padding: 4px 8px; border-radius: 8px; 
+      font-size: 11px; font-weight: 700; font-family: 'Be Vietnam Pro'; cursor: pointer; transition: 0.2s;
+    }
+    .toggle-cau-btn:active { transform: scale(0.9); }
+
+    /* Fix font số kế toán để không nhảy chữ */
     .money-input-group input {
-      width: 100%; border: none; background: transparent; outline: none;
-      text-align: center; font-family: 'Be Vietnam Pro', sans-serif; font-size: 32px; font-weight: 800; color: var(--text-main);
+      width: 100%; border: none; background: transparent; outline: none; text-align: center;
+      font-family: 'Be Vietnam Pro', sans-serif; font-size: 32px; font-weight: 800; color: var(--text-main);
+      font-variant-numeric: tabular-nums;
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* VÙNG THÀNH VIÊN TRUNG TÂM */
-    .members-zone {
-      display: flex; flex-direction: column; flex: 1;
-      justify-content: flex-start;
-    }
-    
-    /* HIỆU ỨNG LƯỚI GRID MORPHING (CHỐNG GIẬT LAG) */
-    .fixed-team-wrapper {
-      display: grid;
-      grid-template-rows: 1fr;
-      transition: grid-template-rows 0.5s var(--smooth-curve);
-      will-change: grid-template-rows;
-    }
-    .fixed-team-wrapper.hidden {
-      grid-template-rows: 0fr;
-    }
-    .fixed-team-inner {
-      overflow: hidden;
-      display: flex; flex-direction: column;
-      transition: opacity 0.4s var(--smooth-curve), transform 0.5s var(--smooth-curve);
-      will-change: transform, opacity;
-      transform-origin: top;
-    }
-    .fixed-team-wrapper.hidden .fixed-team-inner {
-      opacity: 0; transform: scaleY(0.9) translateY(-10px);
-    }
+    /* Mode 2: Nhập túp cầu */
+    .cau-detail-mode { display: none; width: 100%; gap: 12px; transition: 0.3s; opacity: 0; }
+    .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase;}
+    .cau-col input { font-size: 24px; color: var(--accent); }
+    .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; }
+    #cauTotalIndicator { display: none; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 8px; }
 
-    .zone-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 12px; text-align: center; text-transform: uppercase; letter-spacing: 1px;}
-    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px;}
+    /* VÙNG THÀNH VIÊN CÓ THỂ CUỘN NHẸ NẾU MÁY BÉ */
+    .members-zone { 
+      display: flex; flex-direction: column; flex: 1; justify-content: flex-start;
+      overflow-y: auto; padding-bottom: 10px; 
+    }
+    .members-zone::-webkit-scrollbar { display: none; }
+    
+    .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s ease-out; }
+    .fixed-team-wrapper.hidden { grid-template-rows: 0fr; }
+    .fixed-team-inner { min-height: 0; overflow: hidden; transition: opacity 0.3s ease-out; }
+    .fixed-team-wrapper.hidden .fixed-team-inner { opacity: 0; }
+
+    .zone-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 12px; text-align: center; text-transform: uppercase;}
+    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 20px;}
     .player-tag {
       background: rgba(255,255,255,0.5); border: 1px solid var(--glass-border); color: var(--text-sub);
       padding: 10px 20px; border-radius: 100px; font-size: 15px; font-weight: 600;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+      transition: all 0.2s ease; cursor: pointer;
     }
-    .player-tag.active {
-      background: var(--text-main); color: #fff; border-color: var(--text-main);
-      box-shadow: 0 6px 16px rgba(30, 41, 59, 0.2); transform: translateY(-2px);
-    }
+    .player-tag.active { background: var(--text-main); color: #fff; border-color: var(--text-main); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); }
 
-    /* KHÁCH GIAO LƯU ĐẨY LÊN MƯỢT MÀ */
-    .guest-container {
-      transition: transform 0.5s var(--smooth-curve);
-      will-change: transform; width: 100%;
-    }
+    /* KHÁCH GIAO LƯU */
+    .guest-container { transition: transform 0.4s ease-out; width: 100%; }
     .guest-row {
       display: flex; justify-content: space-between; align-items: center;
-      background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border); border-radius: 20px; padding: 10px 16px; margin-bottom: 10px;
+      background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 10px 16px; margin-bottom: 10px;
     }
     .guest-label { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
     .guest-stepper { display: flex; align-items: center; background: rgba(0,0,0,0.04); border-radius: 100px; padding: 4px; }
     .step-btn {
-      width: 34px; height: 34px; border-radius: 50%; border: none; background: #fff;
+      width: 36px; height: 36px; border-radius: 50%; border: none; background: #fff;
       font-size: 20px; font-weight: 600; color: var(--text-main); cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.2s; display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.1s; display: flex; justify-content: center; align-items: center;
     }
-    .step-btn:active { transform: scale(0.85); background: #f1f5f9; }
+    .step-btn:active { transform: scale(0.85); background: #e2e8f0; }
     
-    /* Sửa ô nhập liệu Khách Giao Lưu: Mở khóa gõ tay & Ẩn mũi tên mặc định */
     .guest-val { 
-      width: 44px; text-align: center; font-size: 18px; font-weight: 700; 
-      border: none; background: transparent; outline:none; 
-      font-family: 'Be Vietnam Pro', sans-serif; color: var(--text-main);
-      transition: background 0.2s, border-radius 0.2s;
-    }
-    .guest-val:focus {
-      background: rgba(0,0,0,0.05);
-      border-radius: 8px;
-    }
-    /* Xóa mờ mũi tên tăng giảm số của input type="number" */
-    .guest-val::-webkit-outer-spin-button,
-    .guest-val::-webkit-inner-spin-button {
-      -webkit-appearance: none; margin: 0;
+      width: 44px; text-align: center; font-size: 18px; font-weight: 700; border: none; background: transparent; outline:none; 
+      font-family: 'Be Vietnam Pro', sans-serif; color: var(--text-main); font-variant-numeric: tabular-nums;
     }
     .guest-val[type=number] { -moz-appearance: textfield; }
+    .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ */
-    .action-zone { margin-top: auto; padding-top: 10px; flex-shrink: 0;}
+    /* NÚT CHỐT SỔ KHÓA CỨNG (ABSOLUTE) CHỐNG GIẬT */
+    .action-zone {
+      position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+      left: 20px; right: 20px; z-index: 50;
+    }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 24px;
       padding: 20px; font-size: 17px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
-      box-shadow: 0 10px 30px var(--accent-hover); transition: all 0.2s;
+      box-shadow: 0 10px 30px var(--accent-hover); transition: transform 0.2s;
       display: flex; justify-content: center; align-items: center; gap: 10px;
     }
-    .btn-massive:active { transform: scale(0.95); box-shadow: 0 5px 15px var(--accent-hover); }
+    .btn-massive:active { transform: scale(0.95); }
 
-    /* HÓA ĐƠN TRƯỢT */
+    /* HÓA ĐƠN TRƯỢT TỪ DƯỚI LÊN */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -193,19 +185,20 @@
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
       padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px)); 
-      transform: translateY(120%); transition: 0.5s var(--smooth-curve);
+      transform: translateY(120%); transition: 0.4s cubic-bezier(0.32, 0.72, 0, 1);
       box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
-    .receipt-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 24px;}
-    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px; align-items: center;}
-    .receipt-item strong { font-size: 18px; }
-    .receipt-sub { font-size: 13px; color: var(--text-sub); }
+    .receipt-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px;}
+    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; align-items: center;}
+    .receipt-item strong { font-size: 17px; font-variant-numeric: tabular-nums;}
+    .receipt-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
+    .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.1); margin: 12px 0; }
     
     .btn-close {
-      width: 100%; background: #f1f5f9; color: var(--text-main); margin-top: 16px;
+      width: 100%; background: #f1f5f9; color: var(--text-main); margin-top: 10px;
       padding: 18px; border-radius: 20px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.2s;
     }
     .btn-close:active { transform: scale(0.96); background: #e2e8f0;}
@@ -233,12 +226,34 @@
 
     <div class="money-display-zone">
       <div class="money-input-group">
-        <span class="money-label">Tổng Tiền Sân</span>
+        <div class="money-header">
+           <span class="money-label" style="margin-left: 20px;">TỔNG TIỀN SÂN</span>
+        </div>
         <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
       </div>
-      <div class="money-input-group">
-        <span class="money-label">Tổng Tiền Cầu</span>
-        <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
+
+      <div class="money-input-group" style="padding-bottom: 16px;">
+        <div class="money-header">
+           <span class="money-label">TIỀN CẦU</span>
+           <button class="toggle-cau-btn" onclick="toggleCauMode()">🔁 Đổi kiểu</button>
+        </div>
+        
+        <div id="cauMode1" style="width: 100%; transition: 0.2s;">
+          <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
+        </div>
+
+        <div id="cauMode2" class="cau-detail-mode">
+          <div class="cau-col">
+            <span>GIÁ 1 TÚP / QUẢ</span>
+            <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this); updateCauTotal();">
+          </div>
+          <div class="divider-vert"></div>
+          <div class="cau-col">
+            <span>SỐ LƯỢNG</span>
+            <input type="number" id="slCau" placeholder="0" inputmode="numeric" oninput="updateCauTotal();">
+          </div>
+        </div>
+        <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
       </div>
     </div>
 
@@ -286,20 +301,21 @@
 
   <div class="sheet-overlay" id="resultSheet">
     <div class="sheet-card">
-      <div class="receipt-title">Hoàn Tất Chia Tiền! 🎉</div>
+      <div class="receipt-title">Biên Lai Cầu Lông 🎉</div>
       <div id="syncStatus">Trạng thái đồng bộ...</div>
       <div id="receiptContent"></div>
-      <button class="btn-close" onclick="closeSheet()">Xong</button>
+      <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
     </div>
   </div>
 
   <script>
-    // Link Web App chuẩn của bạn
+    // Link Web App chuẩn xác
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2KNf2aWbSj4tZjku2qAZOcELjsmtD-oOTs_z0CSX-m6rTdM-f8ZTVJ-0hLbCYHnIsyA/exec";
-
+    
     let mode = 'home';
+    let isCauDetailMode = false;
 
-    // Xử lý Ngày tháng
+    // Xử lý Ngày tháng (Hiển thị DD/MM/YYYY đẹp mắt)
     function updateDateDisplay(val) {
       if(!val) return;
       let parts = val.split('-'); 
@@ -310,21 +326,16 @@
         let today = new Date();
         let local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
         let dateStr = local.toISOString().split('T')[0];
-        
         let dateInput = document.getElementById('dateInput');
         dateInput.value = dateStr;
         updateDateDisplay(dateStr); 
-        
-        dateInput.addEventListener('change', (e) => {
-            updateDateDisplay(e.target.value);
-        });
+        dateInput.addEventListener('change', (e) => { updateDateDisplay(e.target.value); });
     });
 
-    // CHUYỂN TABS
+    // CHUYỂN TABS SÂN NHÀ / KHÁCH
     function switchTab(selected) {
       if (mode === selected) return;
       mode = selected;
-      
       let ind = document.getElementById('tabIndicator');
       let tHome = document.getElementById('tabHome');
       let tAway = document.getElementById('tabAway');
@@ -340,52 +351,90 @@
         ind.style.transform = 'translateX(100%)';
         tAway.classList.add('active'); tHome.classList.remove('active');
         fTeam.classList.add('hidden'); 
-        gTitle.innerText = "TỔNG NGƯỜI CHƠI (TỰ ĐỘNG CHIA ĐỀU, NAM +20K)";
+        gTitle.innerText = "TỔNG NGƯỜI CHƠI (CHIA ĐỀU, NAM +20K)";
       }
     }
 
-    // Các hàm phụ trợ
+    // TÍNH NĂNG MỚI: ĐỔI KIỂU TÍNH TIỀN CẦU
+    function toggleCauMode() {
+      isCauDetailMode = !isCauDetailMode;
+      let m1 = document.getElementById('cauMode1');
+      let m2 = document.getElementById('cauMode2');
+      let ind = document.getElementById('cauTotalIndicator');
+
+      if(isCauDetailMode) {
+        m1.style.display = 'none';
+        m2.style.display = 'flex';
+        ind.style.display = 'block';
+        setTimeout(() => { m2.style.opacity = 1; }, 10);
+      } else {
+        m2.style.display = 'none';
+        m2.style.opacity = 0;
+        ind.style.display = 'none';
+        m1.style.display = 'block';
+      }
+    }
+
+    function updateCauTotal() {
+      let gia = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
+      let sl = parseInt(document.getElementById('slCau').value) || 0;
+      document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(gia * sl);
+    }
+
     function toggleTag(el) { el.classList.toggle('active'); }
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " ₫"; }
     
-    // Nút tăng giảm (Đã tích hợp đọc value từ input)
     function stepVal(id, step) { 
       let el = document.getElementById(id); 
-      let currentVal = parseInt(el.value) || 0; // Tránh lỗi NaN nếu để trống
-      let val = currentVal + step; 
+      let val = (parseInt(el.value) || 0) + step; 
       if(val < 0) val = 0; 
       el.value = val; 
     }
 
-    // Tự động điền số 0 nếu người dùng gõ linh tinh rồi bấm ra ngoài
     function validateInput(el) {
-      if (el.value.trim() === '' || parseInt(el.value) < 0) {
-        el.value = '0';
-      }
+      if (el.value.trim() === '' || parseInt(el.value) < 0) { el.value = '0'; }
     }
 
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
-    // Tính toán & Đẩy dữ liệu
+    // XỬ LÝ TOÁN HỌC & ĐẨY DATA
     function processData() {
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
       
       let san = parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) || 0;
-      let cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
+      
+      // Lấy tiền Cầu dựa theo chế độ
+      let cau = 0;
+      if (isCauDetailMode) {
+        let gia = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
+        let sl = parseInt(document.getElementById('slCau').value) || 0;
+        cau = gia * sl;
+      } else {
+        cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
+      }
+      
       let totalCost = san + cau;
 
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
 
-      let html = `<div class="receipt-item"><span>Tổng chi phí:</span> <strong>${formatMoney(totalCost)}</strong></div><div class="divider"></div>`;
+      // XÂY DỰNG CHI TIẾT HÓA ĐƠN TRÊN WEB
+      let html = `
+        <div class="receipt-item"><span style="color:var(--text-sub)">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
+        <div class="receipt-item"><span style="color:var(--text-sub)">🏸 Tiền Cầu:</span> <strong>${formatMoney(cau)}</strong></div>
+        <div class="divider-dash"></div>
+        <div class="receipt-item"><span><strong>TỔNG CHI PHÍ:</strong></span> <strong style="color:var(--accent); font-size: 20px;">${formatMoney(totalCost)}</strong></div>
+        <div class="divider"></div>
+      `;
+
       let teleStr = `<b>🏸 BẢNG TÍNH ${mode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\n💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}\n------------------\n`;
 
       if (mode === 'away') {
         let totalP = namGL + nuGL;
-        if (totalP === 0) { alert("Chưa có ai đi sân khách à?"); return; }
+        if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
 
         let offset = namGL * 20000;
         let base = Math.max(0, totalCost - offset) / totalP;
@@ -393,11 +442,11 @@
         let pNu = pF; let pNam = pF + 20000;
 
         if(namGL) {
-          html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div><strong>${formatMoney(pNam * namGL)}</strong><br><div class="receipt-sub" style="text-align:right">${formatMoney(pNam)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNam * namGL)}</strong><div class="receipt-sub">${formatMoney(pNam)}/ng</div></div></div>`;
           teleStr += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\n`;
         }
         if(nuGL) {
-          html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div><strong>${formatMoney(pNu * nuGL)}</strong><br><div class="receipt-sub" style="text-align:right">${formatMoney(pNu)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNu * nuGL)}</strong><div class="receipt-sub">${formatMoney(pNu)}/ng</div></div></div>`;
           teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
         }
 
@@ -422,13 +471,13 @@
         if(tu) { html += `<div class="receipt-item"><span>Tú</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`;}
         if(quan) { html += `<div class="receipt-item"><span>Quân</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
         
-        if(namGL || nuGL) { html += `<div class="divider"></div>`; teleStr += `------------------\n`; }
+        if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
         if(namGL) { 
-          html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div><strong>${formatMoney(pNamGL * namGL)}</strong><br><div class="receipt-sub" style="text-align:right">${formatMoney(pNamGL)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong>${formatMoney(pNamGL * namGL)}</strong><div class="receipt-sub">${formatMoney(pNamGL)}/ng</div></div></div>`;
           teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b>\n`; 
         }
         if(nuGL) { 
-          html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div><strong>${formatMoney(pNuGL * nuGL)}</strong><br><div class="receipt-sub" style="text-align:right">${formatMoney(pNuGL)}/ng</div></div></div>`;
+          html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong>${formatMoney(pNuGL * nuGL)}</strong><div class="receipt-sub">${formatMoney(pNuGL)}/ng</div></div></div>`;
           teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b>\n`; 
         }
       }
@@ -445,7 +494,7 @@
         body: JSON.stringify({ source: "github_web", reportText: teleStr })
       }).then(r => r.json()).then(res => {
         if(res.status === "success") {
-          statusEl.style.color = '#10b981'; statusEl.innerText = 'Đã gửi Telegram thành công! ✅';
+          statusEl.style.color = '#10b981'; statusEl.innerText = 'Đã gửi biên lai qua Telegram! ✅';
         } else {
           statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi gửi tin: ' + res.message;
         }
