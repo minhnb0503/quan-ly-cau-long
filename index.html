@@ -20,7 +20,6 @@
       --accent-hover: #4f46e5;
       --shadow-soft: 0 8px 32px rgba(30, 41, 59, 0.08);
       --smooth-curve: cubic-bezier(0.32, 0.72, 0, 1); 
-      --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,7 +39,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* CONTAINER CHÍNH TRÊN MOBILE */
+    /* MOBILE LAYOUT */
     .app-glass {
       width: 100%; max-width: 450px; height: 100%;
       display: flex; flex-direction: column;
@@ -48,7 +47,7 @@
       position: relative;
     }
 
-    /* BỐ CỤC CHIA ĐÔI CHO DESKTOP / MÀN HÌNH NGANG */
+    /* DESKTOP SPLIT LAYOUT */
     .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
     .left-col { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 90px; }
     .left-col::-webkit-scrollbar { display: none; }
@@ -68,7 +67,7 @@
       
       .right-col {
         display: flex; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 24px;
+        background: rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 24px;
         position: relative; overflow-y: auto; border: 1px solid var(--glass-border);
       }
       .right-col::-webkit-scrollbar { display: none; }
@@ -108,7 +107,7 @@
       transition: transform 0.4s var(--smooth-curve); z-index: 1;
     }
 
-    /* NHẬP LIỆU TIỀN */
+    /* INPUT KHU VỰC TIỀN */
     .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
     .money-input-group {
       background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
@@ -200,7 +199,7 @@
     }
     .btn-massive:active { transform: scale(0.95); }
 
-    /* MODAL MOBILE */
+    /* === GIAO DIỆN BIÊN LAI (CÓ CHỨC NĂNG BẢO MẬT) === */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -216,17 +215,28 @@
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
-    /* === ANIMATION ĐỈNH CAO CHO PHẦN NỘI DUNG BIÊN LAI (DESKTOP) === */
-    @keyframes smoothPop {
-      0% { opacity: 0; transform: translateY(15px); }
-      100% { opacity: 1; transform: translateY(0); }
+    /* HEADER CỦA BIÊN LAI: THÊM NÚT ẨN NỘI BỘ */
+    .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .receipt-title { font-size: 20px; font-weight: 800; margin: 0; }
+    .privacy-btn { 
+      background: rgba(99, 102, 241, 0.1); color: var(--accent); border: none; 
+      padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; 
+      cursor: pointer; transition: 0.2s; font-family: 'Be Vietnam Pro', sans-serif;
     }
-    .anim-pop { animation: smoothPop 0.5s var(--spring) forwards; }
+    .privacy-btn:active { transform: scale(0.9); }
 
-    /* Style Chi tiết Biên Lai */
-    .receipt-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 20px;}
+    /* HIỆU ỨNG LÀM MỜ GIÁ NỘI BỘ */
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; align-items: center;}
-    .receipt-item strong { font-size: 16px; font-variant-numeric: tabular-nums;}
+    .receipt-item strong { font-size: 16px; font-variant-numeric: tabular-nums; transition: filter 0.3s ease, opacity 0.3s ease; }
+    
+    /* Khi chế độ Privacy bật, các dòng có class 'fixed-member' sẽ bị làm mờ */
+    .privacy-on .fixed-member strong {
+      filter: blur(5px);
+      opacity: 0.4;
+      pointer-events: none;
+      user-select: none;
+    }
+
     .receipt-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
@@ -239,20 +249,24 @@
 
     #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
     .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    
     .desktop-placeholder { text-align: center; color: var(--text-sub); font-size: 15px; font-weight: 500; margin-top: 50px; opacity: 0.7;}
+    
+    @keyframes smoothPop {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .anim-pop { animation: smoothPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   </style>
 </head>
 <body>
 
   <div class="app-glass">
-    
     <div class="main-wrapper">
       
       <div class="left-col">
         <div class="header-bar">
           <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
-          <div class="date-chip">
+          <div class="date-chip" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
             <span id="displayDate">00/00/0000</span>
             <input type="date" id="dateInput" required>
           </div>
@@ -267,21 +281,21 @@
         <div class="money-display-zone">
           <div class="money-input-group">
             <div class="money-header">
-              <span class="money-label">TỔNG TIỀN SÂN</span>
+               <span class="money-label">TỔNG TIỀN SÂN</span>
             </div>
             <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
           </div>
 
           <div class="money-input-group" style="padding-bottom: 16px;">
             <div class="money-header">
-              <span class="money-label">TIỀN CẦU</span>
-              <div class="switch-small-wrap">
-                <span>CHI TIẾT</span>
-                <label class="switch-small">
-                  <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
-                  <span class="slider-small"></span>
-                </label>
-              </div>
+               <span class="money-label">TIỀN CẦU</span>
+               <div class="switch-small-wrap">
+                 <span>CHI TIẾT</span>
+                 <label class="switch-small">
+                   <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                   <span class="slider-small"></span>
+                 </label>
+               </div>
             </div>
             
             <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
@@ -347,8 +361,14 @@
       <div class="right-col">
         <div class="sheet-overlay" id="resultSheet">
           <div class="sheet-card">
-            <div class="receipt-title">Biên Lai Cầu Lông 🎉</div>
+            
+            <div class="receipt-header-flex">
+              <div class="receipt-title">Biên Lai 🎉</div>
+              <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+            </div>
+            
             <div id="syncStatus">Trạng thái đồng bộ...</div>
+            
             <div id="receiptContainer">
                <div id="receiptContent">
                  <div class="desktop-placeholder">👈 Hãy nhập số liệu và bấm "Phân Bổ" để xem chi tiết.</div>
@@ -395,6 +415,9 @@
         });
 
         document.getElementById('syncStatus').style.display = 'none';
+        
+        // Ẩn nút Privacy khi chưa có data
+        document.getElementById('privacyBtn').style.display = 'none';
     });
 
     function switchTab(selected) {
@@ -459,6 +482,19 @@
 
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
+    // Tính năng bật tắt chế độ bảo mật (chỉ áp dụng UI trên Web)
+    function togglePrivacy() {
+      let content = document.getElementById('receiptContent');
+      let btn = document.getElementById('privacyBtn');
+      content.classList.toggle('privacy-on');
+      
+      if(content.classList.contains('privacy-on')) {
+        btn.innerHTML = '🙈 Hiện nội bộ';
+      } else {
+        btn.innerHTML = '👁️ Ẩn nội bộ';
+      }
+    }
+
     function processData() {
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
@@ -488,6 +524,8 @@
       let teleStr = `<b>🏸 BẢNG TÍNH ${mode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\n💎 Sân: ${formatMoney(san)} | 🏸 Cầu: ${formatMoney(cau)}\n------------------\n`;
 
       if (mode === 'away') {
+        document.getElementById('privacyBtn').style.display = 'none'; // Sân khách chia đều không cần ẩn
+
         let totalP = namGL + nuGL;
         if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
 
@@ -505,6 +543,8 @@
           teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
         }
       } else {
+        document.getElementById('privacyBtn').style.display = 'block'; // Hiện nút giấu giá cho Sân Nhà
+
         let minh = document.getElementById('tag-Minh').classList.contains('active') ? 1 : 0;
         let thao = document.getElementById('tag-Thao').classList.contains('active') ? 1 : 0;
         let tu = document.getElementById('tag-Tu').classList.contains('active') ? 1 : 0;
@@ -519,10 +559,11 @@
         let pF = Math.ceil(base / 1000) * 1000;
         let pNu = pF; let pNam = pF + 25000; let pNamGL = pF + 30000; let pNuGL = pF + 5000;
 
-        if(minh) { html += `<div class="receipt-item"><span>Minh</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
-        if(thao) { html += `<div class="receipt-item"><span>Thảo</span> <strong>${formatMoney(pNu)}</strong></div>`; teleStr += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`;}
-        if(tu) { html += `<div class="receipt-item"><span>Tú</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`;}
-        if(quan) { html += `<div class="receipt-item"><span>Quân</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
+        // Thêm class 'fixed-member' để JS nhận diện và làm mờ khi bấm Privacy
+        if(minh) { html += `<div class="receipt-item fixed-member"><span>Minh</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
+        if(thao) { html += `<div class="receipt-item fixed-member"><span>Thảo</span> <strong>${formatMoney(pNu)}</strong></div>`; teleStr += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`;}
+        if(tu) { html += `<div class="receipt-item fixed-member"><span>Tú</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`;}
+        if(quan) { html += `<div class="receipt-item fixed-member"><span>Quân</span> <strong>${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
         
         if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
         if(namGL) { 
@@ -535,20 +576,20 @@
         }
       }
 
-      // === XỬ LÝ ANIMATION MƯỢT MÀ CHO CỘT BIÊN LAI (DESKTOP) VÀ POPUP (MOBILE) ===
       let contentContainer = document.getElementById('receiptContainer');
       let contentInner = document.getElementById('receiptContent');
       let statusEl = document.getElementById('syncStatus');
       
-      // Xóa class animation cũ (nếu có) và kích hoạt reflow để reset animation
       contentContainer.classList.remove('anim-pop');
       void contentContainer.offsetWidth; 
 
-      // Nhồi nội dung mới và gắn lại class animation
       contentInner.innerHTML = html;
       contentContainer.classList.add('anim-pop');
       
-      // Hiện Popup trên Mobile (Trên desktop nó luôn hiện sẵn)
+      // Mặc định luôn tắt chế độ làm mờ khi mới tính toán xong
+      contentInner.classList.remove('privacy-on');
+      document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
+      
       document.getElementById('resultSheet').classList.add('show');
       
       statusEl.style.display = 'block';
