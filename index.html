@@ -20,11 +20,11 @@
       --accent-hover: #4f46e5;
       --shadow-soft: 0 8px 32px rgba(30, 41, 59, 0.08);
       --smooth-curve: cubic-bezier(0.32, 0.72, 0, 1); 
+      --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Chống Zoom & Highlight của Safari */
     button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
@@ -40,7 +40,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* CONTAINER CHÍNH */
+    /* CONTAINER CHÍNH TRÊN MOBILE */
     .app-glass {
       width: 100%; max-width: 450px; height: 100%;
       display: flex; flex-direction: column;
@@ -48,11 +48,11 @@
       position: relative;
     }
 
-    /* BỐ CỤC CHIA ĐÔI KHI MÀN HÌNH NGANG / DESKTOP (Responsive) */
+    /* BỐ CỤC CHIA ĐÔI CHO DESKTOP / MÀN HÌNH NGANG */
     .main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
     .left-col { display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-bottom: 90px; }
     .left-col::-webkit-scrollbar { display: none; }
-    .right-col { display: none; } /* Ẩn cột phải trên Mobile */
+    .right-col { display: none; } 
 
     @media (min-width: 768px), (orientation: landscape) and (min-width: 600px) {
       body { padding: 20px; }
@@ -66,18 +66,15 @@
       .main-wrapper { flex-direction: row; gap: 30px; }
       .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.08); }
       
-      /* Hiện cột phải trên Desktop */
       .right-col {
         display: flex; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.4); border-radius: 24px; padding: 24px;
+        background: rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 24px;
         position: relative; overflow-y: auto; border: 1px solid var(--glass-border);
       }
       .right-col::-webkit-scrollbar { display: none; }
 
-      /* Tắt chế độ cố định đáy của nút bấm, trả về luồng tự nhiên */
       .action-zone { position: static !important; background: transparent !important; padding: 20px 0 0 0 !important; border: none !important; backdrop-filter: none !important; }
       
-      /* Ghi đè Modal Mobile thành Cột cố định Desktop */
       .sheet-overlay { position: static !important; background: transparent !important; padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; display: block !important; backdrop-filter: none !important;}
       .sheet-card { transform: none !important; opacity: 1 !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; max-width: 100% !important; }
       .btn-close { display: none !important; }
@@ -101,7 +98,7 @@
       border-radius: 100px; padding: 4px; margin-bottom: 20px; flex-shrink: 0;
     }
     .tab {
-      flex: 1; text-align: center; padding: 12px 0; font-size: 14px; font-weight: 600;
+      flex: 1; text-align: center; padding: 12px 0; font-size: 15px; font-weight: 600;
       color: var(--text-sub); cursor: pointer; position: relative; z-index: 2; transition: color 0.3s ease;
     }
     .tab.active { color: var(--text-main); }
@@ -111,7 +108,7 @@
       transition: transform 0.4s var(--smooth-curve); z-index: 1;
     }
 
-    /* VÙNG NHẬP TIỀN BẠC */
+    /* NHẬP LIỆU TIỀN */
     .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0; }
     .money-input-group {
       background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
@@ -167,7 +164,7 @@
     .player-tag.active { background: var(--text-main); color: #fff; border-color: var(--text-main); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2); }
 
     /* KHÁCH GIAO LƯU */
-    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; }
+    .guest-container { transition: transform 0.4s var(--smooth-curve); width: 100%; padding-bottom: 20px;}
     .guest-row {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
@@ -188,12 +185,12 @@
     .guest-val[type=number] { -moz-appearance: textfield; }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* NÚT CHỐT SỔ ĐƯỢC GẮN VÀO ĐÁY MOBILE */
+    /* NÚT CHỐT SỔ */
     .action-zone {
       position: absolute; bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       left: 20px; right: 20px; z-index: 50;
       background: linear-gradient(180deg, rgba(253, 251, 251, 0) 0%, rgba(245, 247, 250, 1) 40%);
-      padding-top: 30px; /* Làm hiệu ứng gradient mờ ở đáy */
+      padding-top: 30px; 
     }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
@@ -203,7 +200,7 @@
     }
     .btn-massive:active { transform: scale(0.95); }
 
-    /* BIÊN LAI HÓA ĐƠN (Popup trên Mobile, Cột hiển thị trên Desktop) */
+    /* MODAL MOBILE */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -219,6 +216,14 @@
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
+    /* === ANIMATION ĐỈNH CAO CHO PHẦN NỘI DUNG BIÊN LAI (DESKTOP) === */
+    @keyframes smoothPop {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .anim-pop { animation: smoothPop 0.5s var(--spring) forwards; }
+
+    /* Style Chi tiết Biên Lai */
     .receipt-title { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 20px;}
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; align-items: center;}
     .receipt-item strong { font-size: 16px; font-variant-numeric: tabular-nums;}
@@ -235,24 +240,24 @@
     #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
     .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     
-    /* Chữ giữ chỗ cho màn hình Desktop */
-    .desktop-placeholder { text-align: center; color: var(--text-sub); font-size: 15px; font-weight: 500; margin-top: 50px;}
+    .desktop-placeholder { text-align: center; color: var(--text-sub); font-size: 15px; font-weight: 500; margin-top: 50px; opacity: 0.7;}
   </style>
 </head>
 <body>
 
   <div class="app-glass">
-    <div class="header-bar">
-      <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
-      <div class="date-chip">
-        <span id="displayDate">00/00/0000</span>
-        <input type="date" id="dateInput" required>
-      </div>
-    </div>
-
+    
     <div class="main-wrapper">
       
       <div class="left-col">
+        <div class="header-bar">
+          <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
+          <div class="date-chip">
+            <span id="displayDate">00/00/0000</span>
+            <input type="date" id="dateInput" required>
+          </div>
+        </div>
+
         <div class="fluid-tabs">
           <div class="tab-indicator" id="tabIndicator"></div>
           <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
@@ -262,21 +267,21 @@
         <div class="money-display-zone">
           <div class="money-input-group">
             <div class="money-header">
-               <span class="money-label">TỔNG TIỀN SÂN</span>
+              <span class="money-label">TỔNG TIỀN SÂN</span>
             </div>
             <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" oninput="formatCurrency(this)">
           </div>
 
           <div class="money-input-group" style="padding-bottom: 16px;">
             <div class="money-header">
-               <span class="money-label">TIỀN CẦU</span>
-               <div class="switch-small-wrap">
-                 <span>CHI TIẾT</span>
-                 <label class="switch-small">
-                   <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
-                   <span class="slider-small"></span>
-                 </label>
-               </div>
+              <span class="money-label">TIỀN CẦU</span>
+              <div class="switch-small-wrap">
+                <span>CHI TIẾT</span>
+                <label class="switch-small">
+                  <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                  <span class="slider-small"></span>
+                </label>
+              </div>
             </div>
             
             <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
@@ -344,14 +349,18 @@
           <div class="sheet-card">
             <div class="receipt-title">Biên Lai Cầu Lông 🎉</div>
             <div id="syncStatus">Trạng thái đồng bộ...</div>
-            <div id="receiptContent">
-              <div class="desktop-placeholder" id="placeholderText">👈 Nhập thông tin và bấm "Phân Bổ Chi Phí" để xem biên lai.</div>
+            <div id="receiptContainer">
+               <div id="receiptContent">
+                 <div class="desktop-placeholder">👈 Hãy nhập số liệu và bấm "Phân Bổ" để xem chi tiết.</div>
+               </div>
             </div>
             <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
           </div>
         </div>
       </div>
-    </div> <div class="action-zone">
+    </div> 
+
+    <div class="action-zone">
       <button class="btn-massive" onclick="processData()">
         <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
         Phân Bổ Chi Phí
@@ -385,7 +394,6 @@
           e.target.blur();
         });
 
-        // Ẩn syncStatus ban đầu
         document.getElementById('syncStatus').style.display = 'none';
     });
 
@@ -527,10 +535,22 @@
         }
       }
 
-      document.getElementById('receiptContent').innerHTML = html;
+      // === XỬ LÝ ANIMATION MƯỢT MÀ CHO CỘT BIÊN LAI (DESKTOP) VÀ POPUP (MOBILE) ===
+      let contentContainer = document.getElementById('receiptContainer');
+      let contentInner = document.getElementById('receiptContent');
+      let statusEl = document.getElementById('syncStatus');
+      
+      // Xóa class animation cũ (nếu có) và kích hoạt reflow để reset animation
+      contentContainer.classList.remove('anim-pop');
+      void contentContainer.offsetWidth; 
+
+      // Nhồi nội dung mới và gắn lại class animation
+      contentInner.innerHTML = html;
+      contentContainer.classList.add('anim-pop');
+      
+      // Hiện Popup trên Mobile (Trên desktop nó luôn hiện sẵn)
       document.getElementById('resultSheet').classList.add('show');
       
-      let statusEl = document.getElementById('syncStatus');
       statusEl.style.display = 'block';
       statusEl.style.color = '#6366f1';
       statusEl.innerText = 'Đang chuyển phát nhanh cho Bot...';
