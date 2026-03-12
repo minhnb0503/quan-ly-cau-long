@@ -68,8 +68,6 @@
       justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
     }
-    
-    .right-col { display: none; } 
 
     /* MOBILE NGANG */
     @media (max-height: 500px) and (orientation: landscape) {
@@ -103,13 +101,10 @@
       .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); overflow-y: auto;}
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
-      .right-col {
-        display: flex; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.5); border-radius: 24px; position: relative; 
-        overflow: hidden; border: 1px solid var(--glass-border);
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05); padding: 0 !important; 
-      }
+      
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
+      
+      /* Biến đổi Popup thành Cột hiển thị trên Desktop (Không bọc qua div thừa) */
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; border: 1px solid var(--glass-border);
@@ -189,7 +184,6 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* CẤU TRÚC PHÍM TẮT MỚI: Trượt ngang mượt mà, căn trái */
     .quick-chips { 
       display: flex; flex-wrap: nowrap; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
@@ -203,7 +197,6 @@
     }
     .chip:active { transform: scale(0.9); background: rgba(99, 102, 241, 0.2); }
     
-    /* Thiết kế riêng nút Xóa và Hoàn tác */
     .chip-clear { background: rgba(244, 63, 94, 0.08); color: #e11d48; border-color: rgba(244, 63, 94, 0.15); }
     .chip-clear:active { background: rgba(244, 63, 94, 0.2); }
     .chip-undo { background: rgba(100, 116, 139, 0.1); color: #64748b; border-color: rgba(100, 116, 139, 0.2); transition: 0.2s;}
@@ -273,6 +266,7 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
+    /* BẢNG BIÊN LAI: Định dạng Popup nổi trên Mobile */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -361,13 +355,11 @@
         <div class="form-content-grid">
           
           <div class="money-display-zone">
-            
             <div class="money-input-group">
               <div class="money-header">
                  <span class="money-label">TỔNG TIỀN SÂN</span>
               </div>
               <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
-              
               <div class="quick-chips">
                 <button type="button" class="chip chip-clear" onclick="clearMoney('tienSan')">✕ Xóa</button>
                 <button type="button" class="chip chip-undo disabled" id="undo_tienSan" onclick="undoMoney('tienSan')">↺ Lùi</button>
@@ -394,7 +386,6 @@
               <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
                 <div class="mode-inner" style="opacity: 1;">
                   <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienCau');">
-                  
                   <div class="quick-chips">
                     <button type="button" class="chip chip-clear" onclick="clearMoney('tienCau')">✕ Xóa</button>
                     <button type="button" class="chip chip-undo disabled" id="undo_tienCau" onclick="undoMoney('tienCau')">↺ Lùi</button>
@@ -470,29 +461,27 @@
 
       </div> 
 
-      <div class="right-col">
-        <div class="sheet-overlay" id="resultSheet">
-          <div class="sheet-card">
-            
-            <div class="receipt-header-flex">
-              <div class="receipt-title">Biên Lai 🎉</div>
-              <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
-            </div>
-            
-            <div id="syncStatus">Trạng thái đồng bộ...</div>
-            
-            <div id="receiptContainer">
-               <div id="receiptContent">
-                 <div class="empty-state">
-                   <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                   </svg>
-                   <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
-                 </div>
-               </div>
-            </div>
-            <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
+      <div class="sheet-overlay" id="resultSheet">
+        <div class="sheet-card">
+          
+          <div class="receipt-header-flex">
+            <div class="receipt-title">Biên Lai 🎉</div>
+            <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
           </div>
+          
+          <div id="syncStatus">Trạng thái đồng bộ...</div>
+          
+          <div id="receiptContainer">
+             <div id="receiptContent">
+               <div class="empty-state">
+                 <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                 </svg>
+                 <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+               </div>
+             </div>
+          </div>
+          <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
 
@@ -504,8 +493,6 @@
     
     let mode = 'home';
     let isCauDetailMode = false;
-    
-    // BIẾN LƯU LỊCH SỬ ĐỂ PHỤC VỤ TÍNH NĂNG "UNDO" (HOÀN TÁC)
     let moneyHistory = { 'tienSan': [], 'tienCau': [] };
 
     function updateDateDisplay(val) {
@@ -574,7 +561,6 @@
       let slInput = document.getElementById('slCau');
       slInput.value = slInput.value.replace(/[^0-9]/g, ''); 
       let soQua = parseInt(slInput.value) || 0;
-      
       let thanhTien = Math.round((giaTup / 12) * soQua);
       document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(thanhTien);
     }
@@ -583,20 +569,12 @@
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " ₫"; }
     
-    // ==========================================
-    // LOGIC CHO TÍNH NĂNG QUICK CHIPS, CLEAR & UNDO
-    // ==========================================
     function addMoney(id, amount) {
       let el = document.getElementById(id);
       let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
-      
-      // Lưu vào lịch sử để cho phép Undo
       moneyHistory[id].push(currentVal);
-      
       el.value = (currentVal + amount).toString();
       formatCurrency(el);
-      
-      // Mở khóa nút Undo
       let undoBtn = document.getElementById('undo_' + id);
       if(undoBtn) undoBtn.classList.remove('disabled');
     }
@@ -604,11 +582,8 @@
     function clearMoney(id) {
       let el = document.getElementById(id);
       let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
-      if (currentVal === 0) return; // Nếu đang = 0 rồi thì bỏ qua
-      
-      // Lưu lại để lỡ bấm Clear nhầm thì có thể Undo phục hồi lại số cũ
+      if (currentVal === 0) return; 
       moneyHistory[id].push(currentVal);
-      
       el.value = '';
       let undoBtn = document.getElementById('undo_' + id);
       if(undoBtn) undoBtn.classList.remove('disabled');
@@ -616,17 +591,13 @@
 
     function undoMoney(id) {
       if(!moneyHistory[id] || moneyHistory[id].length === 0) return;
-      
       let el = document.getElementById(id);
-      let lastVal = moneyHistory[id].pop(); // Lấy giá trị ngay trước đó
-      
+      let lastVal = moneyHistory[id].pop(); 
       if(lastVal === 0) el.value = '';
       else {
         el.value = lastVal.toString();
         formatCurrency(el);
       }
-      
-      // Nếu hết lịch sử thì khóa nút Undo lại
       if(moneyHistory[id].length === 0) {
         let undoBtn = document.getElementById('undo_' + id);
         if(undoBtn) undoBtn.classList.add('disabled');
@@ -634,11 +605,10 @@
     }
 
     function clearUndo(id) {
-       moneyHistory[id] = []; // Xóa lịch sử khi người dùng tự gõ tay
+       moneyHistory[id] = []; 
        let undoBtn = document.getElementById('undo_' + id);
        if(undoBtn) undoBtn.classList.add('disabled');
     }
-    // ==========================================
 
     function resetForm() {
       document.getElementById('tienSan').value = '';
@@ -648,7 +618,6 @@
       document.getElementById('namGL').value = '0';
       document.getElementById('nuGL').value = '0';
       
-      // Xóa sạch lịch sử Undo
       clearUndo('tienSan');
       clearUndo('tienCau');
       
@@ -677,9 +646,7 @@
       setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10);
     }
 
-    function validateInputEmpty(el) {
-      el.value = el.value.replace(/[^0-9]/g, '');
-    }
+    function validateInputEmpty(el) { el.value = el.value.replace(/[^0-9]/g, ''); }
     function validateInputZero(el) {
       el.value = el.value.replace(/[^0-9]/g, '');
       if (el.value.trim() === '' || isNaN(parseInt(el.value)) || parseInt(el.value) < 0) { el.value = '0'; }
