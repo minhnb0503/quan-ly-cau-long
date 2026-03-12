@@ -104,7 +104,6 @@
       
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
       
-      /* Biên lai tự động biến thành cột phải trên Desktop */
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; border: 1px solid var(--glass-border);
@@ -307,7 +306,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* BẢNG BIÊN LAI (Đã gỡ bỏ thẻ right-col tàng hình) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -513,24 +511,26 @@
 
       </div> 
 
-      <div class="sheet-overlay" id="resultSheet">
-        <div class="sheet-card">
-          <div class="receipt-header-flex">
-            <div class="receipt-title">Biên Lai 🎉</div>
-            <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
-          </div>
-          <div id="syncStatus">Trạng thái đồng bộ...</div>
-          <div id="receiptContainer">
-             <div id="receiptContent">
-               <div class="empty-state">
-                 <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                 </svg>
-                 <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+      <div class="right-col">
+        <div class="sheet-overlay" id="resultSheet">
+          <div class="sheet-card">
+            <div class="receipt-header-flex">
+              <div class="receipt-title">Biên Lai 🎉</div>
+              <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+            </div>
+            <div id="syncStatus">Trạng thái đồng bộ...</div>
+            <div id="receiptContainer">
+               <div id="receiptContent">
+                 <div class="empty-state">
+                   <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                   </svg>
+                   <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+                 </div>
                </div>
-             </div>
+            </div>
+            <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
           </div>
-          <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
 
@@ -703,11 +703,20 @@
     }
 
     function handleInputFocus(el) { if (el.value === '0') { el.value = ''; } setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10); }
-    function validateInputEmpty(el) { el.value = el.value.replace(/[^0-9]/g, ''); }
-    function validateInputZero(el) {
-      el.value = el.value.replace(/[^0-9]/g, '');
-      if (el.value.trim() === '' || isNaN(parseInt(el.value)) || parseInt(el.value) < 0) { el.value = '0'; }
+    
+    // === FIX LỖI MẤT DẤU CHẤM NGÀN ĐỒNG ===
+    function validateInputEmpty(el) { 
+      let v = el.value.replace(/\D/g, ''); 
+      el.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ''; 
     }
+    
+    // === FIX LỖI XÓA SỐ 0 CHO Ô SỐ LƯỢNG ===
+    function validateInputZero(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v === '' || isNaN(parseInt(v))) { el.value = '0'; }
+      else { el.value = parseInt(v, 10).toString(); }
+    }
+
     function stepVal(id, step) { triggerHaptic('light'); let el = document.getElementById(id); let val = (parseInt(el.value) || 0) + step; if(val < 0) val = 0; el.value = val; }
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
     function togglePrivacy() { triggerHaptic('light'); let content = document.getElementById('receiptContent'); let btn = document.getElementById('privacyBtn'); content.classList.toggle('privacy-on'); if(content.classList.contains('privacy-on')) { btn.innerHTML = '🙈 Hiện nội bộ'; } else { btn.innerHTML = '👁️ Ẩn nội bộ'; } }
@@ -806,9 +815,9 @@
           tracking: { ip: userIPInfo, os: getOS(), total_cost: totalCost, mode: mode, isPublic: isPublicMode ? "Có" : "Không" }
       };
 
-      if (isPublicMode) {
+      if (isPublicMode || APPS_SCRIPT_URL === "") {
           statusEl.style.color = '#10b981'; statusEl.innerText = 'Tính toán thành công! ✅'; triggerHaptic('light');
-          fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) });
+          if(APPS_SCRIPT_URL !== "") { fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) }); }
           return;
       }
 
