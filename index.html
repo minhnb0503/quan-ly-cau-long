@@ -43,7 +43,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* TOAST NOTIFICATION (THÔNG BÁO RESET) */
+    /* TOAST NOTIFICATION */
     .toast { 
       position: fixed; top: env(safe-area-inset-top, 20px); left: 50%; transform: translateX(-50%) translateY(-100px); 
       background: var(--text-main); color: #fff; padding: 12px 24px; border-radius: 100px; 
@@ -52,16 +52,16 @@
     }
     .toast.show { transform: translateX(-50%) translateY(20px); opacity: 1; }
 
-    /* === GIAO DIỆN MOBILE DỌC === */
+    /* === 1. GIAO DIỆN MOBILE DỌC (ĐÃ ÉP MỠ ĐỂ TĂNG DIỆN TÍCH CUỘN CHUẨN UX) === */
     .app-glass {
       width: 100%; max-width: 450px; height: 100%;
       display: flex; flex-direction: column;
-      padding: 24px 20px calc(10px + env(safe-area-inset-bottom, 20px));
+      padding: 16px 20px calc(10px + env(safe-area-inset-bottom, 20px)); /* Ép lề trên nhỏ lại */
       position: relative; overflow: hidden;
     }
 
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-bottom: 100px; position: relative;}
+    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-bottom: 90px; position: relative;}
     .form-content-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     
     .members-zone { 
@@ -69,8 +69,10 @@
       justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
     }
+    
+    .right-col { display: none; } 
 
-    /* === GIAO DIỆN ĐIỆN THOẠI XOAY NGANG === */
+    /* === 2. GIAO DIỆN ĐIỆN THOẠI XOAY NGANG === */
     @media (max-height: 500px) and (orientation: landscape) {
       body { padding: 0; align-items: flex-start; }
       
@@ -94,13 +96,13 @@
         padding: 20px 8px 100px 8px !important; 
       }
       
-      .header-bar { margin-bottom: 15px; }
-      .fluid-tabs { margin-bottom: 15px; }
+      .header-bar { margin-bottom: 12px; }
+      .fluid-tabs { margin-bottom: 12px; }
       .sheet-overlay { align-items: center !important; }
       .sheet-card { border-radius: 24px !important; max-height: 90vh; overflow-y: auto; }
     }
 
-    /* === GIAO DIỆN DESKTOP / IPAD === */
+    /* === 3. GIAO DIỆN DESKTOP / IPAD (GIẢI PHÓNG KHÔNG GIAN, KHÔNG CUỘN THỪA) === */
     @media (min-width: 768px) and (min-height: 501px) {
       body { padding: 20px; }
       .app-glass {
@@ -109,14 +111,26 @@
         border-radius: 36px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.12); padding: 30px;
       }
       .main-wrapper { flex-direction: row; gap: 30px; }
-      .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); }
+      
+      /* Cho phép toàn bộ cột trái cuộn nếu màn hình lỡ bị thấp */
+      .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); overflow-y: auto;}
+      
+      /* Gỡ bỏ cuộn cục bộ của form và member-zone trên Desktop */
+      .form-content-grid { overflow: visible !important; height: auto; }
+      .members-zone { overflow: visible !important; flex: none; height: auto;}
+
+      .right-col {
+        display: flex; flex-direction: column; flex: 1;
+        background: rgba(255, 255, 255, 0.5); border-radius: 24px; position: relative; 
+        overflow: hidden; border: 1px solid var(--glass-border);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05); padding: 0 !important; 
+      }
       
       .action-zone { 
         position: static !important; background: transparent !important; 
-        padding: 20px 8px 30px 8px !important; border: none !important; backdrop-filter: none !important; 
+        padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; 
       }
       
-      /* CÚ PHÁP ĐẶC TRỊ: Biến thẳng sheet-overlay thành cột hiển thị tĩnh trên PC */
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; 
@@ -136,7 +150,7 @@
     }
 
     /* HEADER & RESET BUTTON */
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; }
     .app-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
     
     .header-actions { display: flex; align-items: center; gap: 10px; }
@@ -159,7 +173,7 @@
     /* TABS */
     .fluid-tabs {
       display: flex; position: relative; background: rgba(0,0,0,0.04);
-      border-radius: 100px; padding: 4px; margin-bottom: 20px; flex-shrink: 0;
+      border-radius: 100px; padding: 4px; margin-bottom: 16px; flex-shrink: 0;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     .tab {
@@ -174,10 +188,10 @@
     }
 
     /* NHẬP LIỆU TIỀN & QUICK CHIPS */
-    .money-display-zone { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; flex-shrink: 0;}
+    .money-display-zone { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; flex-shrink: 0;}
     .money-input-group {
       background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border);
-      border-radius: 20px; padding: 14px 20px 18px 20px; box-shadow: var(--shadow-soft); 
+      border-radius: 20px; padding: 12px 16px 14px 16px; box-shadow: var(--shadow-soft); 
       display: flex; flex-direction: column; align-items: center; transition: border-color 0.3s ease, box-shadow 0.3s ease;
       position: relative;
     }
@@ -196,17 +210,22 @@
 
     .money-input-group input {
       width: 100%; border: none; background: transparent; outline: none; text-align: center;
-      font-family: 'Be Vietnam Pro', sans-serif; font-size: 28px; font-weight: 800; color: var(--text-main);
+      font-family: 'Be Vietnam Pro', sans-serif; font-size: 26px; font-weight: 800; color: var(--text-main);
       font-variant-numeric: tabular-nums;
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* PHÍM TẮT NHẬP TIỀN */
-    .quick-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; justify-content: center; width: 100%;}
+    /* FIX LỖI RỚT DÒNG QUICK CHIPS: Ép 1 dòng, vuốt ngang tự do */
+    .quick-chips { 
+      display: flex; flex-wrap: nowrap; gap: 6px; margin-top: 8px; justify-content: center; 
+      width: 100%; overflow-x: auto; padding-bottom: 2px;
+    }
+    .quick-chips::-webkit-scrollbar { display: none; }
     .chip { 
       background: rgba(99, 102, 241, 0.08); color: var(--accent); border: 1px solid rgba(99, 102, 241, 0.15); 
-      padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; 
+      padding: 6px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; 
       cursor: pointer; transition: 0.15s ease; font-family: 'Be Vietnam Pro', sans-serif;
+      flex-shrink: 0; /* Cấm bị bóp méo hình dạng */
     }
     .chip:active { transform: scale(0.9); background: rgba(99, 102, 241, 0.2); }
 
@@ -467,7 +486,9 @@
           </button>
         </div>
 
-      </div> <div class="sheet-overlay" id="resultSheet">
+      </div> 
+
+      <div class="sheet-overlay" id="resultSheet">
         <div class="sheet-card">
           
           <div class="receipt-header-flex">
@@ -717,7 +738,6 @@
         if(quan) { html += `<div class="receipt-item fixed-member"><span>Quân</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
         
         if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
-        // FIX LỖI TELEGRAM: HIỂN THỊ CHI TIẾT GIÁ TIỀN TỪNG NGƯỜI CHO KHÁCH GIAO LƯU SÂN NHÀ
         if(namGL) { 
           html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`;
           teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\n`; 
