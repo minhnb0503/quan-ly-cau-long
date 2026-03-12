@@ -26,7 +26,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    button, a, input, .step-btn, .tab, .player-tag, .toggle-cau-btn, .chip {
+    button, a, input, select, .step-btn, .tab, .player-tag, .toggle-cau-btn, .chip {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
       user-select: none;
@@ -256,6 +256,18 @@
     }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+    /* DROPDOWN CHỌN CÁCH CHIA TIỀN */
+    .split-method-wrapper { display: flex; justify-content: center; margin-bottom: 16px; }
+    .select-box {
+      appearance: none; -webkit-appearance: none;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      border-radius: 100px; padding: 10px 36px 10px 20px;
+      font-family: 'Be Vietnam Pro', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent);
+      box-shadow: 0 4px 10px -4px rgba(0,0,0,0.05); cursor: pointer; outline: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
+    }
+
     .action-zone {
       position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px));
       left: 12px; right: 12px; z-index: 50;
@@ -265,8 +277,7 @@
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
       padding: 18px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
-      box-shadow: var(--shadow-btn); 
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-btn); transition: transform 0.2s, box-shadow 0.2s;
       display: flex; justify-content: center; align-items: center; gap: 10px;
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
@@ -286,10 +297,7 @@
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      padding: 40px 20px; text-align: center; opacity: 0.7; height: 100%;
-    }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; opacity: 0.7; height: 100%;}
     .empty-icon { width: 64px; height: 64px; margin-bottom: 20px; color: var(--accent); opacity: 0.8;}
     .empty-text { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
 
@@ -303,15 +311,12 @@
     .privacy-btn:active { transform: scale(0.9); }
 
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; align-items: center;}
-    
     .price-badge {
       background: rgba(99, 102, 241, 0.12); color: var(--accent); padding: 4px 10px; 
       border-radius: 8px; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;
       letter-spacing: -0.3px; transition: filter 0.3s ease, opacity 0.3s ease;
     }
-    
     .privacy-on .fixed-member .price-badge { filter: blur(5px); opacity: 0.4; pointer-events: none; user-select: none; }
-
     .receipt-sub { font-size: 12px; color: var(--text-sub); margin-top: 4px; text-align: right;}
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
@@ -327,6 +332,7 @@
     
     @keyframes smoothPop { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
     .anim-pop { animation: smoothPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .public-mode-hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -338,7 +344,7 @@
       
       <div class="left-col">
         <div class="header-bar">
-          <div class="app-title">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
+          <div class="app-title" id="mainTitle">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
           <div class="header-actions">
             <button class="reset-btn" onclick="resetForm()" title="Làm mới bảng tính">
               <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
@@ -350,7 +356,7 @@
           </div>
         </div>
 
-        <div class="fluid-tabs">
+        <div class="fluid-tabs" id="tabContainer">
           <div class="tab-indicator" id="tabIndicator"></div>
           <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
           <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
@@ -435,6 +441,14 @@
 
             <div class="guest-container" id="guestWrap">
               <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
+              
+              <div class="split-method-wrapper">
+                <select id="splitMethod" class="select-box" onchange="triggerHaptic('light')">
+                  <option value="nam20k">Luật: Nam nộp hơn Nữ 20k</option>
+                  <option value="chiaDeu">Luật: Nam Nữ chia đều 100%</option>
+                </select>
+              </div>
+              
               <div class="guest-row">
                 <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
                 <div class="guest-stepper">
@@ -465,27 +479,26 @@
 
       </div> 
 
-      <div class="sheet-overlay" id="resultSheet">
-        <div class="sheet-card">
-          
-          <div class="receipt-header-flex">
-            <div class="receipt-title">Biên Lai 🎉</div>
-            <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
-          </div>
-          
-          <div id="syncStatus">Trạng thái đồng bộ...</div>
-          
-          <div id="receiptContainer">
-             <div id="receiptContent">
-               <div class="empty-state">
-                 <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                 </svg>
-                 <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+      <div class="right-col">
+        <div class="sheet-overlay" id="resultSheet">
+          <div class="sheet-card">
+            <div class="receipt-header-flex">
+              <div class="receipt-title">Biên Lai 🎉</div>
+              <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+            </div>
+            <div id="syncStatus">Trạng thái đồng bộ...</div>
+            <div id="receiptContainer">
+               <div id="receiptContent">
+                 <div class="empty-state">
+                   <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                   </svg>
+                   <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+                 </div>
                </div>
-             </div>
+            </div>
+            <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
           </div>
-          <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
 
@@ -493,80 +506,82 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2KNf2aWbSj4tZjku2qAZOcELjsmtD-oOTs_z0CSX-m6rTdM-f8ZTVJ-0hLbCYHnIsyA/exec";
+    // ĐÂY LÀ LINK GOOGLE SCRIPT MỚI CỦA BẠN (HÃY GIỮ NGUYÊN)
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNEr60FdL26zfy-EwqlburOHdvrr5bFBK2lN6XAZftAO4lTR4G4-h0XSU-54114PJI/exec";
     
     let mode = 'home';
     let isCauDetailMode = false;
-    let moneyHistory = { 'tienSan': [], 'tienCau': [] };
+    let moneyHistory = { 'tienSan': [], 'tienCau': [], 'giaCau': [] };
+    let isPublicMode = false;
+    let userIPInfo = "Đang lấy IP...";
 
-    // === BỘ MÁY TẠO RUNG (HAPTIC ENGINE) ===
+    async function fetchUserIP() {
+        try {
+            let response = await fetch('https://api.ipify.org?format=json');
+            let data = await response.json();
+            userIPInfo = data.ip;
+        } catch (error) { userIPInfo = "Không xác định"; }
+    }
+
+    function getOS() {
+        let userAgent = window.navigator.userAgent, platform = window.navigator.platform, macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'], windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'], iosPlatforms = ['iPhone', 'iPad', 'iPod'], os = null;
+        if (macosPlatforms.indexOf(platform) !== -1) os = 'Mac OS'; else if (iosPlatforms.indexOf(platform) !== -1) os = 'iOS'; else if (windowsPlatforms.indexOf(platform) !== -1) os = 'Windows'; else if (/Android/.test(userAgent)) os = 'Android'; else if (!os && /Linux/.test(platform)) os = 'Linux';
+        return os || 'Unknown';
+    }
+
     function triggerHaptic(type = 'light') {
-      if (!navigator.vibrate) return; // Nếu trình duyệt không hỗ trợ (như iOS Safari) thì bỏ qua an toàn
+      if (!navigator.vibrate) return;
       try {
-        if (type === 'light') {
-          navigator.vibrate(10); 
-        } else if (type === 'heavy') {
-          navigator.vibrate(30); 
-        } else if (type === 'success') {
-          navigator.vibrate([15, 50, 20]); // Rung 2 nhịp tạch.. tạch
-        }
+        if (type === 'light') navigator.vibrate(10); 
+        else if (type === 'heavy') navigator.vibrate(30); 
+        else if (type === 'success') navigator.vibrate([15, 50, 20]);
       } catch(e) {}
     }
 
     function updateDateDisplay(val) {
-      if(!val) return;
-      let parts = val.split('-'); 
+      if(!val) return; let parts = val.split('-'); 
       document.getElementById('displayDate').innerText = `${parts[2]}/${parts[1]}/${parts[0]}`; 
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        let today = new Date();
-        let local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+        fetchUserIP();
+        let today = new Date(); let local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
         let dateStr = local.toISOString().split('T')[0];
         let dateInput = document.getElementById('dateInput');
-        dateInput.value = dateStr;
-        updateDateDisplay(dateStr); 
-        
-        dateInput.addEventListener('change', (e) => { 
-          updateDateDisplay(e.target.value); 
-          e.target.blur();
-        });
+        dateInput.value = dateStr; updateDateDisplay(dateStr); 
+        dateInput.addEventListener('change', (e) => { updateDateDisplay(e.target.value); e.target.blur(); });
+        document.getElementById('syncStatus').style.display = 'none'; document.getElementById('privacyBtn').style.display = 'none';
 
-        document.getElementById('syncStatus').style.display = 'none';
-        document.getElementById('privacyBtn').style.display = 'none';
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('public') === 'true') {
+            isPublicMode = true;
+            document.getElementById('tabContainer').classList.add('public-mode-hidden');
+            mode = 'away';
+            document.getElementById('fixedTeamWrap').classList.add('hidden');
+            document.getElementById('guestTitle').innerText = "THÔNG TIN NGƯỜI CHƠI";
+            document.getElementById('mainTitle').innerHTML = 'Tính Tiền <span style="color: var(--accent)">Cầu Lông</span>';
+        }
     });
 
     function switchTab(selected) {
-      if (mode === selected) return;
-      triggerHaptic('light'); // Rung nhẹ khi đổi tab
-      mode = selected;
-      let ind = document.getElementById('tabIndicator');
-      let tHome = document.getElementById('tabHome');
-      let tAway = document.getElementById('tabAway');
-      let fTeam = document.getElementById('fixedTeamWrap');
-      let gTitle = document.getElementById('guestTitle');
+      if (mode === selected || isPublicMode) return; 
+      triggerHaptic('light'); mode = selected;
+      let ind = document.getElementById('tabIndicator'); let tHome = document.getElementById('tabHome'); let tAway = document.getElementById('tabAway');
+      let fTeam = document.getElementById('fixedTeamWrap'); let gTitle = document.getElementById('guestTitle');
 
       if (selected === 'home') {
-        ind.style.transform = 'translateX(0)';
-        tHome.classList.add('active'); tAway.classList.remove('active');
-        fTeam.classList.remove('hidden'); 
-        gTitle.innerText = "KHÁCH GIAO LƯU";
+        ind.style.transform = 'translateX(0)'; tHome.classList.add('active'); tAway.classList.remove('active');
+        fTeam.classList.remove('hidden'); gTitle.innerText = "KHÁCH GIAO LƯU";
       } else {
-        ind.style.transform = 'translateX(100%)';
-        tAway.classList.add('active'); tHome.classList.remove('active');
-        fTeam.classList.add('hidden'); 
-        gTitle.innerText = "TỔNG NGƯỜI CHƠI (CHIA ĐỀU, NAM +20K)";
+        ind.style.transform = 'translateX(100%)'; tAway.classList.add('active'); tHome.classList.remove('active');
+        fTeam.classList.add('hidden'); gTitle.innerText = "TỔNG NGƯỜI CHƠI (CHIA ĐỀU, NAM +20K)";
       }
     }
 
     function toggleCauMode() {
-      triggerHaptic('light'); // Rung nhẹ khi gạt switch
-      isCauDetailMode = document.getElementById('cauToggleSwitch').checked;
-      let m1 = document.getElementById('cauMode1Wrap');
-      let m2 = document.getElementById('cauMode2Wrap');
-      let inner1 = m1.querySelector('.mode-inner');
-      let inner2 = m2.querySelector('.mode-inner');
-
+      triggerHaptic('light'); isCauDetailMode = document.getElementById('cauToggleSwitch').checked;
+      let m1 = document.getElementById('cauMode1Wrap'); let m2 = document.getElementById('cauMode2Wrap');
+      let inner1 = m1.querySelector('.mode-inner'); let inner2 = m2.querySelector('.mode-inner');
       if(isCauDetailMode) {
         m1.style.gridTemplateRows = '0fr'; inner1.style.opacity = '0';
         m2.style.gridTemplateRows = '1fr'; inner2.style.opacity = '1';
@@ -578,133 +593,69 @@
 
     function updateCauTotal() {
       let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
-      let slInput = document.getElementById('slCau');
-      slInput.value = slInput.value.replace(/[^0-9]/g, ''); 
+      let slInput = document.getElementById('slCau'); slInput.value = slInput.value.replace(/[^0-9]/g, ''); 
       let soQua = parseInt(slInput.value) || 0;
       let thanhTien = Math.round((giaTup / 12) * soQua);
       document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(thanhTien);
     }
 
-    function toggleTag(el) { 
-      triggerHaptic('light'); // Rung khi bấm chọn/bỏ chọn thành viên
-      el.classList.toggle('active'); 
-    }
+    function toggleTag(el) { triggerHaptic('light'); el.classList.toggle('active'); }
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " ₫"; }
     
     function addMoney(id, amount) {
-      triggerHaptic('light'); // Rung nhẹ khi bấm cộng tiền
-      let el = document.getElementById(id);
-      let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
-      moneyHistory[id].push(currentVal);
-      el.value = (currentVal + amount).toString();
-      formatCurrency(el);
-      let undoBtn = document.getElementById('undo_' + id);
-      if(undoBtn) undoBtn.classList.remove('disabled');
+      triggerHaptic('light'); let el = document.getElementById(id); let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
+      moneyHistory[id].push(currentVal); el.value = (currentVal + amount).toString(); formatCurrency(el);
+      let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
+      if (id === 'giaCau') updateCauTotal();
     }
 
     function clearMoney(id) {
-      triggerHaptic('heavy'); // Rung mạnh khi xóa
-      let el = document.getElementById(id);
-      let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
-      if (currentVal === 0) return; 
-      moneyHistory[id].push(currentVal);
-      el.value = '';
-      let undoBtn = document.getElementById('undo_' + id);
-      if(undoBtn) undoBtn.classList.remove('disabled');
+      triggerHaptic('heavy'); let el = document.getElementById(id); let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
+      if (currentVal === 0) return; moneyHistory[id].push(currentVal); el.value = '';
+      let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
+      if (id === 'giaCau') updateCauTotal();
     }
 
     function undoMoney(id) {
-      triggerHaptic('light'); // Rung nhẹ khi lùi
-      if(!moneyHistory[id] || moneyHistory[id].length === 0) return;
-      let el = document.getElementById(id);
-      let lastVal = moneyHistory[id].pop(); 
-      if(lastVal === 0) el.value = '';
-      else {
-        el.value = lastVal.toString();
-        formatCurrency(el);
-      }
-      if(moneyHistory[id].length === 0) {
-        let undoBtn = document.getElementById('undo_' + id);
-        if(undoBtn) undoBtn.classList.add('disabled');
-      }
+      triggerHaptic('light'); if(!moneyHistory[id] || moneyHistory[id].length === 0) return;
+      let el = document.getElementById(id); let lastVal = moneyHistory[id].pop(); 
+      if(lastVal === 0) el.value = ''; else { el.value = lastVal.toString(); formatCurrency(el); }
+      if(moneyHistory[id].length === 0) { let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); }
+      if (id === 'giaCau') updateCauTotal();
     }
 
-    function clearUndo(id) {
-       moneyHistory[id] = []; 
-       let undoBtn = document.getElementById('undo_' + id);
-       if(undoBtn) undoBtn.classList.add('disabled');
-    }
+    function clearUndo(id) { moneyHistory[id] = []; let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); }
 
     function resetForm() {
-      triggerHaptic('heavy'); // Rung mạnh khi Reset toàn bộ
-      document.getElementById('tienSan').value = '';
-      document.getElementById('tienCau').value = '';
-      document.getElementById('giaCau').value = '';
-      document.getElementById('slCau').value = '0';
-      document.getElementById('namGL').value = '0';
-      document.getElementById('nuGL').value = '0';
+      triggerHaptic('heavy'); 
+      document.getElementById('tienSan').value = ''; document.getElementById('tienCau').value = '';
+      document.getElementById('giaCau').value = ''; document.getElementById('slCau').value = '0';
+      document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
+      document.getElementById('splitMethod').value = 'nam20k'; 
       
-      clearUndo('tienSan');
-      clearUndo('tienCau');
-      
+      clearUndo('tienSan'); clearUndo('tienCau'); clearUndo('giaCau');
       document.querySelectorAll('.player-tag').forEach(tag => tag.classList.add('active'));
-      switchTab('home');
+      if(!isPublicMode) { switchTab('home'); }
       closeSheet();
-      
-      document.getElementById('receiptContent').innerHTML = `
-        <div class="empty-state">
-          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
-        </div>`;
-      document.getElementById('privacyBtn').style.display = 'none';
-      document.getElementById('syncStatus').style.display = 'none';
+      document.getElementById('receiptContent').innerHTML = `<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div></div>`;
+      document.getElementById('privacyBtn').style.display = 'none'; document.getElementById('syncStatus').style.display = 'none';
       updateCauTotal();
-
-      let toast = document.getElementById('toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2500);
+      let toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    function handleInputFocus(el) {
-      if (el.value === '0') { el.value = ''; }
-      setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10);
-    }
-
+    function handleInputFocus(el) { if (el.value === '0') { el.value = ''; } setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10); }
     function validateInputEmpty(el) { el.value = el.value.replace(/[^0-9]/g, ''); }
     function validateInputZero(el) {
       el.value = el.value.replace(/[^0-9]/g, '');
       if (el.value.trim() === '' || isNaN(parseInt(el.value)) || parseInt(el.value) < 0) { el.value = '0'; }
     }
-
-    function stepVal(id, step) { 
-      triggerHaptic('light'); // Rung nhẹ khi bấm +- người chơi/số quả
-      let el = document.getElementById(id); 
-      let val = (parseInt(el.value) || 0) + step; 
-      if(val < 0) val = 0; 
-      el.value = val; 
-    }
-
+    function stepVal(id, step) { triggerHaptic('light'); let el = document.getElementById(id); let val = (parseInt(el.value) || 0) + step; if(val < 0) val = 0; el.value = val; }
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
-
-    function togglePrivacy() {
-      triggerHaptic('light');
-      let content = document.getElementById('receiptContent');
-      let btn = document.getElementById('privacyBtn');
-      content.classList.toggle('privacy-on');
-      
-      if(content.classList.contains('privacy-on')) {
-        btn.innerHTML = '🙈 Hiện nội bộ';
-      } else {
-        btn.innerHTML = '👁️ Ẩn nội bộ';
-      }
-    }
+    function togglePrivacy() { triggerHaptic('light'); let content = document.getElementById('receiptContent'); let btn = document.getElementById('privacyBtn'); content.classList.toggle('privacy-on'); if(content.classList.contains('privacy-on')) { btn.innerHTML = '🙈 Hiện nội bộ'; } else { btn.innerHTML = '👁️ Ẩn nội bộ'; } }
 
     function processData() {
-      triggerHaptic('success'); // Rung tạch tạch báo hiệu tính toán xong
-      
+      triggerHaptic('success'); 
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
@@ -722,6 +673,8 @@
 
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
+      
+      let splitMethod = document.getElementById('splitMethod').value;
 
       let html = `
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
@@ -734,14 +687,15 @@
 
       if (mode === 'away') {
         document.getElementById('privacyBtn').style.display = 'none';
+        let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
 
-        let totalP = namGL + nuGL;
-        if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
-
-        let offset = namGL * 20000;
+        let offset = 0;
+        if (splitMethod === 'nam20k') { offset = namGL * 20000; }
+        
         let base = Math.max(0, totalCost - offset) / totalP;
-        let pF = Math.ceil(base / 1000) * 1000;
-        let pNu = pF; let pNam = pF + 20000;
+        let pF = Math.ceil(base / 1000) * 1000; 
+        let pNu = pF; 
+        let pNam = splitMethod === 'nam20k' ? pF + 20000 : pF;
 
         if(namGL) {
           html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`;
@@ -759,14 +713,19 @@
         let tu = document.getElementById('tag-Tu').classList.contains('active') ? 1 : 0;
         let quan = document.getElementById('tag-Quan').classList.contains('active') ? 1 : 0;
 
-        let cM = minh + tu + quan; 
-        let totalP = cM + thao + namGL + nuGL;
+        let cM = minh + tu + quan; let totalP = cM + thao + namGL + nuGL;
         if (totalP === 0) { alert("Chưa ai ra sân cả!"); return; }
 
-        let offset = (cM * 25000) + (nuGL * 5000) + (namGL * 30000);
-        let base = Math.max(0, totalCost - offset) / totalP;
+        let offsetGL = splitMethod === 'nam20k' ? (namGL * 30000) + (nuGL * 5000) : 0;
+        let offsetFixed = (cM * 25000); 
+        let totalOffset = offsetFixed + offsetGL;
+        
+        let base = Math.max(0, totalCost - totalOffset) / totalP;
         let pF = Math.ceil(base / 1000) * 1000;
-        let pNu = pF; let pNam = pF + 25000; let pNamGL = pF + 30000; let pNuGL = pF + 5000;
+        
+        let pNu = pF; let pNam = pF + 25000; 
+        let pNamGL = splitMethod === 'nam20k' ? pF + 30000 : pF; 
+        let pNuGL = splitMethod === 'nam20k' ? pF + 5000 : pF;
 
         if(minh) { html += `<div class="receipt-item fixed-member"><span>Minh</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
         if(thao) { html += `<div class="receipt-item fixed-member"><span>Thảo</span> <strong class="price-badge">${formatMoney(pNu)}</strong></div>`; teleStr += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`;}
@@ -774,48 +733,37 @@
         if(quan) { html += `<div class="receipt-item fixed-member"><span>Quân</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
         
         if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
-        if(namGL) { 
-          html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`;
-          teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\n`; 
-        }
-        if(nuGL) { 
-          html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`;
-          teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; 
-        }
+        if(namGL) { html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`; teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\n`; }
+        if(nuGL) { html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`; teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; }
       }
 
-      let contentContainer = document.getElementById('receiptContainer');
-      let contentInner = document.getElementById('receiptContent');
-      let statusEl = document.getElementById('syncStatus');
-      
-      contentContainer.classList.remove('anim-pop');
-      void contentContainer.offsetWidth; 
-
-      contentInner.innerHTML = html;
-      contentContainer.classList.add('anim-pop');
-      
-      contentInner.classList.remove('privacy-on');
-      document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
-      
+      let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
+      contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
+      contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
+      contentInner.classList.remove('privacy-on'); document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
       document.getElementById('resultSheet').classList.add('show');
+      statusEl.style.display = 'block'; statusEl.style.color = '#6366f1';
       
-      statusEl.style.display = 'block';
-      statusEl.style.color = '#6366f1';
-      statusEl.innerText = 'Đang smash biên lai vào Telegram... 🏸💨';
+      let payloadInfo = {
+          source: "github_web",
+          reportText: teleStr,
+          tracking: { ip: userIPInfo, os: getOS(), total_cost: totalCost, mode: mode, isPublic: isPublicMode ? "Có" : "Không" }
+      };
 
+      if (isPublicMode || APPS_SCRIPT_URL === "") {
+          statusEl.style.color = '#10b981'; statusEl.innerText = 'Tính toán thành công! ✅'; triggerHaptic('light');
+          if(APPS_SCRIPT_URL !== "") { fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) }); }
+          return;
+      }
+
+      statusEl.innerText = 'Đang gửi thông báo cho Minh... 🏸💨';
+      
       fetch(APPS_SCRIPT_URL, {
-        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        body: JSON.stringify({ source: "github_web", reportText: teleStr })
+        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadInfo) 
       }).then(r => r.json()).then(res => {
-        if(res.status === "success") {
-          statusEl.style.color = '#10b981'; statusEl.innerText = 'Ting ting! Đã chốt sổ và báo cáo Bot! 💸✅';
-          triggerHaptic('light'); // Rung nhẹ thêm cái nữa khi thành công
-        } else {
-          statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi gửi tin: ' + res.message;
-        }
-      }).catch(err => {
-        statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi mạng nội bộ!';
-      });
+        if(res.status === "success") { statusEl.style.color = '#10b981'; statusEl.innerText = 'Ting ting! Đã báo cáo cho Minh! 💸✅'; triggerHaptic('light'); } 
+        else { statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi gửi tin: ' + res.message; }
+      }).catch(err => { statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi mạng nội bộ!'; });
     }
   </script>
 </body>
