@@ -69,8 +69,6 @@
       justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
     }
-    
-    .right-col { display: none; } 
 
     /* === GIAO DIỆN ĐIỆN THOẠI XOAY NGANG === */
     @media (max-height: 500px) and (orientation: landscape) {
@@ -113,27 +111,26 @@
       .main-wrapper { flex-direction: row; gap: 30px; }
       .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); }
       
-      .right-col {
-        display: flex; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.5); border-radius: 24px; position: relative; 
-        overflow: hidden; border: 1px solid var(--glass-border);
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05); padding: 0 !important; 
-      }
-      
       .action-zone { 
         position: static !important; background: transparent !important; 
         padding: 20px 8px 30px 8px !important; border: none !important; backdrop-filter: none !important; 
       }
       
+      /* CÚ PHÁP ĐẶC TRỊ: Biến thẳng sheet-overlay thành cột hiển thị tĩnh trên PC */
       .sheet-overlay { 
-        position: static !important; background: transparent !important; 
+        position: relative !important; display: flex !important; flex-direction: column; flex: 1;
+        background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; 
+        border: 1px solid var(--glass-border);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05) !important; 
         padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; 
-        display: block !important; backdrop-filter: none !important;
-        overflow-y: auto; height: 100%; width: 100%;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        z-index: 1 !important; overflow: hidden !important;
+        top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
       }
       .sheet-card { 
         transform: none !important; opacity: 1 !important; box-shadow: none !important; 
         background: transparent !important; padding: 24px !important; max-width: 100% !important; 
+        height: 100%; overflow-y: auto; border-radius: 0 !important;
       }
       .btn-close { display: none !important; }
     }
@@ -205,7 +202,7 @@
     .money-input-group input::placeholder { color: #cbd5e1; }
 
     /* PHÍM TẮT NHẬP TIỀN */
-    .quick-chips { display: flex; gap: 8px; margin-top: 8px; justify-content: center; width: 100%;}
+    .quick-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; justify-content: center; width: 100%;}
     .chip { 
       background: rgba(99, 102, 241, 0.08); color: var(--accent); border: 1px solid rgba(99, 102, 241, 0.15); 
       padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; 
@@ -281,7 +278,7 @@
       box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); 
     }
 
-    /* BẢNG BIÊN LAI VÀ EMPTY STATE */
+    /* BẢNG BIÊN LAI (MOBILE POPUP ĐƯỢC CHUYỂN RA NGOÀI ĐỂ KHÔNG BỊ TÀNG HÌNH) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -315,7 +312,6 @@
 
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; align-items: center;}
     
-    /* NHÃN TIỀN TẠO ĐIỂM NHẤN (Visual Dominance) */
     .price-badge {
       background: rgba(99, 102, 241, 0.12); color: var(--accent); padding: 4px 10px; 
       border-radius: 8px; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;
@@ -377,6 +373,8 @@
               </div>
               <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)">
               <div class="quick-chips">
+                <button type="button" class="chip" onclick="addMoney('tienSan', 10000)">+10k</button>
+                <button type="button" class="chip" onclick="addMoney('tienSan', 20000)">+20k</button>
                 <button type="button" class="chip" onclick="addMoney('tienSan', 50000)">+50k</button>
                 <button type="button" class="chip" onclick="addMoney('tienSan', 100000)">+100k</button>
                 <button type="button" class="chip" onclick="addMoney('tienSan', 200000)">+200k</button>
@@ -399,6 +397,8 @@
                 <div class="mode-inner" style="opacity: 1;">
                   <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)">
                   <div class="quick-chips">
+                    <button type="button" class="chip" onclick="addMoney('tienCau', 10000)">+10k</button>
+                    <button type="button" class="chip" onclick="addMoney('tienCau', 20000)">+20k</button>
                     <button type="button" class="chip" onclick="addMoney('tienCau', 50000)">+50k</button>
                     <button type="button" class="chip" onclick="addMoney('tienCau', 100000)">+100k</button>
                   </div>
@@ -467,35 +467,31 @@
           </button>
         </div>
 
-      </div> 
-
-      <div class="right-col">
-        <div class="sheet-overlay" id="resultSheet">
-          <div class="sheet-card">
-            
-            <div class="receipt-header-flex">
-              <div class="receipt-title">Biên Lai 🎉</div>
-              <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
-            </div>
-            
-            <div id="syncStatus">Trạng thái đồng bộ...</div>
-            
-            <div id="receiptContainer">
-               <div id="receiptContent">
-                 <div class="empty-state">
-                   <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                   </svg>
-                   <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
-                 </div>
-               </div>
-            </div>
-            <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
+      </div> <div class="sheet-overlay" id="resultSheet">
+        <div class="sheet-card">
+          
+          <div class="receipt-header-flex">
+            <div class="receipt-title">Biên Lai 🎉</div>
+            <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
           </div>
+          
+          <div id="syncStatus">Trạng thái đồng bộ...</div>
+          
+          <div id="receiptContainer">
+             <div id="receiptContent">
+               <div class="empty-state">
+                 <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                 </svg>
+                 <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+               </div>
+             </div>
+          </div>
+          <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
-    </div> 
 
+    </div> 
   </div>
 
   <script>
@@ -585,11 +581,10 @@
       let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
       el.value = (currentVal + amount).toString();
       formatCurrency(el);
-      // Cập nhật lại tổng nếu là ô Giá 1 Túp (mặc dù ta k đặt chip ở đây nhưng cứ rào trước)
       if (id === 'giaCau') updateCauTotal();
     }
 
-    // Reset Form (Làm mới toàn bộ về 0)
+    // Reset Form
     function resetForm() {
       document.getElementById('tienSan').value = '';
       document.getElementById('tienCau').value = '';
@@ -602,7 +597,6 @@
       switchTab('home');
       closeSheet();
       
-      // Khôi phục Empty State
       document.getElementById('receiptContent').innerHTML = `
         <div class="empty-state">
           <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -614,7 +608,6 @@
       document.getElementById('syncStatus').style.display = 'none';
       updateCauTotal();
 
-      // Hiện Toast Notification
       let toast = document.getElementById('toast');
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2500);
@@ -625,11 +618,9 @@
       setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10);
     }
 
-    // Dành cho tiền (rỗng = rỗng để hiện placeholder)
     function validateInputEmpty(el) {
       el.value = el.value.replace(/[^0-9]/g, '');
     }
-    // Dành cho số lượng người/quả (rỗng = 0)
     function validateInputZero(el) {
       el.value = el.value.replace(/[^0-9]/g, '');
       if (el.value.trim() === '' || isNaN(parseInt(el.value)) || parseInt(el.value) < 0) { el.value = '0'; }
@@ -726,13 +717,14 @@
         if(quan) { html += `<div class="receipt-item fixed-member"><span>Quân</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
         
         if(namGL || nuGL) { html += `<div class="divider-dash"></div>`; teleStr += `------------------\n`; }
+        // FIX LỖI TELEGRAM: HIỂN THỊ CHI TIẾT GIÁ TIỀN TỪNG NGƯỜI CHO KHÁCH GIAO LƯU SÂN NHÀ
         if(namGL) { 
           html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`;
-          teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b>\n`; 
+          teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\n`; 
         }
         if(nuGL) { 
           html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`;
-          teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b>\n`; 
+          teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; 
         }
       }
 
@@ -753,7 +745,6 @@
       
       statusEl.style.display = 'block';
       statusEl.style.color = '#6366f1';
-      // Thay đổi Microcopy cảm xúc
       statusEl.innerText = 'Đang smash biên lai vào Telegram... 🏸💨';
 
       fetch(APPS_SCRIPT_URL, {
