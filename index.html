@@ -68,6 +68,8 @@
       justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
     }
+    
+    .right-col { display: none; } 
 
     /* MOBILE NGANG */
     @media (max-height: 500px) and (orientation: landscape) {
@@ -101,10 +103,13 @@
       .left-col { flex: 1.1; padding-bottom: 0; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); overflow-y: auto;}
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
-      
+      .right-col {
+        display: flex; flex-direction: column; flex: 1;
+        background: rgba(255, 255, 255, 0.5); border-radius: 24px; position: relative; 
+        overflow: hidden; border: 1px solid var(--glass-border);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05); padding: 0 !important; 
+      }
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
-      
-      /* Biến đổi Popup thành Cột hiển thị trên Desktop (Không bọc qua div thừa) */
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; border: 1px solid var(--glass-border);
@@ -266,7 +271,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* BẢNG BIÊN LAI: Định dạng Popup nổi trên Mobile */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -402,7 +406,7 @@
                   <div class="cau-detail-flex">
                     <div class="cau-col">
                       <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                      <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+                      <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal(); clearUndo('giaCau');">
                     </div>
                     <div class="divider-vert"></div>
                     <div class="cau-col">
@@ -495,6 +499,20 @@
     let isCauDetailMode = false;
     let moneyHistory = { 'tienSan': [], 'tienCau': [] };
 
+    // === BỘ MÁY TẠO RUNG (HAPTIC ENGINE) ===
+    function triggerHaptic(type = 'light') {
+      if (!navigator.vibrate) return; // Nếu trình duyệt không hỗ trợ (như iOS Safari) thì bỏ qua an toàn
+      try {
+        if (type === 'light') {
+          navigator.vibrate(10); 
+        } else if (type === 'heavy') {
+          navigator.vibrate(30); 
+        } else if (type === 'success') {
+          navigator.vibrate([15, 50, 20]); // Rung 2 nhịp tạch.. tạch
+        }
+      } catch(e) {}
+    }
+
     function updateDateDisplay(val) {
       if(!val) return;
       let parts = val.split('-'); 
@@ -520,6 +538,7 @@
 
     function switchTab(selected) {
       if (mode === selected) return;
+      triggerHaptic('light'); // Rung nhẹ khi đổi tab
       mode = selected;
       let ind = document.getElementById('tabIndicator');
       let tHome = document.getElementById('tabHome');
@@ -541,6 +560,7 @@
     }
 
     function toggleCauMode() {
+      triggerHaptic('light'); // Rung nhẹ khi gạt switch
       isCauDetailMode = document.getElementById('cauToggleSwitch').checked;
       let m1 = document.getElementById('cauMode1Wrap');
       let m2 = document.getElementById('cauMode2Wrap');
@@ -565,11 +585,15 @@
       document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(thanhTien);
     }
 
-    function toggleTag(el) { el.classList.toggle('active'); }
+    function toggleTag(el) { 
+      triggerHaptic('light'); // Rung khi bấm chọn/bỏ chọn thành viên
+      el.classList.toggle('active'); 
+    }
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " ₫"; }
     
     function addMoney(id, amount) {
+      triggerHaptic('light'); // Rung nhẹ khi bấm cộng tiền
       let el = document.getElementById(id);
       let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
       moneyHistory[id].push(currentVal);
@@ -580,6 +604,7 @@
     }
 
     function clearMoney(id) {
+      triggerHaptic('heavy'); // Rung mạnh khi xóa
       let el = document.getElementById(id);
       let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
       if (currentVal === 0) return; 
@@ -590,6 +615,7 @@
     }
 
     function undoMoney(id) {
+      triggerHaptic('light'); // Rung nhẹ khi lùi
       if(!moneyHistory[id] || moneyHistory[id].length === 0) return;
       let el = document.getElementById(id);
       let lastVal = moneyHistory[id].pop(); 
@@ -611,6 +637,7 @@
     }
 
     function resetForm() {
+      triggerHaptic('heavy'); // Rung mạnh khi Reset toàn bộ
       document.getElementById('tienSan').value = '';
       document.getElementById('tienCau').value = '';
       document.getElementById('giaCau').value = '';
@@ -653,6 +680,7 @@
     }
 
     function stepVal(id, step) { 
+      triggerHaptic('light'); // Rung nhẹ khi bấm +- người chơi/số quả
       let el = document.getElementById(id); 
       let val = (parseInt(el.value) || 0) + step; 
       if(val < 0) val = 0; 
@@ -662,6 +690,7 @@
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
     function togglePrivacy() {
+      triggerHaptic('light');
       let content = document.getElementById('receiptContent');
       let btn = document.getElementById('privacyBtn');
       content.classList.toggle('privacy-on');
@@ -674,6 +703,8 @@
     }
 
     function processData() {
+      triggerHaptic('success'); // Rung tạch tạch báo hiệu tính toán xong
+      
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
@@ -778,6 +809,7 @@
       }).then(r => r.json()).then(res => {
         if(res.status === "success") {
           statusEl.style.color = '#10b981'; statusEl.innerText = 'Ting ting! Đã chốt sổ và báo cáo Bot! 💸✅';
+          triggerHaptic('light'); // Rung nhẹ thêm cái nữa khi thành công
         } else {
           statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi gửi tin: ' + res.message;
         }
