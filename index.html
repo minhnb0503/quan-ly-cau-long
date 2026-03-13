@@ -196,7 +196,7 @@
       padding: 6px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; 
       cursor: pointer; transition: 0.15s ease; font-family: 'Be Vietnam Pro', sans-serif; flex-shrink: 0;
     }
-    .chip:active { transform: scale(0.9); background: rgba(99, 102, 241, 0.2); }
+    .chip:active { transform: scale(0.95); background: rgba(99, 102, 241, 0.2); } /* Giảm độ rút để không trượt tay */
     
     .chip-clear { background: rgba(244, 63, 94, 0.08); color: #e11d48; border-color: rgba(244, 63, 94, 0.15); }
     .chip-clear:active { background: rgba(244, 63, 94, 0.2); }
@@ -239,12 +239,14 @@
     }
     .guest-label { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
     .guest-stepper { display: flex; align-items: center; background: rgba(0,0,0,0.04); border-radius: 100px; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
+    
+    /* FIX LỖI LIỆT NÚT CỘNG/TRỪ: Tăng diện tích lên 36px, giảm độ co rút xuống 0.92 để ngón tay không bị trượt */
     .step-btn {
-      width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff;
-      font-size: 18px; font-weight: 600; color: var(--text-main); cursor: pointer;
-      box-shadow: 0 4px 10px -2px rgba(0,0,0,0.1); transition: 0.1s; display: flex; justify-content: center; align-items: center;
+      width: 36px; height: 36px; border-radius: 50%; border: none; background: #fff;
+      font-size: 20px; font-weight: 600; color: var(--text-main); cursor: pointer;
+      box-shadow: 0 4px 10px -2px rgba(0,0,0,0.1); transition: 0.15s ease; display: flex; justify-content: center; align-items: center;
     }
-    .step-btn:active { transform: scale(0.85); background: #e2e8f0; }
+    .step-btn:active { transform: scale(0.92); background: #e2e8f0; }
     
     .guest-val { 
       width: 40px; text-align: center; font-size: 16px; font-weight: 700; border: none; background: transparent; outline:none; 
@@ -294,33 +296,21 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* ===========================================================================
-       FIX LỖI CHỤP ẢNH MÀN HÌNH (SCREENSHOT):
-       - Hủy bỏ giới hạn chiều cao (max-height) trên thẻ Card để nó giãn tối đa.
-       - Cho phép toàn bộ Overlay (lớp phủ đen) có thể cuộn được.
-       =========================================================================== */
+    /* LỚP PHỦ BIÊN LAI: Đã mở khóa cho phép giãn tối đa để Screenshot toàn phần */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       z-index: 100; opacity: 0; pointer-events: none; transition: 0.4s ease;
-      
-      /* Cấu trúc linh hoạt cho phép cuộn toàn trang */
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
+      display: flex; flex-direction: column; align-items: center; 
       padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
-      overflow-y: auto; /* Bật thanh cuộn cho lớp phủ */
-      -webkit-overflow-scrolling: touch;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
     .sheet-overlay.show { opacity: 1; pointer-events: auto; }
     
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
-      padding: 24px; 
-      
-      margin-top: auto; /* Đẩy Card xuống đáy màn hình khi ngắn, không cắt đỉnh khi dài */
-      transform: translateY(100%); 
-      transition: transform 0.4s var(--smooth-curve);
+      padding: 24px; margin-top: auto; 
+      transform: translateY(100%); transition: transform 0.4s var(--smooth-curve);
       box-shadow: 0 -15px 40px -15px rgba(0,0,0,0.15); 
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
@@ -339,7 +329,6 @@
     }
     .privacy-btn:active { transform: scale(0.9); }
 
-    /* Thu hẹp nhẹ các khoảng cách để việc chụp ảnh tối ưu hơn */
     .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; align-items: center;}
     .price-badge {
       background: rgba(99, 102, 241, 0.12); color: var(--accent); padding: 4px 10px; 
@@ -398,7 +387,7 @@
         <div class="header-bar">
           <div class="app-title" id="mainTitle">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
           <div class="header-actions">
-            <button class="reset-btn" onclick="resetForm()" title="Làm mới bảng tính">
+            <button type="button" class="reset-btn" onclick="resetForm()" title="Làm mới bảng tính">
               <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
             <div class="date-chip" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
@@ -512,17 +501,17 @@
               <div class="guest-row">
                 <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
                 <div class="guest-stepper">
-                  <button class="step-btn" onclick="stepVal('namGL', -1)">-</button>
+                  <button type="button" class="step-btn" onclick="stepVal('namGL', -1)">-</button>
                   <input type="text" class="guest-val" id="namGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button class="step-btn" onclick="stepVal('namGL', 1)">+</button>
+                  <button type="button" class="step-btn" onclick="stepVal('namGL', 1)">+</button>
                 </div>
               </div>
               <div class="guest-row">
                 <span class="guest-label">👩🏻‍💼 Số Nữ</span>
                 <div class="guest-stepper">
-                  <button class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
+                  <button type="button" class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
                   <input type="text" class="guest-val" id="nuGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
+                  <button type="button" class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
                 </div>
               </div>
             </div>
@@ -531,7 +520,7 @@
         </div> 
         
         <div class="action-zone">
-          <button class="btn-massive" onclick="processData()">
+          <button type="button" class="btn-massive" onclick="processData()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
             Phân Bổ Chi Phí
           </button>
@@ -544,7 +533,7 @@
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
             <div style="display: flex; gap: 8px;">
-                <button class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
+                <button type="button" class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
             </div>
           </div>
           <div id="syncStatus">Trạng thái đồng bộ...</div>
@@ -565,7 +554,7 @@
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
           
-          <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
+          <button type="button" class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
 
@@ -744,7 +733,15 @@
       if (v === '' || isNaN(parseInt(v))) { el.value = '0'; }
       else { el.value = parseInt(v, 10).toString(); }
     }
-    function stepVal(id, step) { triggerHaptic('light'); let el = document.getElementById(id); let val = (parseInt(el.value) || 0) + step; if(val < 0) val = 0; el.value = val; }
+    
+    function stepVal(id, step) { 
+      triggerHaptic('light'); 
+      let el = document.getElementById(id); 
+      let val = (parseInt(el.value) || 0) + step; 
+      if(val < 0) val = 0; 
+      el.value = val; 
+    }
+    
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
     function toggleQR() {
