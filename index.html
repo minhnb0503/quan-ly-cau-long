@@ -319,8 +319,6 @@
 
     .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .receipt-title { font-size: 20px; font-weight: 800; margin: 0; }
-    
-    /* Giao diện nút bấm QR - Đã xóa nút Ẩn Nội Bộ */
     .privacy-btn { 
       background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; 
       padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; 
@@ -732,7 +730,6 @@
     function stepVal(id, step) { triggerHaptic('light'); let el = document.getElementById(id); let val = (parseInt(el.value) || 0) + step; if(val < 0) val = 0; el.value = val; }
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
 
-    // HÀM BẬT/TẮT MÃ QR (Đã xóa các dòng liên quan tới privacyBtn cũ)
     function toggleQR() {
         triggerHaptic('light');
         isShowingQR = !isShowingQR;
@@ -777,7 +774,6 @@
       let totalCost = san + cau;
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
-      let splitMethod = document.getElementById('splitMethod').value;
 
       let html = `
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
@@ -792,7 +788,6 @@
         document.getElementById('qrBtn').style.display = 'none'; 
 
         let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
-        
         let offset = 0;
         if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
         
