@@ -109,15 +109,16 @@
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px !important; border: 1px solid var(--glass-border) !important;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05) !important; 
-        padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; 
+        padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; visibility: visible !important;
         backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        transform: none !important; -webkit-transform: none !important; /* Xóa transform trên desktop */
         z-index: 1 !important; overflow: hidden !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
       }
       .sheet-card { 
         transform: none !important; opacity: 1 !important; box-shadow: none !important; 
         background: transparent !important; padding: 24px !important; max-width: 100% !important; 
         height: 100% !important; border-radius: 0 !important; margin: 0 !important; max-height: none !important;
-        overflow-y: auto !important;
+        overflow-y: auto !important; will-change: auto !important;
       }
       .btn-close { display: none !important; }
     }
@@ -196,7 +197,7 @@
       padding: 6px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; 
       cursor: pointer; transition: 0.15s ease; font-family: 'Be Vietnam Pro', sans-serif; flex-shrink: 0;
     }
-    .chip:active { transform: scale(0.95); background: rgba(99, 102, 241, 0.2); } /* Giảm độ rút để không trượt tay */
+    .chip:active { transform: scale(0.95); background: rgba(99, 102, 241, 0.2); }
     
     .chip-clear { background: rgba(244, 63, 94, 0.08); color: #e11d48; border-color: rgba(244, 63, 94, 0.15); }
     .chip-clear:active { background: rgba(244, 63, 94, 0.2); }
@@ -239,8 +240,6 @@
     }
     .guest-label { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
     .guest-stepper { display: flex; align-items: center; background: rgba(0,0,0,0.04); border-radius: 100px; padding: 4px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
-    
-    /* FIX LỖI LIỆT NÚT CỘNG/TRỪ: Tăng diện tích lên 36px, giảm độ co rút xuống 0.92 để ngón tay không bị trượt */
     .step-btn {
       width: 36px; height: 36px; border-radius: 50%; border: none; background: #fff;
       font-size: 20px; font-weight: 600; color: var(--text-main); cursor: pointer;
@@ -296,22 +295,33 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* LỚP PHỦ BIÊN LAI: Đã mở khóa cho phép giãn tối đa để Screenshot toàn phần */
+    /* ===========================================================================
+       FIX LỖI CHỚP NHÁY TRÊN IOS (Hardware Acceleration) + CUỘN ĐỂ SCREENSHOT
+       =========================================================================== */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      z-index: 100; opacity: 0; pointer-events: none; transition: 0.4s ease;
+      z-index: 100; opacity: 0; visibility: hidden; pointer-events: none; 
+      transition: opacity 0.4s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.4s;
+      
       display: flex; flex-direction: column; align-items: center; 
       padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
       overflow-y: auto; -webkit-overflow-scrolling: touch;
+      
+      /* CÁC LỆNH ÉP GPU XỬ LÝ ĐỂ KHÔNG BỊ CHỚP ĐEN/TRẮNG TRÊN IPHONE */
+      transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0);
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      perspective: 1000px; -webkit-perspective: 1000px;
+      will-change: opacity;
     }
-    .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+    .sheet-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
     
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
       padding: 24px; margin-top: auto; 
-      transform: translateY(100%); transition: transform 0.4s var(--smooth-curve);
+      transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
       box-shadow: 0 -15px 40px -15px rgba(0,0,0,0.15); 
+      will-change: transform;
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
@@ -872,9 +882,13 @@
       document.getElementById('qrContainer').style.display = 'none';
       if (!isPublicMode && mode === 'home') document.getElementById('qrBtn').innerHTML = '💳 QR Chủ sân';
 
-      let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
-      contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
-      contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
+      let contentInner = document.getElementById('receiptContent'); 
+      let statusEl = document.getElementById('syncStatus');
+      
+      contentInner.classList.remove('anim-pop'); 
+      void contentInner.offsetWidth; 
+      contentInner.innerHTML = html; 
+      contentInner.classList.add('anim-pop');
       
       document.getElementById('resultSheet').classList.add('show');
       
