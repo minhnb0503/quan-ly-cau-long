@@ -122,6 +122,7 @@
         transform: none !important; opacity: 1 !important; box-shadow: none !important; 
         background: transparent !important; padding: 24px !important; max-width: 100% !important; 
         height: 100% !important; overflow-y: auto !important; border-radius: 0 !important;
+        max-height: none !important; /* Xóa giới hạn chiều cao trên desktop */
       }
       .btn-close { display: none !important; }
     }
@@ -298,6 +299,7 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
+    /* FIX LỖI KẸT POPUP TRÊN MOBILE: Giới hạn chiều cao max 85vh và bật overflow-y */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -305,11 +307,14 @@
       display: flex; justify-content: center; align-items: flex-end; padding: 16px;
     }
     .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+    
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
       padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px)); 
       transform: translateY(120%); transition: 0.4s var(--smooth-curve);
       box-shadow: 0 -15px 40px -15px rgba(0,0,0,0.15); 
+      max-height: 85vh; /* Giới hạn chiều cao */
+      overflow-y: auto; /* Bật thanh cuộn */
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
@@ -520,15 +525,15 @@
           </button>
         </div>
 
-      </div> 
-
-      <div class="sheet-overlay" id="resultSheet">
+      </div> <div class="sheet-overlay" id="resultSheet">
         <div class="sheet-card">
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
+            
             <div style="display: flex; gap: 8px;">
                 <button class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
             </div>
+            
           </div>
           <div id="syncStatus">Trạng thái đồng bộ...</div>
           
@@ -544,7 +549,7 @@
           </div>
           
           <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
-            <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
+            <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; max-height: 45vh; width: auto; object-fit: contain; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
           
@@ -788,6 +793,7 @@
         document.getElementById('qrBtn').style.display = 'none'; 
 
         let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+        
         let offset = 0;
         if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
         
