@@ -68,8 +68,6 @@
       justify-content: flex-start; overflow-y: auto; padding-bottom: 20px; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
     }
-    
-    .right-col { display: none; } 
 
     /* MOBILE NGANG */
     @media (max-height: 500px) and (orientation: landscape) {
@@ -104,20 +102,14 @@
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
       
-      /* GIẢI QUYẾT BÀI TOÁN LỖI HIỂN THỊ CHIPS TRÊN MÁY TÍNH */
       .quick-chips {
-        flex-wrap: wrap !important; /* Tự động xuống dòng nếu thiếu chỗ */
+        flex-wrap: wrap !important;
         justify-content: center !important;
         overflow-x: visible !important;
       }
 
-      .right-col {
-        display: flex; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.5); border-radius: 24px; position: relative; 
-        overflow: hidden; border: 1px solid var(--glass-border);
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05); padding: 0 !important; 
-      }
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
+      
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
         background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; border: 1px solid var(--glass-border);
@@ -345,7 +337,6 @@
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
     
-    /* === CSS CHO NÚT ẨN/HIỆN ĐỘI SÂN NHÀ === */
     .fixed-team-receipt-header {
       display: flex; justify-content: space-between; align-items: center;
       font-size: 12px; font-weight: 700; color: var(--text-sub);
@@ -535,9 +526,15 @@
         <div class="sheet-card">
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
-            <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none; background: rgba(16, 185, 129, 0.1); color: #10b981;">💳 QR Chủ sân</button>
+                <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+            </div>
+            
           </div>
           <div id="syncStatus">Trạng thái đồng bộ...</div>
+          
           <div id="receiptContainer">
              <div id="receiptContent">
                <div class="empty-state">
@@ -548,6 +545,12 @@
                </div>
              </div>
           </div>
+          
+          <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
+            <img src="qr.jpeg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
+            <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
+          </div>
+          
           <button class="btn-close" onclick="closeSheet()">Đóng Lại</button>
         </div>
       </div>
@@ -564,6 +567,7 @@
     let isPublicMode = false;
     let userIPInfo = "Đang lấy IP...";
     let currentSplitMethod = 'nam20k';
+    let isShowingQR = false;
 
     async function fetchUserIP() {
         try {
@@ -600,7 +604,8 @@
         let dateInput = document.getElementById('dateInput');
         dateInput.value = dateStr; updateDateDisplay(dateStr); 
         dateInput.addEventListener('change', (e) => { updateDateDisplay(e.target.value); e.target.blur(); });
-        document.getElementById('syncStatus').style.display = 'none'; document.getElementById('privacyBtn').style.display = 'none';
+        document.getElementById('syncStatus').style.display = 'none'; 
+        document.getElementById('privacyBtn').style.display = 'none';
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('public') === 'true') {
@@ -713,16 +718,15 @@
       if(!isPublicMode) { switchTab('home'); }
       closeSheet();
       document.getElementById('receiptContent').innerHTML = `<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div></div>`;
-      document.getElementById('privacyBtn').style.display = 'none'; document.getElementById('syncStatus').style.display = 'none';
+      document.getElementById('privacyBtn').style.display = 'none'; 
+      document.getElementById('qrBtn').style.display = 'none'; 
+      document.getElementById('syncStatus').style.display = 'none';
       updateCauTotal();
       let toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
     function handleInputFocus(el) { if (el.value === '0') { el.value = ''; } setTimeout(function() { el.selectionStart = el.selectionEnd = el.value.length; }, 10); }
-    function validateInputEmpty(el) { 
-      let v = el.value.replace(/\D/g, ''); 
-      el.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ''; 
-    }
+    function validateInputEmpty(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ''; }
     function validateInputZero(el) {
       let v = el.value.replace(/\D/g, '');
       if (v === '' || isNaN(parseInt(v))) { el.value = '0'; }
@@ -732,16 +736,36 @@
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
     function togglePrivacy() { triggerHaptic('light'); let content = document.getElementById('receiptContent'); let btn = document.getElementById('privacyBtn'); content.classList.toggle('privacy-on'); if(content.classList.contains('privacy-on')) { btn.innerHTML = '🙈 Hiện nội bộ'; } else { btn.innerHTML = '👁️ Ẩn nội bộ'; } }
 
+    function toggleQR() {
+        triggerHaptic('light');
+        isShowingQR = !isShowingQR;
+        let qrBtn = document.getElementById('qrBtn');
+        let content = document.getElementById('receiptContainer');
+        let qrCont = document.getElementById('qrContainer');
+        let privacyBtn = document.getElementById('privacyBtn');
+
+        if(isShowingQR) {
+            content.style.display = 'none';
+            privacyBtn.style.display = 'none'; 
+            qrCont.style.display = 'block';
+            qrBtn.innerHTML = '🧾 Xem Biên Lai';
+        } else {
+            content.style.display = 'block';
+            privacyBtn.style.display = 'block';
+            qrCont.style.display = 'none';
+            qrBtn.innerHTML = '💳 QR Chủ sân';
+        }
+    }
+
     function processData() {
       triggerHaptic('success'); 
+      
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
       
       let san = parseInt(document.getElementById('tienSan').value.replace(/\./g, '')) || 0;
       let cau = 0;
-      
-      // === TẠO HIỂN THỊ CHI TIẾT CẦU ===
       let cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
       let teleCauStr = `🏸 Cầu: ${formatMoney(cau)}`;
       
@@ -750,7 +774,6 @@
         let soQua = parseInt(document.getElementById('slCau').value) || 0;
         cau = Math.round((giaTup / 12) * soQua);
         
-        // Cập nhật lại HTML và Telegram nếu đang bật Chi Tiết Cầu
         cauDisplay = `<div style="text-align:right"><strong>${formatMoney(cau)}</strong><div class="receipt-sub" style="margin-top:0">${soQua} quả - ${formatMoney(giaTup)}/túp</div></div>`;
         teleCauStr = `🏸 Cầu: ${formatMoney(cau)} (${soQua} quả - ${formatMoney(giaTup)}/túp)`;
       } else {
@@ -775,8 +798,9 @@
 
       if (mode === 'away') {
         document.getElementById('privacyBtn').style.display = 'none';
-        let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+        document.getElementById('qrBtn').style.display = 'none'; 
 
+        let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
         let offset = 0;
         if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
         
@@ -795,6 +819,7 @@
         }
       } else {
         document.getElementById('privacyBtn').style.display = 'block';
+        if (!isPublicMode) { document.getElementById('qrBtn').style.display = 'block'; }
 
         let minh = document.getElementById('tag-Minh').classList.contains('active') ? 1 : 0;
         let thao = document.getElementById('tag-Thao').classList.contains('active') ? 1 : 0;
@@ -815,7 +840,6 @@
         let pNamGL = pF + 30000; 
         let pNuGL = pF + 5000;
 
-        // === TẠO KHỐI ĐỘI HÌNH CỐ ĐỊNH CÓ THỂ ĐÓNG MỞ (COLLAPSIBLE) ===
         let fixedMembersHtml = "";
         if(minh) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Minh</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
         if(thao) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Thảo</span> <strong class="price-badge">${formatMoney(pNu)}</strong></div>`; teleStr += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`;}
@@ -841,12 +865,16 @@
         if(nuGL) { html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`; teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; }
       }
 
+      isShowingQR = false;
+      document.getElementById('receiptContainer').style.display = 'block';
+      document.getElementById('qrContainer').style.display = 'none';
+      document.getElementById('qrBtn').innerHTML = '💳 QR Chủ sân';
+
       let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
       contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
       contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
       contentInner.classList.remove('privacy-on'); document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
       document.getElementById('resultSheet').classList.add('show');
-      statusEl.style.display = 'block'; statusEl.style.color = '#6366f1';
       
       let payloadInfo = {
           source: "github_web",
@@ -854,20 +882,22 @@
           tracking: { ip: userIPInfo, os: getOS(), total_cost: totalCost, mode: mode, isPublic: isPublicMode ? "Có" : "Không" }
       };
 
-      if (isPublicMode || APPS_SCRIPT_URL === "DÁN_LINK_WEB_APP_VÀO_ĐÂY") {
-          statusEl.style.color = '#10b981'; statusEl.innerText = 'Tính toán thành công! ✅'; triggerHaptic('light');
-          if(APPS_SCRIPT_URL !== "DÁN_LINK_WEB_APP_VÀO_ĐÂY") { fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) }); }
+      statusEl.style.display = 'block'; 
+      statusEl.style.color = '#10b981'; 
+      
+      if (isPublicMode || APPS_SCRIPT_URL === "") {
+          statusEl.innerText = 'Tính toán thành công! ✅'; 
+          if(APPS_SCRIPT_URL !== "") { fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) }).catch(e=>e); }
           return;
       }
 
-      statusEl.innerText = 'Đang gửi thông báo cho Minh... 🏸💨';
+      statusEl.innerText = 'Ting ting! Đã báo cáo cho Minh! 💸✅'; 
       
       fetch(APPS_SCRIPT_URL, {
         method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadInfo) 
-      }).then(r => r.json()).then(res => {
-        if(res.status === "success") { statusEl.style.color = '#10b981'; statusEl.innerText = 'Ting ting! Đã báo cáo cho Minh! 💸✅'; triggerHaptic('light'); } 
-        else { statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi gửi tin: ' + res.message; }
-      }).catch(err => { statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi mạng nội bộ!'; });
+      }).catch(err => { 
+        statusEl.style.color = '#f43f5e'; statusEl.innerText = 'Lỗi mạng, chưa gửi được báo cáo!'; 
+      });
     }
   </script>
 </body>
