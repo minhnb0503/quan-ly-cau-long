@@ -102,17 +102,11 @@
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
       
-      .quick-chips {
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        overflow-x: visible !important;
-      }
-
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
       
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
-        background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px; border: 1px solid var(--glass-border);
+        background: rgba(255, 255, 255, 0.5) !important; border-radius: 24px !important; border: 1px solid var(--glass-border) !important;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05) !important; 
         padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; 
         backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
@@ -121,7 +115,7 @@
       .sheet-card { 
         transform: none !important; opacity: 1 !important; box-shadow: none !important; 
         background: transparent !important; padding: 24px !important; max-width: 100% !important; 
-        height: 100%; overflow-y: auto; border-radius: 0 !important;
+        height: 100% !important; overflow-y: auto !important; border-radius: 0 !important;
       }
       .btn-close { display: none !important; }
     }
@@ -189,8 +183,9 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
+    /* QUAN TRỌNG: ÉP CÁC NÚT +100K NẰM TRÊN 1 DÒNG DUY NHẤT Ở MỌI THIẾT BỊ */
     .quick-chips { 
-      display: flex; flex-wrap: nowrap; gap: 6px; margin-top: 8px; justify-content: flex-start; 
+      display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
       scrollbar-width: none; -ms-overflow-style: none;
     }
@@ -520,9 +515,7 @@
           </button>
         </div>
 
-      </div> 
-
-      <div class="sheet-overlay" id="resultSheet">
+      </div> <div class="sheet-overlay" id="resultSheet">
         <div class="sheet-card">
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
@@ -758,8 +751,6 @@
     }
 
     function processData() {
-      triggerHaptic('success'); 
-      
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
       let dateStr = dateRaw.split('-').reverse().join('/');
@@ -865,15 +856,17 @@
         if(nuGL) { html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`; teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; }
       }
 
+      triggerHaptic('success'); 
       isShowingQR = false;
       document.getElementById('receiptContainer').style.display = 'block';
       document.getElementById('qrContainer').style.display = 'none';
-      document.getElementById('qrBtn').innerHTML = '💳 QR Chủ sân';
+      if (!isPublicMode && mode === 'home') document.getElementById('qrBtn').innerHTML = '💳 QR Chủ sân';
 
       let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
       contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
       contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
       contentInner.classList.remove('privacy-on'); document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
+      
       document.getElementById('resultSheet').classList.add('show');
       
       let payloadInfo = {
