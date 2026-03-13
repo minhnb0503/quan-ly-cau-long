@@ -86,7 +86,7 @@
       .header-bar { margin-bottom: 12px; }
       .fluid-tabs { margin-bottom: 12px; }
       .sheet-overlay { align-items: center !important; }
-      .sheet-card { border-radius: 24px !important; max-height: 90vh; }
+      .sheet-card { border-radius: 24px !important; max-height: none !important; margin: auto !important;}
     }
 
     /* DESKTOP */
@@ -116,7 +116,8 @@
       .sheet-card { 
         transform: none !important; opacity: 1 !important; box-shadow: none !important; 
         background: transparent !important; padding: 24px !important; max-width: 100% !important; 
-        height: 100% !important; border-radius: 0 !important; max-height: none !important;
+        height: 100% !important; border-radius: 0 !important; margin: 0 !important; max-height: none !important;
+        overflow-y: auto !important;
       }
       .btn-close { display: none !important; }
     }
@@ -185,7 +186,7 @@
     .money-input-group input::placeholder { color: #cbd5e1; }
 
     .quick-chips { 
-      display: flex; flex-wrap: nowrap; gap: 6px; margin-top: 8px; justify-content: flex-start; 
+      display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
       scrollbar-width: none; -ms-overflow-style: none;
     }
@@ -293,30 +294,42 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* ==============================================================
-       FIX BỐ CỤC POPUP: GHIM NÚT ĐÓNG, CHỈ CUỘN NỘI DUNG BIÊN LAI 
-       ============================================================== */
+    /* ===========================================================================
+       FIX LỖI CHỤP ẢNH MÀN HÌNH (SCREENSHOT):
+       - Hủy bỏ giới hạn chiều cao (max-height) trên thẻ Card để nó giãn tối đa.
+       - Cho phép toàn bộ Overlay (lớp phủ đen) có thể cuộn được.
+       =========================================================================== */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       z-index: 100; opacity: 0; pointer-events: none; transition: 0.4s ease;
-      display: flex; justify-content: center; align-items: flex-end; padding: 16px;
+      
+      /* Cấu trúc linh hoạt cho phép cuộn toàn trang */
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+      overflow-y: auto; /* Bật thanh cuộn cho lớp phủ */
+      -webkit-overflow-scrolling: touch;
     }
     .sheet-overlay.show { opacity: 1; pointer-events: auto; }
     
     .sheet-card {
       background: #fff; width: 100%; max-width: 400px; border-radius: 32px;
-      padding: 24px 24px calc(24px + env(safe-area-inset-bottom, 0px)); 
-      transform: translateY(120%); transition: 0.4s var(--smooth-curve);
-      box-shadow: 0 -15px 40px -15px rgba(0,0,0,0.15); 
+      padding: 24px; 
       
-      /* Biến thẻ Card thành khối hộp linh hoạt để chia khu vực cuộn */
-      display: flex; flex-direction: column;
-      max-height: 85vh; /* Giới hạn chiều cao tổng thể không vượt quá 85% màn hình */
+      margin-top: auto; /* Đẩy Card xuống đáy màn hình khi ngắn, không cắt đỉnh khi dài */
+      transform: translateY(100%); 
+      transition: transform 0.4s var(--smooth-curve);
+      box-shadow: 0 -15px 40px -15px rgba(0,0,0,0.15); 
     }
     .sheet-overlay.show .sheet-card { transform: translateY(0); }
 
-    .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; opacity: 0.7; height: 100%;}
+    .empty-icon { width: 64px; height: 64px; margin-bottom: 20px; color: var(--accent); opacity: 0.8;}
+    .empty-text { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
+
+    .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .receipt-title { font-size: 20px; font-weight: 800; margin: 0; }
     
     .privacy-btn { 
@@ -326,28 +339,8 @@
     }
     .privacy-btn:active { transform: scale(0.9); }
 
-    #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); flex-shrink: 0; }
-
-    /* KHU VỰC ĐƯỢC PHÉP CUỘN (CHỈ NỘI DUNG BIÊN LAI) */
-    #receiptContainer {
-      flex: 1; /* Tự động phình to lấp đầy khoảng trống */
-      min-height: 0; /* Tránh lỗi tràn layout flex */
-      overflow-y: auto; /* Bật cuộn dọc */
-      margin: 0 -10px; /* Nới lỏng 2 bên để thanh cuộn nằm sát mép */
-      padding: 0 10px;
-      scrollbar-width: none; /* Ẩn thanh cuộn mặc định (Firefox) */
-    }
-    #receiptContainer::-webkit-scrollbar { display: none; } /* Ẩn thanh cuộn (Chrome/Safari) */
-
-    #qrContainer {
-      flex: 1; overflow-y: auto; min-height: 0; text-align: center;
-    }
-
-    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; opacity: 0.7; height: 100%;}
-    .empty-icon { width: 64px; height: 64px; margin-bottom: 20px; color: var(--accent); opacity: 0.8;}
-    .empty-text { font-size: 14px; line-height: 1.6; color: var(--text-sub); }
-
-    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; align-items: center;}
+    /* Thu hẹp nhẹ các khoảng cách để việc chụp ảnh tối ưu hơn */
+    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; align-items: center;}
     .price-badge {
       background: rgba(99, 102, 241, 0.12); color: var(--accent); padding: 4px 10px; 
       border-radius: 8px; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;
@@ -358,49 +351,35 @@
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
     
-    /* ==============================================================
-       FIX LỖI GIẬT ANIMATION BẰNG CSS GRID SIÊU MƯỢT
-       ============================================================== */
     .fixed-team-receipt-header {
       display: flex; justify-content: space-between; align-items: center;
       font-size: 12px; font-weight: 700; color: var(--text-sub);
-      padding: 8px 0; margin-top: 4px; margin-bottom: 4px; cursor: pointer; text-transform: uppercase;
+      padding: 6px 0; margin-top: 4px; margin-bottom: 0px; cursor: pointer; text-transform: uppercase;
       transition: opacity 0.2s;
     }
     .fixed-team-receipt-header:active { opacity: 0.6; }
     .fixed-team-receipt-header svg {
       width: 16px; height: 16px; stroke: currentColor;
-      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); /* Gia tốc lò xo iOS */
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .fixed-team-receipt-header.collapsed svg { transform: rotate(-90deg); }
     
     .fixed-team-receipt-content {
-      display: grid; 
-      grid-template-rows: 1fr; /* Trạng thái Mở */
-      transition: grid-template-rows 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .fixed-team-receipt-content.collapsed { 
-      grid-template-rows: 0fr; /* Trạng thái Đóng */
-    }
-    .fixed-team-receipt-inner { 
-      min-height: 0; 
-      overflow: hidden; 
-      transition: opacity 0.3s ease-out;
-      opacity: 1;
-    }
-    .fixed-team-receipt-content.collapsed .fixed-team-receipt-inner { 
-      opacity: 0; 
-      visibility: hidden; /* Vô hiệu hóa tương tác khi ẩn */
-    }
+    .fixed-team-receipt-content.collapsed { grid-template-rows: 0fr; }
+    .fixed-team-receipt-inner { min-height: 0; overflow: hidden; transition: opacity 0.3s ease-out; opacity: 1; }
+    .fixed-team-receipt-content.collapsed .fixed-team-receipt-inner { opacity: 0; visibility: hidden; }
 
-    /* NÚT ĐÓNG LẠI ĐƯỢC GHIM CỨNG BÊN DƯỚI CÙNG */
+    #qrContainer { width: 100%; text-align: center; }
+
     .btn-close {
-      flex-shrink: 0; /* Khóa cứng không cho thu nhỏ */
       width: 100%; background: #f1f5f9; color: var(--text-main); margin-top: 16px;
       padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s;
     }
     .btn-close:active { transform: scale(0.96); background: #e2e8f0;}
 
+    #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
     .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     
     @keyframes smoothPop { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
@@ -581,7 +560,7 @@
              </div>
           </div>
           
-          <div id="qrContainer" style="display: none;">
+          <div id="qrContainer" style="display: none; padding: 10px 0;">
             <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
