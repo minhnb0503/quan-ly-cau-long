@@ -102,7 +102,6 @@
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
       
-      /* FIX LỖI +200K RỚT DÒNG TRÊN BẢN WEB: Bắt buộc 1 dòng, cho phép cuộn ngang, căn sát trái để không bị mất nút */
       .quick-chips {
         flex-wrap: nowrap !important;
         justify-content: flex-start !important; 
@@ -190,7 +189,6 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* Thanh cuộn cho Chip mượt mà trên cả điện thoại và máy tính */
     .quick-chips { 
       display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
@@ -258,7 +256,6 @@
     }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* CUSTOM DROPDOWN CHỌN CÁCH CHIA TIỀN */
     .split-method-container { display: none; justify-content: center; margin-bottom: 16px; width: 100%; }
     .custom-select-wrapper { position: relative; width: 100%; max-width: 280px; user-select: none; }
     .custom-select-trigger {
@@ -301,7 +298,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* BẢNG BIÊN LAI (Hoạt động Độc Lập) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -323,8 +319,10 @@
 
     .receipt-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .receipt-title { font-size: 20px; font-weight: 800; margin: 0; }
+    
+    /* Giao diện nút bấm QR - Đã xóa nút Ẩn Nội Bộ */
     .privacy-btn { 
-      background: rgba(99, 102, 241, 0.1); color: var(--accent); border: none; 
+      background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; 
       padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; 
       cursor: pointer; transition: 0.2s; font-family: 'Be Vietnam Pro', sans-serif;
     }
@@ -336,7 +334,7 @@
       border-radius: 8px; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums;
       letter-spacing: -0.3px; transition: filter 0.3s ease, opacity 0.3s ease;
     }
-    .privacy-on .fixed-member .price-badge { filter: blur(5px); opacity: 0.4; pointer-events: none; user-select: none; }
+    
     .receipt-sub { font-size: 12px; color: var(--text-sub); margin-top: 4px; text-align: right;}
     .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 16px 0; }
     .divider-dash { border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 16px 0; }
@@ -530,12 +528,9 @@
         <div class="sheet-card">
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
-            
             <div style="display: flex; gap: 8px;">
-                <button class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none; background: rgba(16, 185, 129, 0.1); color: #10b981;">💳 QR Chủ sân</button>
-                <button class="privacy-btn" id="privacyBtn" onclick="togglePrivacy()">👁️ Ẩn nội bộ</button>
+                <button class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
             </div>
-            
           </div>
           <div id="syncStatus">Trạng thái đồng bộ...</div>
           
@@ -551,7 +546,7 @@
           </div>
           
           <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
-            <img src="qr.jpeg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
+            <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
           
@@ -609,7 +604,6 @@
         dateInput.value = dateStr; updateDateDisplay(dateStr); 
         dateInput.addEventListener('change', (e) => { updateDateDisplay(e.target.value); e.target.blur(); });
         document.getElementById('syncStatus').style.display = 'none'; 
-        document.getElementById('privacyBtn').style.display = 'none';
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('public') === 'true') {
@@ -722,7 +716,6 @@
       if(!isPublicMode) { switchTab('home'); }
       closeSheet();
       document.getElementById('receiptContent').innerHTML = `<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div></div>`;
-      document.getElementById('privacyBtn').style.display = 'none'; 
       document.getElementById('qrBtn').style.display = 'none'; 
       document.getElementById('syncStatus').style.display = 'none';
       updateCauTotal();
@@ -738,30 +731,26 @@
     }
     function stepVal(id, step) { triggerHaptic('light'); let el = document.getElementById(id); let val = (parseInt(el.value) || 0) + step; if(val < 0) val = 0; el.value = val; }
     function closeSheet() { document.getElementById('resultSheet').classList.remove('show'); }
-    function togglePrivacy() { triggerHaptic('light'); let content = document.getElementById('receiptContent'); let btn = document.getElementById('privacyBtn'); content.classList.toggle('privacy-on'); if(content.classList.contains('privacy-on')) { btn.innerHTML = '🙈 Hiện nội bộ'; } else { btn.innerHTML = '👁️ Ẩn nội bộ'; } }
 
+    // HÀM BẬT/TẮT MÃ QR (Đã xóa các dòng liên quan tới privacyBtn cũ)
     function toggleQR() {
         triggerHaptic('light');
         isShowingQR = !isShowingQR;
         let qrBtn = document.getElementById('qrBtn');
         let content = document.getElementById('receiptContainer');
         let qrCont = document.getElementById('qrContainer');
-        let privacyBtn = document.getElementById('privacyBtn');
 
         if(isShowingQR) {
             content.style.display = 'none';
-            privacyBtn.style.display = 'none'; 
             qrCont.style.display = 'block';
             qrBtn.innerHTML = '🧾 Xem Biên Lai';
         } else {
             content.style.display = 'block';
-            privacyBtn.style.display = 'block';
             qrCont.style.display = 'none';
             qrBtn.innerHTML = '💳 QR Chủ sân';
         }
     }
 
-    // ĐÃ FIX XONG LỖI FATAL JS TẠI HÀM NÀY
     function processData() {
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
@@ -788,6 +777,7 @@
       let totalCost = san + cau;
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
+      let splitMethod = document.getElementById('splitMethod').value;
 
       let html = `
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
@@ -799,7 +789,6 @@
       let teleStr = `<b>🏸 BẢNG TÍNH ${mode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\n💎 Sân: ${formatMoney(san)} | ${teleCauStr}\n------------------\n`;
 
       if (mode === 'away') {
-        document.getElementById('privacyBtn').style.display = 'none';
         document.getElementById('qrBtn').style.display = 'none'; 
 
         let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
@@ -821,7 +810,6 @@
           teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
         }
       } else {
-        document.getElementById('privacyBtn').style.display = 'block';
         if (!isPublicMode) { document.getElementById('qrBtn').style.display = 'block'; }
 
         let minh = document.getElementById('tag-Minh').classList.contains('active') ? 1 : 0;
@@ -877,7 +865,6 @@
       let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
       contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
       contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
-      contentInner.classList.remove('privacy-on'); document.getElementById('privacyBtn').innerHTML = '👁️ Ẩn nội bộ';
       
       document.getElementById('resultSheet').classList.add('show');
       
