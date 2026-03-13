@@ -102,6 +102,13 @@
       .form-content-grid { overflow: visible !important; height: auto; }
       .members-zone { overflow: visible !important; flex: none; height: auto;}
       
+      /* FIX LỖI +200K RỚT DÒNG TRÊN BẢN WEB: Bắt buộc 1 dòng, cho phép cuộn ngang, căn sát trái để không bị mất nút */
+      .quick-chips {
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important; 
+        overflow-x: auto !important;
+      }
+
       .action-zone { position: static !important; background: transparent !important; padding: 20px 8px 10px 8px !important; border: none !important; backdrop-filter: none !important; }
       
       .sheet-overlay { 
@@ -183,7 +190,7 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* QUAN TRỌNG: ÉP CÁC NÚT +100K NẰM TRÊN 1 DÒNG DUY NHẤT Ở MỌI THIẾT BỊ */
+    /* Thanh cuộn cho Chip mượt mà trên cả điện thoại và máy tính */
     .quick-chips { 
       display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
@@ -251,6 +258,7 @@
     }
     .guest-val::-webkit-outer-spin-button, .guest-val::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+    /* CUSTOM DROPDOWN CHỌN CÁCH CHIA TIỀN */
     .split-method-container { display: none; justify-content: center; margin-bottom: 16px; width: 100%; }
     .custom-select-wrapper { position: relative; width: 100%; max-width: 280px; user-select: none; }
     .custom-select-trigger {
@@ -293,6 +301,7 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
+    /* BẢNG BIÊN LAI (Hoạt động Độc Lập) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -515,7 +524,9 @@
           </button>
         </div>
 
-      </div> <div class="sheet-overlay" id="resultSheet">
+      </div> 
+
+      <div class="sheet-overlay" id="resultSheet">
         <div class="sheet-card">
           <div class="receipt-header-flex">
             <div class="receipt-title">Biên Lai 🎉</div>
@@ -750,6 +761,7 @@
         }
     }
 
+    // ĐÃ FIX XONG LỖI FATAL JS TẠI HÀM NÀY
     function processData() {
       let dateRaw = document.getElementById('dateInput').value;
       if(!dateRaw) { alert("Chọn ngày đi đã!"); return; }
@@ -776,7 +788,6 @@
       let totalCost = san + cau;
       let namGL = parseInt(document.getElementById('namGL').value) || 0;
       let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
-      let splitMethod = document.getElementById('splitMethod').value;
 
       let html = `
         <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
@@ -792,6 +803,7 @@
         document.getElementById('qrBtn').style.display = 'none'; 
 
         let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+        
         let offset = 0;
         if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
         
