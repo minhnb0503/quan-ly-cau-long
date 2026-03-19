@@ -111,7 +111,7 @@
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5), 0 15px 30px -10px rgba(0,0,0,0.05) !important; 
         padding: 0 !important; opacity: 1 !important; pointer-events: auto !important; visibility: visible !important;
         backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-        transform: none !important; -webkit-transform: none !important; /* Xóa transform trên desktop */
+        transform: none !important; -webkit-transform: none !important;
         z-index: 1 !important; overflow: hidden !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
       }
       .sheet-card { 
@@ -295,9 +295,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* ===========================================================================
-       FIX LỖI CHỚP NHÁY TRÊN IOS (Hardware Acceleration) + CUỘN ĐỂ SCREENSHOT
-       =========================================================================== */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -308,7 +305,6 @@
       padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
       overflow-y: auto; -webkit-overflow-scrolling: touch;
       
-      /* CÁC LỆNH ÉP GPU XỬ LÝ ĐỂ KHÔNG BỊ CHỚP ĐEN/TRẮNG TRÊN IPHONE */
       transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0);
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
       perspective: 1000px; -webkit-perspective: 1000px;
@@ -504,10 +500,18 @@
                   <div class="custom-select-options">
                     <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ 20k</div>
                     <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
+                    <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
                   </div>
                 </div>
               </div>
               
+              <div class="guest-row anim-pop" id="nuCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
+                <span class="guest-label">💸 Mức thu Nữ (₫)</span>
+                <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                  <input type="text" class="guest-val" id="nuCoDinhGia" value="50.000" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                </div>
+              </div>
+
               <div class="guest-row">
                 <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
                 <div class="guest-stepper">
@@ -559,7 +563,7 @@
              </div>
           </div>
           
-          <div id="qrContainer" style="display: none; padding: 10px 0;">
+          <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
             <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
@@ -646,9 +650,19 @@
         currentSplitMethod = value;
         document.getElementById('splitMethodText').innerText = text;
         document.getElementById('customSelectWrapper').classList.remove('open');
+        
         document.getElementById('opt-nam20k').classList.remove('selected');
         document.getElementById('opt-chiaDeu').classList.remove('selected');
+        document.getElementById('opt-nuCoDinh').classList.remove('selected');
+        
         document.getElementById('opt-' + value).classList.add('selected');
+        
+        // HIỆN/ẨN Ô NHẬP TIỀN NỮ CỐ ĐỊNH TÙY THEO LUẬT ĐƯỢC CHỌN
+        if (value === 'nuCoDinh') {
+            document.getElementById('nuCoDinhWrap').style.display = 'flex';
+        } else {
+            document.getElementById('nuCoDinhWrap').style.display = 'none';
+        }
     }
 
     function switchTab(selected) {
@@ -662,10 +676,14 @@
         ind.style.transform = 'translateX(0)'; tHome.classList.add('active'); tAway.classList.remove('active');
         fTeam.classList.remove('hidden'); gTitle.innerText = "KHÁCH GIAO LƯU";
         splitContainer.style.display = 'none';
+        document.getElementById('nuCoDinhWrap').style.display = 'none'; // Ở Sân nhà thì ẩn luôn ô này
       } else {
         ind.style.transform = 'translateX(100%)'; tAway.classList.add('active'); tHome.classList.remove('active');
         fTeam.classList.add('hidden'); gTitle.innerText = "THÔNG TIN NGƯỜI CHƠI";
         splitContainer.style.display = 'flex';
+        if (currentSplitMethod === 'nuCoDinh') {
+           document.getElementById('nuCoDinhWrap').style.display = 'flex';
+        }
       }
     }
 
@@ -723,6 +741,8 @@
       document.getElementById('tienSan').value = ''; document.getElementById('tienCau').value = '';
       document.getElementById('giaCau').value = ''; document.getElementById('slCau').value = '0';
       document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
+      document.getElementById('nuCoDinhGia').value = '50.000'; // Reset giá mặc định
+      
       selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k'); 
       
       clearUndo('tienSan'); clearUndo('tienCau'); clearUndo('giaCau');
@@ -813,13 +833,28 @@
 
         let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
         
-        let offset = 0;
-        if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
-        
-        let base = Math.max(0, totalCost - offset) / totalP;
-        let pF = Math.ceil(base / 1000) * 1000; 
-        let pNu = pF; 
-        let pNam = currentSplitMethod === 'nam20k' ? pF + 20000 : pF;
+        let pNam = 0; let pNu = 0;
+
+        // XỬ LÝ LÔ GIC CHO CÁC LUẬT SÂN KHÁCH
+        if (currentSplitMethod === 'nuCoDinh') {
+            let tienNuCoDinh = parseInt(document.getElementById('nuCoDinhGia').value.replace(/\./g, '')) || 0;
+            pNu = tienNuCoDinh;
+            
+            if (namGL > 0) {
+                let phanConLai = Math.max(0, totalCost - (pNu * nuGL));
+                pNam = Math.ceil((phanConLai / namGL) / 1000) * 1000;
+            } else {
+                // Nếu không có Nam, Nữ phải tự gánh và chia đều tổng chi phí
+                pNu = Math.ceil((totalCost / nuGL) / 1000) * 1000;
+            }
+        } else {
+            let offset = 0;
+            if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
+            let base = Math.max(0, totalCost - offset) / totalP;
+            let pF = Math.ceil(base / 1000) * 1000; 
+            pNu = pF; 
+            pNam = currentSplitMethod === 'nam20k' ? pF + 20000 : pF;
+        }
 
         if(namGL) {
           html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`;
@@ -882,13 +917,9 @@
       document.getElementById('qrContainer').style.display = 'none';
       if (!isPublicMode && mode === 'home') document.getElementById('qrBtn').innerHTML = '💳 QR Chủ sân';
 
-      let contentInner = document.getElementById('receiptContent'); 
-      let statusEl = document.getElementById('syncStatus');
-      
-      contentInner.classList.remove('anim-pop'); 
-      void contentInner.offsetWidth; 
-      contentInner.innerHTML = html; 
-      contentInner.classList.add('anim-pop');
+      let contentContainer = document.getElementById('receiptContainer'); let contentInner = document.getElementById('receiptContent'); let statusEl = document.getElementById('syncStatus');
+      contentContainer.classList.remove('anim-pop'); void contentContainer.offsetWidth; 
+      contentInner.innerHTML = html; contentContainer.classList.add('anim-pop');
       
       document.getElementById('resultSheet').classList.add('show');
       
