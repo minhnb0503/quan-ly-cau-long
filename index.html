@@ -26,22 +26,28 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    button, a, input, select, .step-btn, .tab, .player-tag, .toggle-cau-btn, .chip {
+    /* NGĂN CHẶN THAO TÁC CẢM ỨNG THỪA (Double tap to zoom, panning) TRÊN NÚT BẤM */
+    button, a, input, select, .step-btn, .tab, .player-tag, .toggle-cau-btn, .chip, .custom-select-trigger, .action-zone {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
-      user-select: none;
     }
 
     ::-webkit-scrollbar { display: none; }
 
+    /* FIX CỨNG TOÀN BỘ NỀN WEB (Chống rung lắc, chống kéo giãn cao su) */
     body {
       font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-gradient);
       color: var(--text-main);
       display: flex; justify-content: center; align-items: center;
-      height: 100dvh; overflow: hidden;
+      position: fixed; width: 100vw; height: 100dvh; overflow: hidden; /* Khóa cứng nền */
+      overscroll-behavior-y: none; /* Khóa Refresh vuốt xuống */
+      user-select: none; -webkit-user-select: none; /* Khóa bôi đen lung tung */
       -webkit-font-smoothing: antialiased;
     }
+    
+    /* Nhả quyền bôi đen/copy chữ cho các ô nhập liệu */
+    input { user-select: auto; -webkit-user-select: auto; }
 
     .toast { 
       position: fixed; top: env(safe-area-inset-top, 20px); left: 50%; transform: translateX(-50%) translateY(-100px); 
@@ -60,21 +66,17 @@
     }
 
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative;}
     
-    /* FIX LỖI ĐÈ NÚT: Định hình lại cột trái */
-    .left-col { 
-      display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative;
-    }
-    
-    /* Vùng chứa toàn bộ Form sẽ chịu trách nhiệm cuộn */
+    /* VÙNG ĐƯỢC PHÉP CUỘN MƯỢT MÀ */
     .form-content-grid { 
       display: flex; flex-direction: column; flex: 1; min-height: 0; 
       overflow-y: auto; padding-bottom: 20px; 
+      -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; /* Nhốt thanh cuộn không lan ra nền */
       scrollbar-width: none; -ms-overflow-style: none;
     }
     .form-content-grid::-webkit-scrollbar { display: none; }
     
-    /* Vùng Member không tự cuộn nữa mà cuộn theo Form */
     .members-zone { 
       display: flex; flex-direction: column; flex-shrink: 0; 
       margin: 0 -10px; padding: 0 10px 10px 10px;
@@ -82,7 +84,7 @@
 
     /* MOBILE NGANG */
     @media (max-height: 500px) and (orientation: landscape) {
-      body { padding: 0; align-items: flex-start; }
+      body { padding: 0; align-items: flex-start; position: static; overflow: auto;}
       .app-glass {
         max-width: 100% !important; height: 100dvh !important; border-radius: 0; box-shadow: none;
         padding: 15px max(20px, env(safe-area-inset-left)) max(15px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right)) !important;
@@ -101,7 +103,7 @@
 
     /* DESKTOP */
     @media (min-width: 768px) and (min-height: 501px) {
-      body { padding: 20px; }
+      body { padding: 20px; position: static; overflow: auto;}
       .app-glass {
         max-width: 950px; height: calc(100dvh - 40px); max-height: 800px;
         background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.8);
@@ -113,7 +115,7 @@
       .members-zone { flex: none; height: auto;}
       
       .quick-chips { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto !important; }
-      .action-zone { padding: 20px 0 10px 0 !important; border: none !important; backdrop-filter: none !important; }
+      .action-zone { padding: 20px 0 10px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
       
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
@@ -218,11 +220,21 @@
     .mode-grid { display: grid; width: 100%; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .mode-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s ease; }
     
-    .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; }
+    /* CSS CHO TÍNH NĂNG NHIỀU LOẠI CẦU */
+    .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; position: relative;}
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
     .cau-col input { font-size: 20px !important; color: var(--accent) !important; }
     .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; }
+    
+    .btn-remove-cau {
+      position: absolute; right: -8px; top: -8px; background: rgba(244, 63, 94, 0.1); color: #f43f5e; 
+      border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 50%; width: 22px; height: 22px; 
+      font-size: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center;
+      transition: 0.2s;
+    }
+    .btn-remove-cau:active { transform: scale(0.85); background: rgba(244, 63, 94, 0.2); }
+
     #cauTotalIndicator { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 100px;}
 
     .fixed-team-wrapper { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.4s var(--smooth-curve); flex-shrink: 0;}
@@ -291,7 +303,6 @@
     .custom-option:hover { background: rgba(99,102,241,0.05); color: var(--accent); }
     .custom-option.selected { background: rgba(99,102,241,0.1); color: var(--accent); font-weight: 700; }
 
-    /* Nút Phân Bổ (Bám đáy tĩnh, không trôi đè lên form) */
     .action-zone {
       flex-shrink: 0;
       position: relative; 
@@ -307,7 +318,9 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* LỚP PHỦ BIÊN LAI (Cho phép cuộn để Screenshot toàn phần) */
+    /* ===========================================================================
+       LỚP PHỦ BIÊN LAI CẢI TIẾN
+       =========================================================================== */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -469,17 +482,23 @@
 
               <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
                 <div class="mode-inner" style="opacity: 0;">
-                  <div class="cau-detail-flex">
-                    <div class="cau-col">
-                      <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                      <input type="text" id="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal(); clearUndo('giaCau');">
-                    </div>
-                    <div class="divider-vert"></div>
-                    <div class="cau-col">
-                      <span>SỐ QUẢ ĐÁNH</span>
-                      <input type="text" id="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
-                    </div>
+                  
+                  <div id="cauListContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                      <div class="cau-detail-flex cau-item">
+                        <div class="cau-col">
+                          <span>GIÁ 1 TÚP (12 QUẢ)</span>
+                          <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+                        </div>
+                        <div class="divider-vert"></div>
+                        <div class="cau-col">
+                          <span>SỐ QUẢ</span>
+                          <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+                        </div>
+                      </div>
                   </div>
+                  
+                  <button type="button" class="chip chip-undo" style="margin-top: 12px; width: auto; align-self: center;" onclick="addCauRow()">+ Thêm loại cầu khác</button>
+
                   <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
                 </div>
               </div>
@@ -576,7 +595,7 @@
              </div>
           </div>
           
-          <div id="qrContainer" style="display: none; padding: 10px 0;">
+          <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
             <img src="qr.jpg" alt="Mã QR Chủ Sân" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
@@ -593,7 +612,7 @@
     
     let mode = 'home';
     let isCauDetailMode = false;
-    let moneyHistory = { 'tienSan': [], 'tienCau': [], 'giaCau': [] };
+    let moneyHistory = { 'tienSan': [], 'tienCau': [] };
     let isPublicMode = false;
     let userIPInfo = "Đang lấy IP...";
     let currentSplitMethod = 'nam20k';
@@ -712,12 +731,39 @@
       }
     }
 
+    // === HÀM XỬ LÝ NHIỀU DÒNG CẦU ===
+    function addCauRow() {
+      triggerHaptic('light');
+      let container = document.getElementById('cauListContainer');
+      let row = document.createElement('div');
+      row.className = 'cau-detail-flex cau-item anim-pop';
+      row.innerHTML = `
+          <button type="button" class="btn-remove-cau" onclick="triggerHaptic('heavy'); this.parentElement.remove(); updateCauTotal();">✕</button>
+          <div class="cau-col">
+            <span>GIÁ 1 TÚP (12 QUẢ)</span>
+            <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+          </div>
+          <div class="divider-vert"></div>
+          <div class="cau-col">
+            <span>SỐ QUẢ</span>
+            <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+          </div>
+      `;
+      container.appendChild(row);
+    }
+
     function updateCauTotal() {
-      let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
-      let slInput = document.getElementById('slCau'); slInput.value = slInput.value.replace(/[^0-9]/g, ''); 
-      let soQua = parseInt(slInput.value) || 0;
-      let thanhTien = Math.round((giaTup / 12) * soQua);
-      document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(thanhTien);
+      let total = 0;
+      document.querySelectorAll('.cau-item').forEach(item => {
+          let giaTup = parseInt(item.querySelector('.giaCau').value.replace(/\./g, '')) || 0;
+          let slInput = item.querySelector('.slCau');
+          let soQuaStr = slInput.value.replace(/[^0-9]/g, '');
+          if(soQuaStr !== slInput.value) slInput.value = soQuaStr;
+          let soQua = parseInt(soQuaStr) || 0;
+          total += Math.round((giaTup / 12) * soQua);
+      });
+      document.getElementById('cauTotalIndicator').innerText = "Thành tiền: " + formatMoney(total);
+      return total;
     }
 
     function toggleTag(el) { triggerHaptic('light'); el.classList.toggle('active'); }
@@ -726,16 +772,17 @@
     
     function addMoney(id, amount) {
       triggerHaptic('light'); let el = document.getElementById(id); let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
+      if(!moneyHistory[id]) moneyHistory[id] = [];
       moneyHistory[id].push(currentVal); el.value = (currentVal + amount).toString(); formatCurrency(el);
       let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
-      if (id === 'giaCau') updateCauTotal();
     }
 
     function clearMoney(id) {
       triggerHaptic('heavy'); let el = document.getElementById(id); let currentVal = parseInt(el.value.replace(/\D/g, '')) || 0;
-      if (currentVal === 0) return; moneyHistory[id].push(currentVal); el.value = '';
+      if (currentVal === 0) return; 
+      if(!moneyHistory[id]) moneyHistory[id] = [];
+      moneyHistory[id].push(currentVal); el.value = '';
       let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
-      if (id === 'giaCau') updateCauTotal();
     }
 
     function undoMoney(id) {
@@ -743,24 +790,42 @@
       let el = document.getElementById(id); let lastVal = moneyHistory[id].pop(); 
       if(lastVal === 0) el.value = ''; else { el.value = lastVal.toString(); formatCurrency(el); }
       if(moneyHistory[id].length === 0) { let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); }
-      if (id === 'giaCau') updateCauTotal();
     }
 
-    function clearUndo(id) { moneyHistory[id] = []; let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); }
+    function clearUndo(id) { 
+        if(!moneyHistory[id]) moneyHistory[id] = [];
+        moneyHistory[id] = []; let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); 
+    }
 
     function resetForm() {
       triggerHaptic('heavy'); 
       document.getElementById('tienSan').value = ''; document.getElementById('tienCau').value = '';
-      document.getElementById('giaCau').value = ''; document.getElementById('slCau').value = '0';
       document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
       document.getElementById('nuCoDinhGia').value = '50.000'; 
       
-      selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k'); 
+      // Khôi phục khung nhập cầu về 1 dòng mặc định
+      let cauList = document.getElementById('cauListContainer');
+      cauList.innerHTML = `
+          <div class="cau-detail-flex cau-item">
+            <div class="cau-col">
+              <span>GIÁ 1 TÚP (12 QUẢ)</span>
+              <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+            </div>
+            <div class="divider-vert"></div>
+            <div class="cau-col">
+              <span>SỐ QUẢ</span>
+              <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+            </div>
+          </div>
+      `;
       
-      clearUndo('tienSan'); clearUndo('tienCau'); clearUndo('giaCau');
+      selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k'); 
+      clearUndo('tienSan'); clearUndo('tienCau');
       document.querySelectorAll('.player-tag').forEach(tag => tag.classList.add('active'));
+      
       if(!isPublicMode) { switchTab('home'); }
       closeSheet();
+      
       document.getElementById('receiptContent').innerHTML = `<div class="empty-state"><svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div></div>`;
       document.getElementById('qrBtn').style.display = 'none'; 
       document.getElementById('syncStatus').style.display = 'none';
@@ -814,13 +879,24 @@
       let cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
       let teleCauStr = `🏸 Cầu: ${formatMoney(cau)}`;
       
+      // XỬ LÝ LÔ GIC TÍNH TỔNG CẦU TỪ NHIỀU DÒNG
       if (isCauDetailMode) {
-        let giaTup = parseInt(document.getElementById('giaCau').value.replace(/\./g, '')) || 0;
-        let soQua = parseInt(document.getElementById('slCau').value) || 0;
-        cau = Math.round((giaTup / 12) * soQua);
+        let details = [];
+        let totalSoQua = 0;
+        document.querySelectorAll('.cau-item').forEach(item => {
+            let giaTup = parseInt(item.querySelector('.giaCau').value.replace(/\./g, '')) || 0;
+            let soQua = parseInt(item.querySelector('.slCau').value) || 0;
+            if(soQua > 0 && giaTup > 0) {
+                let cost = Math.round((giaTup / 12) * soQua);
+                cau += cost;
+                totalSoQua += soQua;
+                details.push(`${soQua}q-${formatMoney(giaTup)}`); // Viết tắt cho gọn biên lai
+            }
+        });
         
-        cauDisplay = `<div style="text-align:right"><strong>${formatMoney(cau)}</strong><div class="receipt-sub" style="margin-top:0">${soQua} quả - ${formatMoney(giaTup)}/túp</div></div>`;
-        teleCauStr = `🏸 Cầu: ${formatMoney(cau)} (${soQua} quả - ${formatMoney(giaTup)}/túp)`;
+        let detailText = details.length > 0 ? details.join(', ') : '0 quả';
+        cauDisplay = `<div style="text-align:right"><strong>${formatMoney(cau)}</strong><div class="receipt-sub" style="margin-top:0">${detailText}</div></div>`;
+        teleCauStr = `🏸 Cầu: ${formatMoney(cau)} (${detailText})`;
       } else {
         cau = parseInt(document.getElementById('tienCau').value.replace(/\./g, '')) || 0;
         cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
