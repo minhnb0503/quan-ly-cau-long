@@ -26,7 +26,6 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* NGĂN CHẶN THAO TÁC CẢM ỨNG THỪA (Double tap to zoom, panning) TRÊN NÚT BẤM */
     button, a, input, select, .step-btn, .tab, .player-tag, .toggle-cau-btn, .chip, .custom-select-trigger, .action-zone {
       touch-action: manipulation !important;
       -webkit-tap-highlight-color: transparent !important;
@@ -34,19 +33,28 @@
 
     ::-webkit-scrollbar { display: none; }
 
-    /* FIX CỨNG TOÀN BỘ NỀN WEB (Chống rung lắc, chống kéo giãn cao su) */
+    /* ==============================================================
+       FIX LỖI TRƯỢT NGANG CẢ TRANG: Khóa cứng html và body
+       ============================================================== */
+    html, body {
+      width: 100%; height: 100%;
+      max-width: 100vw;
+      margin: 0; padding: 0;
+      overflow: hidden; /* Cấm tuyệt đối cuộn ngoài ý muốn */
+      position: fixed; /* Khóa chặt vị trí nền trang */
+      overscroll-behavior: none; /* Khóa hiệu ứng kéo đàn hồi của iOS */
+    }
+
     body {
       font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-gradient);
       color: var(--text-main);
       display: flex; justify-content: center; align-items: center;
-      position: fixed; width: 100vw; height: 100dvh; overflow: hidden; /* Khóa cứng nền */
-      overscroll-behavior-y: none; /* Khóa Refresh vuốt xuống */
-      user-select: none; -webkit-user-select: none; /* Khóa bôi đen lung tung */
+      user-select: none; -webkit-user-select: none;
       -webkit-font-smoothing: antialiased;
+      touch-action: none; /* Ngăn mọi thao tác vuốt trượt từ body gốc */
     }
     
-    /* Nhả quyền bôi đen/copy chữ cho các ô nhập liệu */
     input { user-select: auto; -webkit-user-select: auto; }
 
     .toast { 
@@ -59,32 +67,36 @@
 
     /* MOBILE DỌC */
     .app-glass {
-      width: 100%; max-width: 450px; height: 100%;
+      width: 100%; max-width: 100vw; height: 100%; /* Giới hạn độ rộng chặt chẽ */
       display: flex; flex-direction: column;
       padding: 16px 20px calc(10px + env(safe-area-inset-bottom, 20px));
-      position: relative; overflow: hidden;
+      position: relative; overflow: hidden; /* Không cho tràn ra ngoài kính */
     }
 
-    .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative;}
+    .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: hidden;}
+    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; overflow: hidden;}
     
-    /* VÙNG ĐƯỢC PHÉP CUỘN MƯỢT MÀ */
+    /* ==============================================================
+       CHỈ CHO PHÉP VUỐT DỌC TẠI VÙNG NHẬP LIỆU
+       ============================================================== */
     .form-content-grid { 
       display: flex; flex-direction: column; flex: 1; min-height: 0; 
-      overflow-y: auto; padding-bottom: 20px; 
-      -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; /* Nhốt thanh cuộn không lan ra nền */
+      overflow-y: auto; overflow-x: hidden; /* Cấm trượt ngang */
+      padding-bottom: 20px; width: 100%;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; 
       scrollbar-width: none; -ms-overflow-style: none;
+      touch-action: pan-y; /* Mở khóa: Chỉ cho phép vuốt dọc */
     }
-    .form-content-grid::-webkit-scrollbar { display: none; }
     
     .members-zone { 
       display: flex; flex-direction: column; flex-shrink: 0; 
-      margin: 0 -10px; padding: 0 10px 10px 10px;
+      margin: 0; padding: 0 0 10px 0; /* Xóa margin âm gây tràn ngang */
+      width: 100%;
     }
 
     /* MOBILE NGANG */
     @media (max-height: 500px) and (orientation: landscape) {
-      body { padding: 0; align-items: flex-start; position: static; overflow: auto;}
+      html, body { position: static; overflow: auto; touch-action: auto;}
       .app-glass {
         max-width: 100% !important; height: 100dvh !important; border-radius: 0; box-shadow: none;
         padding: 15px max(20px, env(safe-area-inset-left)) max(15px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right)) !important;
@@ -103,11 +115,12 @@
 
     /* DESKTOP */
     @media (min-width: 768px) and (min-height: 501px) {
-      body { padding: 20px; position: static; overflow: auto;}
+      html, body { position: static; overflow: auto; touch-action: auto;}
+      body { padding: 20px; }
       .app-glass {
         max-width: 950px; height: calc(100dvh - 40px); max-height: 800px;
         background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(255, 255, 255, 0.8);
-        border-radius: 36px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.12); padding: 30px;
+        border-radius: 36px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.12); padding: 30px; margin: auto;
       }
       .main-wrapper { flex-direction: row; gap: 30px; }
       .left-col { flex: 1.1; padding-right: 15px; border-right: 1px solid rgba(0,0,0,0.06); }
@@ -198,10 +211,12 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
+    /* MỞ KHÓA CHO DẢI CHIP NÀY ĐƯỢC PHÉP TRƯỢT NGANG (Chống lỗi không cuộn được) */
     .quick-chips { 
       display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
       scrollbar-width: none; -ms-overflow-style: none;
+      touch-action: pan-x; /* Cấp quyền vuốt ngang cho riêng vùng này */
     }
     .quick-chips::-webkit-scrollbar { display: none; }
     .chip { 
@@ -220,7 +235,6 @@
     .mode-grid { display: grid; width: 100%; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .mode-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s ease; }
     
-    /* CSS CHO TÍNH NĂNG NHIỀU LOẠI CẦU */
     .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; position: relative;}
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
@@ -308,7 +322,7 @@
       position: relative; 
       padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)) 0;
       background: transparent;
-      z-index: 50;
+      z-index: 50; width: 100%;
     }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
@@ -318,9 +332,7 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* ===========================================================================
-       LỚP PHỦ BIÊN LAI CẢI TIẾN
-       =========================================================================== */
+    /* LỚP PHỦ BIÊN LAI (MỞ KHÓA CHO PHÉP CUỘN ĐỂ CHỤP MÀN HÌNH) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -329,7 +341,8 @@
       
       display: flex; flex-direction: column; align-items: center; 
       padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
-      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+      touch-action: pan-y; /* Mở khóa cuộn dọc cho biên lai */
       
       transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0);
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
@@ -563,9 +576,7 @@
             </div>
           </div>
 
-        </div> 
-        
-        <div class="action-zone">
+        </div> <div class="action-zone">
           <button type="button" class="btn-massive" onclick="processData()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
             Phân Bổ Chi Phí
@@ -731,7 +742,6 @@
       }
     }
 
-    // === HÀM XỬ LÝ NHIỀU DÒNG CẦU ===
     function addCauRow() {
       triggerHaptic('light');
       let container = document.getElementById('cauListContainer');
@@ -775,6 +785,7 @@
       if(!moneyHistory[id]) moneyHistory[id] = [];
       moneyHistory[id].push(currentVal); el.value = (currentVal + amount).toString(); formatCurrency(el);
       let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
+      if (id === 'giaCau') updateCauTotal();
     }
 
     function clearMoney(id) {
@@ -783,6 +794,7 @@
       if(!moneyHistory[id]) moneyHistory[id] = [];
       moneyHistory[id].push(currentVal); el.value = '';
       let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.remove('disabled');
+      if (id === 'giaCau') updateCauTotal();
     }
 
     function undoMoney(id) {
@@ -790,6 +802,7 @@
       let el = document.getElementById(id); let lastVal = moneyHistory[id].pop(); 
       if(lastVal === 0) el.value = ''; else { el.value = lastVal.toString(); formatCurrency(el); }
       if(moneyHistory[id].length === 0) { let undoBtn = document.getElementById('undo_' + id); if(undoBtn) undoBtn.classList.add('disabled'); }
+      if (id === 'giaCau') updateCauTotal();
     }
 
     function clearUndo(id) { 
@@ -803,7 +816,6 @@
       document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
       document.getElementById('nuCoDinhGia').value = '50.000'; 
       
-      // Khôi phục khung nhập cầu về 1 dòng mặc định
       let cauList = document.getElementById('cauListContainer');
       cauList.innerHTML = `
           <div class="cau-detail-flex cau-item">
@@ -879,7 +891,6 @@
       let cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
       let teleCauStr = `🏸 Cầu: ${formatMoney(cau)}`;
       
-      // XỬ LÝ LÔ GIC TÍNH TỔNG CẦU TỪ NHIỀU DÒNG
       if (isCauDetailMode) {
         let details = [];
         let totalSoQua = 0;
@@ -890,7 +901,7 @@
                 let cost = Math.round((giaTup / 12) * soQua);
                 cau += cost;
                 totalSoQua += soQua;
-                details.push(`${soQua}q-${formatMoney(giaTup)}`); // Viết tắt cho gọn biên lai
+                details.push(`${soQua}q-${formatMoney(giaTup)}`); 
             }
         });
         
