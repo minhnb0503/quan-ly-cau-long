@@ -33,16 +33,13 @@
 
     ::-webkit-scrollbar { display: none; }
 
-    /* ==============================================================
-       FIX LỖI TRƯỢT NGANG CẢ TRANG: Khóa cứng html và body
-       ============================================================== */
     html, body {
       width: 100%; height: 100%;
       max-width: 100vw;
       margin: 0; padding: 0;
-      overflow: hidden; /* Cấm tuyệt đối cuộn ngoài ý muốn */
-      position: fixed; /* Khóa chặt vị trí nền trang */
-      overscroll-behavior: none; /* Khóa hiệu ứng kéo đàn hồi của iOS */
+      overflow: hidden; 
+      position: fixed; 
+      overscroll-behavior: none; 
     }
 
     body {
@@ -50,9 +47,9 @@
       background: var(--bg-gradient);
       color: var(--text-main);
       display: flex; justify-content: center; align-items: center;
-      user-select: none; -webkit-user-select: none;
+      user-select: none; -webkit-user-select: none; 
       -webkit-font-smoothing: antialiased;
-      touch-action: none; /* Ngăn mọi thao tác vuốt trượt từ body gốc */
+      touch-action: none; 
     }
     
     input { user-select: auto; -webkit-user-select: auto; }
@@ -67,30 +64,27 @@
 
     /* MOBILE DỌC */
     .app-glass {
-      width: 100%; max-width: 100vw; height: 100%; /* Giới hạn độ rộng chặt chẽ */
+      width: 100%; max-width: 100vw; height: 100%; 
       display: flex; flex-direction: column;
       padding: 16px 20px calc(10px + env(safe-area-inset-bottom, 20px));
-      position: relative; overflow: hidden; /* Không cho tràn ra ngoài kính */
+      position: relative; overflow: hidden; 
     }
 
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: hidden;}
     .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; overflow: hidden;}
     
-    /* ==============================================================
-       CHỈ CHO PHÉP VUỐT DỌC TẠI VÙNG NHẬP LIỆU
-       ============================================================== */
     .form-content-grid { 
       display: flex; flex-direction: column; flex: 1; min-height: 0; 
-      overflow-y: auto; overflow-x: hidden; /* Cấm trượt ngang */
+      overflow-y: auto; overflow-x: hidden; 
       padding-bottom: 20px; width: 100%;
       -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; 
       scrollbar-width: none; -ms-overflow-style: none;
-      touch-action: pan-y; /* Mở khóa: Chỉ cho phép vuốt dọc */
+      touch-action: pan-y; 
     }
     
     .members-zone { 
       display: flex; flex-direction: column; flex-shrink: 0; 
-      margin: 0; padding: 0 0 10px 0; /* Xóa margin âm gây tràn ngang */
+      margin: 0; padding: 0 0 10px 0; 
       width: 100%;
     }
 
@@ -211,12 +205,11 @@
     }
     .money-input-group input::placeholder { color: #cbd5e1; }
 
-    /* MỞ KHÓA CHO DẢI CHIP NÀY ĐƯỢC PHÉP TRƯỢT NGANG (Chống lỗi không cuộn được) */
     .quick-chips { 
       display: flex; flex-wrap: nowrap !important; gap: 6px; margin-top: 8px; justify-content: flex-start; 
       width: 100%; overflow-x: auto; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;
       scrollbar-width: none; -ms-overflow-style: none;
-      touch-action: pan-x; /* Cấp quyền vuốt ngang cho riêng vùng này */
+      touch-action: pan-x; 
     }
     .quick-chips::-webkit-scrollbar { display: none; }
     .chip { 
@@ -235,17 +228,19 @@
     .mode-grid { display: grid; width: 100%; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .mode-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s ease; }
     
-    .cau-detail-flex { display: flex; width: 100%; gap: 12px; margin-top: 4px; justify-content: space-between; position: relative;}
+    /* FIX LỖI NÚT XOÁ CẦU BỊ LẸM: Chuyển sang bố cục Flexbox 3 cột rõ ràng, không dùng Position Absolute nữa */
+    .cau-detail-flex { display: flex; width: 100%; gap: 8px; margin-top: 4px; justify-content: space-between; align-items: center;}
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
     .cau-col input { font-size: 20px !important; color: var(--accent) !important; }
-    .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; }
+    .divider-vert { width: 1px; background: var(--glass-border); margin: 6px 0; height: 30px;}
     
+    .cau-action-col { width: 24px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
     .btn-remove-cau {
-      position: absolute; right: -8px; top: -8px; background: rgba(244, 63, 94, 0.1); color: #f43f5e; 
-      border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 50%; width: 22px; height: 22px; 
+      background: rgba(244, 63, 94, 0.1); color: #f43f5e; 
+      border: 1px solid rgba(244, 63, 94, 0.2); border-radius: 50%; width: 24px; height: 24px; 
       font-size: 12px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center;
-      transition: 0.2s;
+      transition: 0.2s; flex-shrink: 0;
     }
     .btn-remove-cau:active { transform: scale(0.85); background: rgba(244, 63, 94, 0.2); }
 
@@ -332,7 +327,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* LỚP PHỦ BIÊN LAI (MỞ KHÓA CHO PHÉP CUỘN ĐỂ CHỤP MÀN HÌNH) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -342,7 +336,7 @@
       display: flex; flex-direction: column; align-items: center; 
       padding: max(40px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
       overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
-      touch-action: pan-y; /* Mở khóa cuộn dọc cho biên lai */
+      touch-action: pan-y; 
       
       transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0);
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
@@ -507,7 +501,7 @@
                           <span>SỐ QUẢ</span>
                           <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
                         </div>
-                      </div>
+                        <div class="cau-action-col"></div> </div>
                   </div>
                   
                   <button type="button" class="chip chip-undo" style="margin-top: 12px; width: auto; align-self: center;" onclick="addCauRow()">+ Thêm loại cầu khác</button>
@@ -576,7 +570,9 @@
             </div>
           </div>
 
-        </div> <div class="action-zone">
+        </div> 
+        
+        <div class="action-zone">
           <button type="button" class="btn-massive" onclick="processData()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
             Phân Bổ Chi Phí
@@ -748,7 +744,6 @@
       let row = document.createElement('div');
       row.className = 'cau-detail-flex cau-item anim-pop';
       row.innerHTML = `
-          <button type="button" class="btn-remove-cau" onclick="triggerHaptic('heavy'); this.parentElement.remove(); updateCauTotal();">✕</button>
           <div class="cau-col">
             <span>GIÁ 1 TÚP (12 QUẢ)</span>
             <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
@@ -757,6 +752,9 @@
           <div class="cau-col">
             <span>SỐ QUẢ</span>
             <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+          </div>
+          <div class="cau-action-col">
+            <button type="button" class="btn-remove-cau" onclick="triggerHaptic('heavy'); this.closest('.cau-item').remove(); updateCauTotal();">✕</button>
           </div>
       `;
       container.appendChild(row);
@@ -828,6 +826,7 @@
               <span>SỐ QUẢ</span>
               <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
             </div>
+            <div class="cau-action-col"></div>
           </div>
       `;
       
