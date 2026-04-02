@@ -71,7 +71,9 @@
     }
 
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: hidden;}
-    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; overflow: hidden;}
+    
+    /* Đã tháo lệnh overflow: hidden ở left-col để bóng đổ không bị kẹt */
+    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; }
     
     .form-content-grid { 
       display: flex; flex-direction: column; flex: 1; min-height: 0; 
@@ -123,8 +125,8 @@
       
       .quick-chips { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto !important; }
       
-      /* Desktop Action Zone */
-      .action-zone { padding: 20px 0 16px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
+      /* Căn chỉnh không gian đáy cho bóng đổ trên Web Desktop */
+      .action-zone { padding: 20px 0 30px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
       
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
@@ -314,14 +316,14 @@
     .custom-option.selected { background: rgba(99,102,241,0.1); color: var(--accent); font-weight: 700; }
 
     /* ==============================================================
-       FIX LỖI BÓNG ĐỔ (SHADOW) BỊ CHÉM VÀ LỖI DẢI MÀU NỀN
+       FIX LỖI CẮT BÓNG ĐỔ: Bơm thêm đệm bên dưới nút Phân Bổ
        ============================================================== */
     .action-zone {
       flex-shrink: 0;
       position: relative; 
-      /* Tăng padding đáy để nút tỏa bóng đổ mượt mà không bị lẹm */
-      padding: 16px 4px calc(28px + env(safe-area-inset-bottom, 0px)) 4px;
-      background: transparent; /* Xóa gradient rác cũ */
+      /* Tăng padding-bottom lên 40px để chừa chỗ cho Shadow không bị chém */
+      padding: 12px 0 calc(40px + env(safe-area-inset-bottom, 0px)) 0;
+      background: transparent;
       z-index: 50; width: 100%;
     }
     .btn-massive {
@@ -332,7 +334,6 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
-    /* LỚP PHỦ BIÊN LAI (MỞ KHÓA CHO PHÉP CUỘN ĐỂ CHỤP MÀN HÌNH) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
