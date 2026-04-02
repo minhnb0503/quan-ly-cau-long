@@ -70,10 +70,9 @@
       position: relative; overflow: hidden; 
     }
 
-    .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: hidden;}
-    
-    /* Đã tháo lệnh overflow: hidden ở left-col để bóng đổ không bị kẹt */
-    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; }
+    /* FIX LỖI CẮT BÓNG ĐỔ: Cho phép mở toang ranh giới các cột chứa nút Phân Bổ */
+    .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: visible; }
+    .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; overflow: visible; }
     
     .form-content-grid { 
       display: flex; flex-direction: column; flex: 1; min-height: 0; 
@@ -125,8 +124,8 @@
       
       .quick-chips { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto !important; }
       
-      /* Căn chỉnh không gian đáy cho bóng đổ trên Web Desktop */
-      .action-zone { padding: 20px 0 30px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
+      /* Căn chỉnh không gian đáy cho bóng đổ trên Web Desktop thoải mái nhất */
+      .action-zone { padding: 20px 0 20px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important; overflow: visible !important;}
       
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
@@ -315,16 +314,13 @@
     .custom-option:hover { background: rgba(99,102,241,0.05); color: var(--accent); }
     .custom-option.selected { background: rgba(99,102,241,0.1); color: var(--accent); font-weight: 700; }
 
-    /* ==============================================================
-       FIX LỖI CẮT BÓNG ĐỔ: Bơm thêm đệm bên dưới nút Phân Bổ
-       ============================================================== */
     .action-zone {
       flex-shrink: 0;
       position: relative; 
-      /* Tăng padding-bottom lên 40px để chừa chỗ cho Shadow không bị chém */
-      padding: 12px 0 calc(40px + env(safe-area-inset-bottom, 0px)) 0;
+      padding: 16px 4px calc(24px + env(safe-area-inset-bottom, 0px)) 4px;
       background: transparent;
       z-index: 50; width: 100%;
+      overflow: visible; 
     }
     .btn-massive {
       width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 20px;
