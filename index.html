@@ -122,7 +122,9 @@
       .members-zone { flex: none; height: auto;}
       
       .quick-chips { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto !important; }
-      .action-zone { padding: 20px 0 10px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
+      
+      /* Desktop Action Zone */
+      .action-zone { padding: 20px 0 16px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important;}
       
       .sheet-overlay { 
         position: relative !important; display: flex !important; flex-direction: column; flex: 1;
@@ -228,7 +230,6 @@
     .mode-grid { display: grid; width: 100%; transition: grid-template-rows 0.4s var(--smooth-curve); }
     .mode-inner { min-height: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.3s ease; }
     
-    /* FIX LỖI NÚT XOÁ CẦU BỊ LẸM: Chuyển sang bố cục Flexbox 3 cột rõ ràng, không dùng Position Absolute nữa */
     .cau-detail-flex { display: flex; width: 100%; gap: 8px; margin-top: 4px; justify-content: space-between; align-items: center;}
     .cau-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
     .cau-col span { font-size: 10px; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; text-transform: uppercase; text-align: center;}
@@ -312,11 +313,15 @@
     .custom-option:hover { background: rgba(99,102,241,0.05); color: var(--accent); }
     .custom-option.selected { background: rgba(99,102,241,0.1); color: var(--accent); font-weight: 700; }
 
+    /* ==============================================================
+       FIX LỖI BÓNG ĐỔ (SHADOW) BỊ CHÉM VÀ LỖI DẢI MÀU NỀN
+       ============================================================== */
     .action-zone {
       flex-shrink: 0;
       position: relative; 
-      padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)) 0;
-      background: transparent;
+      /* Tăng padding đáy để nút tỏa bóng đổ mượt mà không bị lẹm */
+      padding: 16px 4px calc(28px + env(safe-area-inset-bottom, 0px)) 4px;
+      background: transparent; /* Xóa gradient rác cũ */
       z-index: 50; width: 100%;
     }
     .btn-massive {
@@ -327,6 +332,7 @@
     }
     .btn-massive:active { transform: scale(0.96); box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.6); }
 
+    /* LỚP PHỦ BIÊN LAI (MỞ KHÓA CHO PHÉP CUỘN ĐỂ CHỤP MÀN HÌNH) */
     .sheet-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -570,9 +576,7 @@
             </div>
           </div>
 
-        </div> 
-        
-        <div class="action-zone">
+        </div> <div class="action-zone">
           <button type="button" class="btn-massive" onclick="processData()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
             Phân Bổ Chi Phí
