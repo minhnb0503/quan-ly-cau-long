@@ -411,6 +411,44 @@
     #syncStatus { text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
     .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
     
+    /* ==============================================================
+       GIAO DIỆN MODAL NHẬP TÊN CUSTOM (THAY THẾ PROMPT XẤU XÍ)
+       ============================================================== */
+    .custom-modal-overlay { 
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+      background: rgba(15,23,42,0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+      z-index: 2000; display: flex; justify-content: center; align-items: center; 
+      opacity: 0; visibility: hidden; transition: 0.3s ease; 
+    }
+    .custom-modal-overlay.show { opacity: 1; visibility: visible; }
+    
+    .custom-modal { 
+      background: #fff; width: 90%; max-width: 320px; border-radius: 24px; padding: 24px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: scale(0.9); 
+      transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    .custom-modal-overlay.show .custom-modal { transform: scale(1); }
+    
+    .custom-modal h3 { margin: 0 0 16px 0; font-size: 18px; color: var(--text-main); text-align: center; }
+    
+    .custom-modal input { 
+      width: 100%; background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); 
+      padding: 14px 16px; border-radius: 16px; font-size: 16px; outline: none; 
+      font-family: inherit; margin-bottom: 20px; color: var(--text-main); font-weight: 600;
+      transition: 0.2s; box-sizing: border-box;
+    }
+    .custom-modal input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+    
+    .custom-modal-actions { display: flex; gap: 12px; }
+    .custom-modal-actions button { 
+      flex: 1; padding: 14px; border-radius: 16px; font-size: 15px; font-weight: 700; 
+      border: none; cursor: pointer; transition: 0.2s; font-family: inherit;
+    }
+    .btn-cancel { background: #f1f5f9; color: var(--text-sub); }
+    .btn-cancel:active { background: #e2e8f0; transform: scale(0.96);}
+    .btn-confirm { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .btn-confirm:active { transform: scale(0.96); box-shadow: 0 2px 6px rgba(99,102,241,0.3); }
+
     @keyframes smoothPop { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
     .anim-pop { animation: smoothPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     .public-mode-hidden { display: none !important; }
@@ -419,6 +457,17 @@
 <body>
 
   <div id="toast" class="toast">Đã làm sạch form sẵn sàng cho trận mới! 🏸</div>
+
+  <div class="custom-modal-overlay" id="customPromptOverlay">
+    <div class="custom-modal">
+      <h3 id="customPromptTitle">Nhập tên thành viên</h3>
+      <input type="text" id="customPromptInput" placeholder="Nhập tên vào đây..." autocomplete="off">
+      <div class="custom-modal-actions">
+        <button class="btn-cancel" onclick="closeCustomPrompt(false)">Hủy</button>
+        <button class="btn-confirm" onclick="closeCustomPrompt(true)">Xác nhận</button>
+      </div>
+    </div>
+  </div>
 
   <div class="app-glass">
     <div class="main-wrapper">
@@ -547,6 +596,7 @@
                     <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ 20k</div>
                     <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
                     <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
+                    <div class="custom-option" id="opt-sanNha" onclick="selectMethod('sanNha', 'Luật: Quy chế Sân Nhà')">Luật: Quy chế Sân Nhà</div>
                   </div>
                 </div>
               </div>
@@ -557,9 +607,27 @@
                   <input type="text" class="guest-val" id="nuCoDinhGia" value="50.000" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
                 </div>
               </div>
+              
+              <div class="guest-row anim-pop public-only-row" id="namCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                <span class="guest-label">🏅 Nam Cố định</span>
+                <div class="guest-stepper">
+                  <button type="button" class="step-btn" onclick="stepVal('namCD', -1)">-</button>
+                  <input type="text" class="guest-val" id="namCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                  <button type="button" class="step-btn" onclick="stepVal('namCD', 1)">+</button>
+                </div>
+              </div>
+              
+              <div class="guest-row anim-pop public-only-row" id="nuCoDinhWrap2" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                <span class="guest-label">🏅 Nữ Cố định</span>
+                <div class="guest-stepper">
+                  <button type="button" class="step-btn" onclick="stepVal('nuCD', -1)">-</button>
+                  <input type="text" class="guest-val" id="nuCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                  <button type="button" class="step-btn" onclick="stepVal('nuCD', 1)">+</button>
+                </div>
+              </div>
 
               <div class="guest-row">
-                <span class="guest-label">🤵🏻‍♂️ Số Nam</span>
+                <span class="guest-label" id="labelNamGL">🤵🏻‍♂️ Số Nam</span>
                 <div class="guest-stepper">
                   <button type="button" class="step-btn" onclick="stepVal('namGL', -1)">-</button>
                   <input type="text" class="guest-val" id="namGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
@@ -567,7 +635,7 @@
                 </div>
               </div>
               <div class="guest-row">
-                <span class="guest-label">👩🏻‍💼 Số Nữ</span>
+                <span class="guest-label" id="labelNuGL">👩🏻‍💼 Số Nữ</span>
                 <div class="guest-stepper">
                   <button type="button" class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
                   <input type="text" class="guest-val" id="nuGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
@@ -632,7 +700,6 @@
     let currentSplitMethod = 'nam20k';
     let isShowingQR = false;
     
-    // BIẾN TOÀN CỤC ĐỂ ĐẾM NGƯỜI MẶC ĐỊNH
     let customCount = { nam: 1, nu: 1 };
 
     async function fetchUserIP() {
@@ -703,13 +770,27 @@
         document.getElementById('opt-nam20k').classList.remove('selected');
         document.getElementById('opt-chiaDeu').classList.remove('selected');
         document.getElementById('opt-nuCoDinh').classList.remove('selected');
+        document.getElementById('opt-sanNha').classList.remove('selected');
         
         document.getElementById('opt-' + value).classList.add('selected');
         
+        // Ẩn hiện các ô Input tùy thuộc vào Luật được chọn
         if (value === 'nuCoDinh') {
             document.getElementById('nuCoDinhWrap').style.display = 'flex';
         } else {
             document.getElementById('nuCoDinhWrap').style.display = 'none';
+        }
+
+        if (value === 'sanNha') {
+            document.getElementById('namCoDinhWrap').style.display = 'flex';
+            document.getElementById('nuCoDinhWrap2').style.display = 'flex';
+            document.getElementById('labelNamGL').innerText = "👤 Nam Giao lưu";
+            document.getElementById('labelNuGL').innerText = "👤 Nữ Giao lưu";
+        } else {
+            document.getElementById('namCoDinhWrap').style.display = 'none';
+            document.getElementById('nuCoDinhWrap2').style.display = 'none';
+            document.getElementById('labelNamGL').innerText = "🤵🏻‍♂️ Số Nam";
+            document.getElementById('labelNuGL').innerText = "👩🏻‍💼 Số Nữ";
         }
     }
 
@@ -725,12 +806,21 @@
         fTeam.classList.remove('hidden'); gTitle.innerText = "KHÁCH GIAO LƯU";
         splitContainer.style.display = 'none';
         document.getElementById('nuCoDinhWrap').style.display = 'none'; 
+        document.getElementById('namCoDinhWrap').style.display = 'none';
+        document.getElementById('nuCoDinhWrap2').style.display = 'none';
+        document.getElementById('labelNamGL').innerText = "🤵🏻‍♂️ Số Nam";
+        document.getElementById('labelNuGL').innerText = "👩🏻‍💼 Số Nữ";
       } else {
         ind.style.transform = 'translateX(100%)'; tAway.classList.add('active'); tHome.classList.remove('active');
         fTeam.classList.add('hidden'); gTitle.innerText = "THÔNG TIN NGƯỜI CHƠI";
         splitContainer.style.display = 'flex';
-        if (currentSplitMethod === 'nuCoDinh') {
-           document.getElementById('nuCoDinhWrap').style.display = 'flex';
+        
+        if (currentSplitMethod === 'nuCoDinh') document.getElementById('nuCoDinhWrap').style.display = 'flex';
+        if (currentSplitMethod === 'sanNha') {
+            document.getElementById('namCoDinhWrap').style.display = 'flex';
+            document.getElementById('nuCoDinhWrap2').style.display = 'flex';
+            document.getElementById('labelNamGL').innerText = "👤 Nam Giao lưu";
+            document.getElementById('labelNuGL').innerText = "👤 Nữ Giao lưu";
         }
       }
     }
@@ -784,23 +874,50 @@
       return total;
     }
 
-    // === HÀM XỬ LÝ THÊM THÀNH VIÊN VỚI BỘ ĐẾM THÔNG MINH ===
-    function addCustomMember(gender) {
+    // === LOGIC POPUP CUSTOM MỚI ===
+    let promptResolve;
+    function openCustomPrompt(title, defaultText) {
+      return new Promise(resolve => {
         triggerHaptic('light');
+        promptResolve = resolve;
+        document.getElementById('customPromptTitle').innerText = title;
+        let input = document.getElementById('customPromptInput');
+        input.value = '';
+        input.placeholder = `Vd: ${defaultText}`;
+        document.getElementById('customPromptOverlay').classList.add('show');
         
+        setTimeout(() => input.focus(), 100);
+        
+        input.onkeydown = function(e) {
+            if (e.key === 'Enter') closeCustomPrompt(true);
+        };
+      });
+    }
+
+    function closeCustomPrompt(isConfirm) {
+      triggerHaptic('light');
+      document.getElementById('customPromptOverlay').classList.remove('show');
+      if (isConfirm) {
+        promptResolve(document.getElementById('customPromptInput').value);
+      } else {
+        promptResolve(null);
+      }
+    }
+
+    async function addCustomMember(gender) {
         let defaultText = gender === 'nam' ? 'Nam' : 'Nữ';
         if (customCount[gender] > 1) {
             defaultText += ' ' + customCount[gender];
         }
         
-        let promptMsg = gender === 'nam' ? `Nhập tên Nam cố định mới (để trống sẽ là "${defaultText}"):` : `Nhập tên Nữ cố định mới (để trống sẽ là "${defaultText}"):`;
-        let name = prompt(promptMsg);
+        let promptMsg = gender === 'nam' ? `Thêm Nam cố định` : `Thêm Nữ cố định`;
         
-        // Nếu người dùng ấn Hủy (Cancel) thì thoát
-        if (name === null) return; 
+        // Đợi người dùng nhập xong từ Modal mới chạy tiếp
+        let name = await openCustomPrompt(promptMsg, defaultText);
+        
+        if (name === null) return; // Nhấn Hủy
         
         let finalName = name.trim();
-        // Nếu để trống thì lấy tên mặc định và TĂNG BỘ ĐẾM
         if (finalName === "") {
             finalName = defaultText;
             customCount[gender]++;
@@ -856,9 +973,9 @@
       triggerHaptic('heavy'); 
       document.getElementById('tienSan').value = ''; document.getElementById('tienCau').value = '';
       document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
+      document.getElementById('namCD').value = '0'; document.getElementById('nuCD').value = '0';
       document.getElementById('nuCoDinhGia').value = '50.000'; 
       
-      // Khôi phục bộ đếm
       customCount = { nam: 1, nu: 1 };
       
       let cauList = document.getElementById('cauListContainer');
@@ -977,37 +1094,51 @@
 
       if (mode === 'away') {
         document.getElementById('qrBtn').style.display = 'none'; 
-
-        let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
         
-        let pNam = 0; let pNu = 0;
+        let pNam = 0; let pNu = 0; let pNamGL = 0; let pNuGL = 0;
 
-        if (currentSplitMethod === 'nuCoDinh') {
-            let tienNuCoDinh = parseInt(document.getElementById('nuCoDinhGia').value.replace(/\./g, '')) || 0;
-            pNu = tienNuCoDinh;
+        if (currentSplitMethod === 'sanNha') {
+            let namCD = parseInt(document.getElementById('namCD').value) || 0;
+            let nuCD = parseInt(document.getElementById('nuCD').value) || 0;
+            let totalP = namCD + nuCD + namGL + nuGL;
+            if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+
+            let offsetGL = (namGL * 30000) + (nuGL * 5000);
+            let offsetFixed = (namCD * 25000); 
+            let totalOffset = offsetFixed + offsetGL;
             
-            if (namGL > 0) {
-                let phanConLai = Math.max(0, totalCost - (pNu * nuGL));
-                pNam = Math.ceil((phanConLai / namGL) / 1000) * 1000;
-            } else {
-                pNu = Math.ceil((totalCost / nuGL) / 1000) * 1000;
-            }
-        } else {
-            let offset = 0;
-            if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
-            let base = Math.max(0, totalCost - offset) / totalP;
-            let pF = Math.ceil(base / 1000) * 1000; 
-            pNu = pF; 
-            pNam = currentSplitMethod === 'nam20k' ? pF + 20000 : pF;
-        }
+            let base = Math.max(0, totalCost - totalOffset) / totalP;
+            let pF = Math.ceil(base / 1000) * 1000;
+            
+            pNu = pF; pNam = pF + 25000; pNamGL = pF + 30000; pNuGL = pF + 5000;
 
-        if(namGL) {
-          html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`;
-          teleStr += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\n`;
-        }
-        if(nuGL) {
-          html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`;
-          teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`;
+            if(namCD) { html += `<div class="receipt-item"><span>🏅 Nam Cố định x${namCD}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namCD)}</div></div></div>`; teleStr += `🏅 Nam CD (${namCD}): <b>${formatMoney(pNam * namCD)}</b> (${formatMoney(pNam)}/ng)\n`; }
+            if(nuCD) { html += `<div class="receipt-item"><span>🏅 Nữ Cố định x${nuCD}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuCD)}</div></div></div>`; teleStr += `🏅 Nữ CD (${nuCD}): <b>${formatMoney(pNu * nuCD)}</b> (${formatMoney(pNu)}/ng)\n`; }
+            if(namGL || nuGL) { html += `<div class="divider-dash" style="margin-top:8px"></div>`; teleStr += `------------------\n`; }
+            if(namGL) { html += `<div class="receipt-item"><span>👤 Nam Giao lưu x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`; teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\n`; }
+            if(nuGL) { html += `<div class="receipt-item"><span>👤 Nữ Giao lưu x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`; teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\n`; }
+            
+        } else {
+            let totalP = namGL + nuGL; if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+            if (currentSplitMethod === 'nuCoDinh') {
+                let tienNuCoDinh = parseInt(document.getElementById('nuCoDinhGia').value.replace(/\./g, '')) || 0;
+                pNu = tienNuCoDinh;
+                if (namGL > 0) {
+                    let phanConLai = Math.max(0, totalCost - (pNu * nuGL));
+                    pNam = Math.ceil((phanConLai / namGL) / 1000) * 1000;
+                } else {
+                    pNu = Math.ceil((totalCost / nuGL) / 1000) * 1000;
+                }
+            } else {
+                let offset = 0;
+                if (currentSplitMethod === 'nam20k') { offset = namGL * 20000; }
+                let base = Math.max(0, totalCost - offset) / totalP;
+                let pF = Math.ceil(base / 1000) * 1000; 
+                pNu = pF; pNam = currentSplitMethod === 'nam20k' ? pF + 20000 : pF;
+            }
+
+            if(namGL) { html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`; teleStr += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\n`; }
+            if(nuGL) { html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`; teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\n`; }
         }
       } else {
         if (!isPublicMode) { document.getElementById('qrBtn').style.display = 'block'; }
