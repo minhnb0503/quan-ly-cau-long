@@ -70,7 +70,6 @@
       position: relative; overflow: hidden; 
     }
 
-    /* FIX LỖI CẮT BÓNG ĐỔ: Cho phép mở toang ranh giới các cột chứa nút Phân Bổ */
     .main-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; overflow: visible; }
     .left-col { display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; width: 100%; overflow: visible; }
     
@@ -123,8 +122,6 @@
       .members-zone { flex: none; height: auto;}
       
       .quick-chips { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto !important; }
-      
-      /* Căn chỉnh không gian đáy cho bóng đổ trên Web Desktop thoải mái nhất */
       .action-zone { padding: 20px 0 20px 0 !important; border: none !important; backdrop-filter: none !important; position: static !important; overflow: visible !important;}
       
       .sheet-overlay { 
@@ -254,11 +251,12 @@
     .fixed-team-wrapper.hidden .fixed-team-inner { opacity: 0; }
 
     .zone-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 12px; text-align: center; text-transform: uppercase;}
-    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 20px;}
+    .tags-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 12px;}
     .player-tag {
       background: rgba(255,255,255,0.6); border: 1px solid var(--glass-border); color: var(--text-sub);
       padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 600;
       transition: all 0.2s ease; cursor: pointer; box-shadow: 0 4px 10px -4px rgba(0,0,0,0.05); 
+      display: flex; align-items: center; gap: 6px;
     }
     .player-tag.active { 
       background: var(--text-main); color: #fff; border-color: var(--text-main); 
@@ -317,7 +315,7 @@
     .action-zone {
       flex-shrink: 0;
       position: relative; 
-      padding: 16px 4px calc(24px + env(safe-area-inset-bottom, 0px)) 4px;
+      padding: 12px 0 calc(40px + env(safe-area-inset-bottom, 0px)) 0;
       background: transparent;
       z-index: 50; width: 100%;
       overflow: visible; 
@@ -504,7 +502,8 @@
                           <span>SỐ QUẢ</span>
                           <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
                         </div>
-                        <div class="cau-action-col"></div> </div>
+                        <div class="cau-action-col"></div> 
+                      </div>
                   </div>
                   
                   <button type="button" class="chip chip-undo" style="margin-top: 12px; width: auto; align-self: center;" onclick="addCauRow()">+ Thêm loại cầu khác</button>
@@ -519,11 +518,16 @@
             <div class="fixed-team-wrapper" id="fixedTeamWrap">
               <div class="fixed-team-inner">
                 <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
-                <div class="tags-grid">
-                  <div class="player-tag active" id="tag-Minh" onclick="toggleTag(this)">Minh</div>
-                  <div class="player-tag active" id="tag-Thao" onclick="toggleTag(this)">Thảo</div>
-                  <div class="player-tag active" id="tag-Tu" onclick="toggleTag(this)">Tú</div>
-                  <div class="player-tag active" id="tag-Quan" onclick="toggleTag(this)">Quân</div>
+                <div class="tags-grid" id="tagsGrid">
+                  <div class="player-tag active" data-name="Minh" data-gender="nam" onclick="toggleTag(this)">Minh</div>
+                  <div class="player-tag active" data-name="Thảo" data-gender="nu" onclick="toggleTag(this)">Thảo</div>
+                  <div class="player-tag active" data-name="Tú" data-gender="nam" onclick="toggleTag(this)">Tú</div>
+                  <div class="player-tag active" data-name="Quân" data-gender="nam" onclick="toggleTag(this)">Quân</div>
+                </div>
+                
+                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
+                  <button type="button" class="chip" style="background: rgba(99,102,241,0.05);" onclick="addCustomMember('nam')">+ Thêm Nam cố định</button>
+                  <button type="button" class="chip" style="background: rgba(244,63,94,0.05); color: #f43f5e; border-color: rgba(244,63,94,0.15);" onclick="addCustomMember('nu')">+ Thêm Nữ cố định</button>
                 </div>
               </div>
             </div>
@@ -573,7 +577,9 @@
             </div>
           </div>
 
-        </div> <div class="action-zone">
+        </div> 
+        
+        <div class="action-zone">
           <button type="button" class="btn-massive" onclick="processData()">
             <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
             Phân Bổ Chi Phí
@@ -625,6 +631,9 @@
     let userIPInfo = "Đang lấy IP...";
     let currentSplitMethod = 'nam20k';
     let isShowingQR = false;
+    
+    // BIẾN TOÀN CỤC ĐỂ ĐẾM NGƯỜI MẶC ĐỊNH
+    let customCount = { nam: 1, nu: 1 };
 
     async function fetchUserIP() {
         try {
@@ -775,6 +784,40 @@
       return total;
     }
 
+    // === HÀM XỬ LÝ THÊM THÀNH VIÊN VỚI BỘ ĐẾM THÔNG MINH ===
+    function addCustomMember(gender) {
+        triggerHaptic('light');
+        
+        let defaultText = gender === 'nam' ? 'Nam' : 'Nữ';
+        if (customCount[gender] > 1) {
+            defaultText += ' ' + customCount[gender];
+        }
+        
+        let promptMsg = gender === 'nam' ? `Nhập tên Nam cố định mới (để trống sẽ là "${defaultText}"):` : `Nhập tên Nữ cố định mới (để trống sẽ là "${defaultText}"):`;
+        let name = prompt(promptMsg);
+        
+        // Nếu người dùng ấn Hủy (Cancel) thì thoát
+        if (name === null) return; 
+        
+        let finalName = name.trim();
+        // Nếu để trống thì lấy tên mặc định và TĂNG BỘ ĐẾM
+        if (finalName === "") {
+            finalName = defaultText;
+            customCount[gender]++;
+        }
+        
+        let grid = document.getElementById('tagsGrid');
+        let newTag = document.createElement('div');
+        newTag.className = 'player-tag active custom-tag anim-pop';
+        newTag.setAttribute('data-name', finalName);
+        newTag.setAttribute('data-gender', gender);
+        
+        newTag.innerHTML = `${finalName} <span style="margin-left:6px; font-size:12px; color:inherit; opacity:0.6; padding: 2px 6px; border-radius:50%; background:rgba(0,0,0,0.1)" onclick="event.stopPropagation(); triggerHaptic('heavy'); this.parentElement.remove();">✕</span>`;
+        
+        newTag.onclick = function() { toggleTag(this); };
+        grid.appendChild(newTag);
+    }
+
     function toggleTag(el) { triggerHaptic('light'); el.classList.toggle('active'); }
     function formatCurrency(input) { let v = input.value.replace(/\D/g, ''); input.value = v ? parseInt(v, 10).toLocaleString('vi-VN') : ""; }
     function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + " ₫"; }
@@ -815,6 +858,9 @@
       document.getElementById('namGL').value = '0'; document.getElementById('nuGL').value = '0';
       document.getElementById('nuCoDinhGia').value = '50.000'; 
       
+      // Khôi phục bộ đếm
+      customCount = { nam: 1, nu: 1 };
+      
       let cauList = document.getElementById('cauListContainer');
       cauList.innerHTML = `
           <div class="cau-detail-flex cau-item">
@@ -833,6 +879,8 @@
       
       selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k'); 
       clearUndo('tienSan'); clearUndo('tienCau');
+      
+      document.querySelectorAll('.custom-tag').forEach(tag => tag.remove());
       document.querySelectorAll('.player-tag').forEach(tag => tag.classList.add('active'));
       
       if(!isPublicMode) { switchTab('home'); }
@@ -964,12 +1012,15 @@
       } else {
         if (!isPublicMode) { document.getElementById('qrBtn').style.display = 'block'; }
 
-        let minh = document.getElementById('tag-Minh').classList.contains('active') ? 1 : 0;
-        let thao = document.getElementById('tag-Thao').classList.contains('active') ? 1 : 0;
-        let tu = document.getElementById('tag-Tu').classList.contains('active') ? 1 : 0;
-        let quan = document.getElementById('tag-Quan').classList.contains('active') ? 1 : 0;
+        let activeTags = document.querySelectorAll('#tagsGrid .player-tag.active');
+        let cM = 0; let cN = 0;
+        
+        activeTags.forEach(tag => {
+            if(tag.getAttribute('data-gender') === 'nam') cM++;
+            else cN++;
+        });
 
-        let cM = minh + tu + quan; let totalP = cM + thao + namGL + nuGL;
+        let totalP = cM + cN + namGL + nuGL;
         if (totalP === 0) { alert("Chưa ai ra sân cả!"); return; }
 
         let offsetGL = (namGL * 30000) + (nuGL * 5000);
@@ -984,10 +1035,18 @@
         let pNuGL = pF + 5000;
 
         let fixedMembersHtml = "";
-        if(minh) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Minh</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Minh: <b>${formatMoney(pNam)}</b>\n`;}
-        if(thao) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Thảo</span> <strong class="price-badge">${formatMoney(pNu)}</strong></div>`; teleStr += `👩🏻‍💼 Thảo: <b>${formatMoney(pNu)}</b>\n`;}
-        if(tu) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Tú</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Tú: <b>${formatMoney(pNam)}</b>\n`;}
-        if(quan) { fixedMembersHtml += `<div class="receipt-item fixed-member"><span>Quân</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; teleStr += `🤵🏻‍♂️ Quân: <b>${formatMoney(pNam)}</b>\n`;}
+        
+        activeTags.forEach(tag => {
+            let name = tag.getAttribute('data-name');
+            let gender = tag.getAttribute('data-gender');
+            if(gender === 'nam') {
+                fixedMembersHtml += `<div class="receipt-item fixed-member"><span>${name}</span> <strong class="price-badge">${formatMoney(pNam)}</strong></div>`; 
+                teleStr += `🤵🏻‍♂️ ${name}: <b>${formatMoney(pNam)}</b>\n`;
+            } else {
+                fixedMembersHtml += `<div class="receipt-item fixed-member"><span>${name}</span> <strong class="price-badge">${formatMoney(pNu)}</strong></div>`; 
+                teleStr += `👩🏻‍💼 ${name}: <b>${formatMoney(pNu)}</b>\n`;
+            }
+        });
         
         if (fixedMembersHtml !== "") {
             html += `
