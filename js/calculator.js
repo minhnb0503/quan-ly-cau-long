@@ -4,11 +4,14 @@
  */
 const Calculator = (() => {
   function roundUp1k(n) { return Math.ceil(n / 1000) * 1000; }
-  function formatMoney(n) { return parseInt(n).toLocaleString('vi-VN') + ' ₫'; }
+  function formatMoney(amount) {
+    if (typeof amount !== 'number' || isNaN(amount)) return '0 ₫';
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' ₫';
+  }
   function parseMoney(str) { return parseInt(String(str).replace(/\./g, '').replace(/\D/g, '')) || 0; }
   function formatCurrencyValue(val) {
     const v = String(val).replace(/\D/g, '');
-    return v ? parseInt(v, 10).toLocaleString('vi-VN') : '';
+    return v ? parseInt(v, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : '';
   }
 
   return {

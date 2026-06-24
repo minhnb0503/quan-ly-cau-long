@@ -40,7 +40,8 @@ const Storage = (() => {
         { name: 'Minh', gender: 'nam', isDefault: true },
         { name: 'Thảo', gender: 'nu', isDefault: true },
         { name: 'Tú', gender: 'nam', isDefault: true },
-        { name: 'Quân', gender: 'nam', isDefault: true }
+        { name: 'Quân', gender: 'nam', isDefault: true },
+        { name: 'Ly', gender: 'nu', isDefault: true }
       ]);
     },
     saveMembers(members) { _set(KEYS.MEMBERS, members); },

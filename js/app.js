@@ -583,7 +583,8 @@ function resetForm() {
     { name: 'Minh', gender: 'nam', isDefault: true },
     { name: 'Thảo', gender: 'nu', isDefault: true },
     { name: 'Tú', gender: 'nam', isDefault: true },
-    { name: 'Quân', gender: 'nam', isDefault: true }
+    { name: 'Quân', gender: 'nam', isDefault: true },
+    { name: 'Ly', gender: 'nu', isDefault: true }
   ];
   Storage.saveMembers(defaultMembers);
   renderMembersFromStorage();
@@ -850,8 +851,6 @@ function processData() {
 // ======================== INITIALIZATION ======================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Theme
-  applyTheme(Storage.getTheme());
 
   // IP
   fetchUserIP();
