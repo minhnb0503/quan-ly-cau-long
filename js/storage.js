@@ -27,8 +27,10 @@ const Storage = (() => {
     getSettings() {
       return _get(KEYS.SETTINGS, {
         offsetNam20k: 20000,
-        sanNhaNuCD: 50000,
-        sanNhaGLOffset: 5000
+        sanNhaNuGL: 50000,
+        sanNhaGLOffset: 5000,
+        sanNhaNamOffset: 20000,
+        sanNhaNuGLToggle: false
       });
     },
     saveSettings(s) { _set(KEYS.SETTINGS, s); },

@@ -129,7 +129,10 @@
               <div class="fixed-team-inner">
                 <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
                 <div class="tags-grid" id="tagsGrid">
-                  <!-- Members populated via JS -->
+                  <div class="player-tag active" data-name="Minh" data-gender="nam">Minh</div>
+                  <div class="player-tag active" data-name="Thảo" data-gender="nu">Thảo</div>
+                  <div class="player-tag active" data-name="Tú" data-gender="nam">Tú</div>
+                  <div class="player-tag active" data-name="Quân" data-gender="nam">Quân</div>
                 </div>
                 
                 <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
@@ -139,20 +142,45 @@
               </div>
             </div>
 
-            <!-- NEW: Simple Sân Nhà Inputs -->
+            <!-- TÙY CHỈNH LUẬT SÂN NHÀ -->
             <div class="fixed-team-wrapper" id="sanNhaConfigWrap" style="margin-top: 8px;">
               <div class="fixed-team-inner">
-                <div class="zone-title" style="margin-bottom: 8px;">THÔNG SỐ SÂN NHÀ</div>
-                <div class="guest-row anim-pop" style="margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
-                  <span class="guest-label">💸 Giá Nữ Cố Định (₫)</span>
-                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                    <input type="text" class="guest-val" id="sanNhaNuCD" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
-                  </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                   <span style="font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">⚙️ TÙY CHỈNH LUẬT SÂN NHÀ</span>
+                   <label class="switch-small">
+                     <input type="checkbox" id="sanNhaCustomToggle" onchange="document.getElementById('sanNhaCustomOptions').style.display = this.checked ? 'flex' : 'none';">
+                     <span class="slider-small"></span>
+                   </label>
                 </div>
-                <div class="guest-row anim-pop" style="margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
-                  <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
-                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                    <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                
+                <div id="sanNhaCustomOptions" style="display: none; flex-direction: column; gap: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span class="guest-label">💸 Nữ Giao Lưu thu một giá</span>
+                    <label class="switch-small">
+                      <input type="checkbox" id="sanNhaNuGLToggle" onchange="toggleSanNhaNuGL()">
+                      <span class="slider-small"></span>
+                    </label>
+                  </div>
+                  
+                  <div id="sanNhaNuGLInputWrap" style="display: none; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                    <span class="guest-label" style="font-size: 12px; color: var(--text-sub); padding-left: 12px;">↳ Giá Nữ GL (₫)</span>
+                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                      <input type="text" class="guest-val" id="sanNhaNuGL" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                    </div>
+                  </div>
+
+                  <div id="sanNhaNamHonNuWrap" style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                    <span class="guest-label">🏅 Nam nộp hơn Nữ (₫)</span>
+                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                      <input type="text" class="guest-val" id="sanNhaNamOffset" placeholder="20.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                    <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
+                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                      <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                    </div>
                   </div>
                 </div>
               </div>

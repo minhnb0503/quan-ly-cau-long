@@ -18,36 +18,40 @@ const Calculator = (() => {
     formatCurrencyValue,
 
     /**
-     * Sân Nhà - Logic mới
-     * Nữ cố định nhập tay, Nữ GL = Nữ CĐ + offset.
-     * Nam gánh phần còn lại, Nam GL = Nam CĐ + offset.
-     * @param {number} totalCost - Total cost (sân + cầu)
-     * @param {Array} activeMembers - Array of {name, gender} for active fixed team members
-     * @param {number} namGL - Number of male guests
-     * @param {number} nuGL - Number of female guests
-     * @param {number} nuCDPrice - Giá Nữ cố định
-     * @param {number} glOffset - Độ chênh lệch Giao lưu đắt hơn Cố định
-     * @returns {Object|null} Result with member prices, guest prices, totals
+     * Sân Nhà - Hỗ trợ cả 2 chế độ:
+     * 1. Nữ GL 1 giá (isNuGLMode = true): Nữ GL = nuGLPrice, Nữ CĐ = max(0, Nữ GL - glOffset). Nam gánh phần còn lại, Nam GL = Nam CĐ + glOffset.
+     * 2. Nam hơn Nữ (isNuGLMode = false): Nữ CĐ = base. Nam CĐ = base + namOffset. Nữ GL = base + glOffset. Nam GL = base + namOffset + glOffset.
      */
-    calcSanNhaNew(totalCost, activeMembers, namGL, nuGL, nuCDPrice, glOffset) {
+    calcSanNha(totalCost, activeMembers, namGL, nuGL, isNuGLMode, nuGLPrice, namOffset, glOffset) {
       const cM = activeMembers.filter(m => m.gender === 'nam').length;
       const cN = activeMembers.filter(m => m.gender === 'nu').length;
       const totalP = cM + cN + namGL + nuGL;
       if (totalP === 0) return null;
 
-      const pNuCD = nuCDPrice;
-      const pNuGL = pNuCD + glOffset;
-      const totalNu = (pNuCD * cN) + (pNuGL * nuGL);
+      let pNamCD = 0, pNuCD = 0, pNamGL = 0, pNuGL = 0;
 
-      let pNamCD = 0;
-      let pNamGL = 0;
-      const totalNamCount = cM + namGL;
+      if (isNuGLMode) {
+        pNuGL = nuGLPrice;
+        pNuCD = Math.max(0, pNuGL - glOffset);
+        const totalNu = (pNuCD * cN) + (pNuGL * nuGL);
 
-      if (totalNamCount > 0) {
-        const remainingForNam = Math.max(0, totalCost - totalNu);
-        const baseNam = (remainingForNam - (glOffset * namGL)) / totalNamCount;
-        pNamCD = roundUp1k(baseNam);
-        pNamGL = pNamCD + glOffset;
+        const totalNamCount = cM + namGL;
+        if (totalNamCount > 0) {
+          const remainingForNam = Math.max(0, totalCost - totalNu);
+          const baseNam = (remainingForNam - (glOffset * namGL)) / totalNamCount;
+          pNamCD = roundUp1k(baseNam);
+          pNamGL = pNamCD + glOffset;
+        }
+      } else {
+        const offsetFixed = cM * namOffset;
+        const offsetGL = (namGL * (namOffset + glOffset)) + (nuGL * glOffset);
+        const totalOffset = offsetFixed + offsetGL;
+
+        const base = Math.max(0, totalCost - totalOffset) / totalP;
+        pNuCD = roundUp1k(base);
+        pNamCD = pNuCD + namOffset;
+        pNuGL = pNuCD + glOffset;
+        pNamGL = pNuCD + namOffset + glOffset;
       }
 
       const totalCollected = (pNamCD * cM) + (pNuCD * cN) + (pNamGL * namGL) + (pNuGL * nuGL);

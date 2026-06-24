@@ -376,7 +376,22 @@ async function addCustomMember(gender) {
   saveMembersState();
 }
 
+// ======================== TÙY CHỈNH SÂN NHÀ ===================
 
+function toggleSanNhaNuGL() {
+  triggerHaptic('light');
+  let isNuGL = document.getElementById('sanNhaNuGLToggle').checked;
+  if (isNuGL) {
+    document.getElementById('sanNhaNuGLInputWrap').style.display = 'flex';
+    document.getElementById('sanNhaNamHonNuWrap').style.display = 'none';
+  } else {
+    document.getElementById('sanNhaNuGLInputWrap').style.display = 'none';
+    document.getElementById('sanNhaNamHonNuWrap').style.display = 'flex';
+  }
+  let s = Storage.getSettings();
+  s.sanNhaNuGLToggle = isNuGL;
+  Storage.saveSettings(s);
+}
 
 // ======================== QR ==================================
 
@@ -711,9 +726,12 @@ function processData() {
     let totalP = activeMembers.length + namGL + nuGL;
     if (totalP === 0) { alert("Chưa ai ra sân cả!"); return; }
 
-    let nuCDPrice = parseMoney(document.getElementById('sanNhaNuCD').value);
+    let nuGLPrice = parseMoney(document.getElementById('sanNhaNuGL').value);
     let glOffset = parseMoney(document.getElementById('sanNhaGLOffset').value);
-    let result = Calculator.calcSanNhaNew(totalCost, activeMembers, namGL, nuGL, nuCDPrice, glOffset);
+    let namOffset = parseMoney(document.getElementById('sanNhaNamOffset').value);
+    let isNuGLMode = document.getElementById('sanNhaNuGLToggle').checked;
+    
+    let result = Calculator.calcSanNha(totalCost, activeMembers, namGL, nuGL, isNuGLMode, nuGLPrice, namOffset, glOffset);
 
     let pNamCD = result.pNamCD;
     let pNuCD = result.pNuCD;
@@ -862,18 +880,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sân Nhà Defaults
   let settings = Storage.getSettings();
-  document.getElementById('sanNhaNuCD').value = Calculator.formatCurrencyValue(settings.sanNhaNuCD);
+  document.getElementById('sanNhaNuGL').value = Calculator.formatCurrencyValue(settings.sanNhaNuGL);
   document.getElementById('sanNhaGLOffset').value = Calculator.formatCurrencyValue(settings.sanNhaGLOffset);
+  document.getElementById('sanNhaNamOffset').value = Calculator.formatCurrencyValue(settings.sanNhaNamOffset);
+  document.getElementById('sanNhaNuGLToggle').checked = settings.sanNhaNuGLToggle;
+  
+  if (settings.sanNhaNuGLToggle) {
+    document.getElementById('sanNhaNuGLInputWrap').style.display = 'flex';
+    document.getElementById('sanNhaNamHonNuWrap').style.display = 'none';
+  } else {
+    document.getElementById('sanNhaNuGLInputWrap').style.display = 'none';
+    document.getElementById('sanNhaNamHonNuWrap').style.display = 'flex';
+  }
 
-  document.getElementById('sanNhaNuCD').addEventListener('change', function() {
-    let s = Storage.getSettings();
-    s.sanNhaNuCD = parseMoney(this.value);
-    Storage.saveSettings(s);
+  document.getElementById('sanNhaNuGL').addEventListener('change', function() {
+    let s = Storage.getSettings(); s.sanNhaNuGL = parseMoney(this.value); Storage.saveSettings(s);
   });
   document.getElementById('sanNhaGLOffset').addEventListener('change', function() {
-    let s = Storage.getSettings();
-    s.sanNhaGLOffset = parseMoney(this.value);
-    Storage.saveSettings(s);
+    let s = Storage.getSettings(); s.sanNhaGLOffset = parseMoney(this.value); Storage.saveSettings(s);
+  });
+  document.getElementById('sanNhaNamOffset').addEventListener('change', function() {
+    let s = Storage.getSettings(); s.sanNhaNamOffset = parseMoney(this.value); Storage.saveSettings(s);
   });
     document.getElementById('tabContainer').classList.add('public-mode-hidden');
     mode = 'away';
