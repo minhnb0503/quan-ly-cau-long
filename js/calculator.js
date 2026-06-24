@@ -18,36 +18,37 @@ const Calculator = (() => {
     formatCurrencyValue,
 
     /**
-     * Sân Nhà - Tự động (existing Sân Nhà logic)
-     * Uses offsets: Nam CĐ gets +offsetNamCD, Nam GL gets +offsetNamGL, Nữ GL gets +offsetNuGL, Nữ CĐ is base
+     * Sân Nhà - Logic mới
+     * Nữ cố định nhập tay, Nữ GL = Nữ CĐ + offset.
+     * Nam gánh phần còn lại, Nam GL = Nam CĐ + offset.
      * @param {number} totalCost - Total cost (sân + cầu)
      * @param {Array} activeMembers - Array of {name, gender} for active fixed team members
      * @param {number} namGL - Number of male guests
      * @param {number} nuGL - Number of female guests
-     * @param {Object} settings - Settings with offset values
+     * @param {number} nuCDPrice - Giá Nữ cố định
+     * @param {number} glOffset - Độ chênh lệch Giao lưu đắt hơn Cố định
      * @returns {Object|null} Result with member prices, guest prices, totals
      */
-    calcSanNhaAuto(totalCost, activeMembers, namGL, nuGL, settings) {
+    calcSanNhaNew(totalCost, activeMembers, namGL, nuGL, nuCDPrice, glOffset) {
       const cM = activeMembers.filter(m => m.gender === 'nam').length;
       const cN = activeMembers.filter(m => m.gender === 'nu').length;
       const totalP = cM + cN + namGL + nuGL;
       if (totalP === 0) return null;
 
-      const oNamCD = settings.offsetNamCD || 25000;
-      const oNamGL = settings.offsetNamGL || 30000;
-      const oNuGL = settings.offsetNuGL || 5000;
+      const pNuCD = nuCDPrice;
+      const pNuGL = pNuCD + glOffset;
+      const totalNu = (pNuCD * cN) + (pNuGL * nuGL);
 
-      const offsetGL = (namGL * oNamGL) + (nuGL * oNuGL);
-      const offsetFixed = cM * oNamCD;
-      const totalOffset = offsetFixed + offsetGL;
+      let pNamCD = 0;
+      let pNamGL = 0;
+      const totalNamCount = cM + namGL;
 
-      const base = Math.max(0, totalCost - totalOffset) / totalP;
-      const pF = roundUp1k(base);
-
-      const pNuCD = pF;
-      const pNamCD = pF + oNamCD;
-      const pNamGL = pF + oNamGL;
-      const pNuGL = pF + oNuGL;
+      if (totalNamCount > 0) {
+        const remainingForNam = Math.max(0, totalCost - totalNu);
+        const baseNam = (remainingForNam - (glOffset * namGL)) / totalNamCount;
+        pNamCD = roundUp1k(baseNam);
+        pNamGL = pNamCD + glOffset;
+      }
 
       const totalCollected = (pNamCD * cM) + (pNuCD * cN) + (pNamGL * namGL) + (pNuGL * nuGL);
 
@@ -58,35 +59,6 @@ const Calculator = (() => {
           amount: m.gender === 'nam' ? pNamCD : pNuCD
         })),
         pNamCD, pNuCD, pNamGL, pNuGL,
-        totalCollected,
-        difference: totalCollected - totalCost
-      };
-    },
-
-    /**
-     * Sân Nhà - Cố định giá Giao Lưu (NEW FEATURE)
-     * GL pays fixed price, CĐ pays fixed price minus discount
-     */
-    calcSanNhaFixedPrice(totalCost, activeMembers, namGL, nuGL, priceNamGL, priceNuGL, discount) {
-      const cM = activeMembers.filter(m => m.gender === 'nam').length;
-      const cN = activeMembers.filter(m => m.gender === 'nu').length;
-      const totalP = cM + cN + namGL + nuGL;
-      if (totalP === 0) return null;
-
-      const pNamCD = Math.max(0, priceNamGL - discount);
-      const pNuCD = Math.max(0, priceNuGL - discount);
-
-      const totalCollected = (pNamCD * cM) + (pNuCD * cN) + (priceNamGL * namGL) + (priceNuGL * nuGL);
-
-      return {
-        memberResults: activeMembers.map(m => ({
-          name: m.name,
-          gender: m.gender,
-          amount: m.gender === 'nam' ? pNamCD : pNuCD
-        })),
-        pNamCD, pNuCD,
-        pNamGL: priceNamGL,
-        pNuGL: priceNuGL,
         totalCollected,
         difference: totalCollected - totalCost
       };

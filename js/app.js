@@ -95,59 +95,6 @@ function updateDateDisplay(val) {
   document.getElementById('displayDate').innerText = `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
-// ======================== THEME ===============================
-
-function applyTheme(theme) {
-  if (theme === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeToggle').innerText = '☀️';
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeToggle').innerText = '🌙';
-  }
-}
-
-function toggleTheme() {
-  triggerHaptic('light');
-  let current = Storage.getTheme();
-  let next = current === 'dark' ? 'light' : 'dark';
-  Storage.setTheme(next);
-  applyTheme(next);
-}
-
-// ======================== SETTINGS MODAL ======================
-
-function openSettings() {
-  triggerHaptic('light');
-  let settings = Storage.getSettings();
-  document.getElementById('setOffsetNam20k').value = Calculator.formatCurrencyValue(settings.offsetNam20k);
-  document.getElementById('setOffsetNamCD').value = Calculator.formatCurrencyValue(settings.offsetNamCD);
-  document.getElementById('setOffsetNamGL').value = Calculator.formatCurrencyValue(settings.offsetNamGL);
-  document.getElementById('setOffsetNuGL').value = Calculator.formatCurrencyValue(settings.offsetNuGL);
-  document.getElementById('settingsOverlay').classList.add('show');
-}
-
-function closeSettings() {
-  triggerHaptic('light');
-  document.getElementById('settingsOverlay').classList.remove('show');
-}
-
-function saveSettings() {
-  triggerHaptic('success');
-  let settings = {
-    offsetNam20k: parseMoney(document.getElementById('setOffsetNam20k').value),
-    offsetNamCD: parseMoney(document.getElementById('setOffsetNamCD').value),
-    offsetNamGL: parseMoney(document.getElementById('setOffsetNamGL').value),
-    offsetNuGL: parseMoney(document.getElementById('setOffsetNuGL').value),
-    fixedPriceNamGL: Storage.getSettings().fixedPriceNamGL,
-    fixedPriceNuGL: Storage.getSettings().fixedPriceNuGL,
-    fixedPriceDiscount: Storage.getSettings().fixedPriceDiscount
-  };
-  Storage.saveSettings(settings);
-  closeSettings();
-  showToast('Đã lưu cài đặt! ✅');
-}
-
 // ======================== TABS ================================
 
 function switchTab(selected) {
@@ -159,8 +106,7 @@ function switchTab(selected) {
   let tAway = document.getElementById('tabAway');
   let fTeam = document.getElementById('fixedTeamWrap');
   let gTitle = document.getElementById('guestTitle');
-  let splitContainer = document.getElementById('splitMethodContainer');
-  let fpWrap = document.getElementById('fixedPriceWrap');
+  let fpWrap = document.getElementById('sanNhaConfigWrap');
 
   if (selected === 'home') {
     ind.style.transform = 'translateX(0)';
@@ -185,12 +131,7 @@ function switchTab(selected) {
     if (fpWrap) fpWrap.style.display = 'none';
 
     if (currentSplitMethod === 'nuCoDinh') document.getElementById('nuCoDinhWrap').style.display = 'flex';
-    if (currentSplitMethod === 'sanNha') {
-      document.getElementById('namCoDinhWrap').style.display = 'flex';
-      document.getElementById('nuCoDinhWrap2').style.display = 'flex';
-      document.getElementById('labelNamGL').innerText = "👤 Nam Giao lưu";
-      document.getElementById('labelNuGL').innerText = "👤 Nữ Giao lưu";
-    }
+
   }
 }
 
@@ -210,7 +151,6 @@ function selectMethod(value, text) {
   document.getElementById('opt-nam20k').classList.remove('selected');
   document.getElementById('opt-chiaDeu').classList.remove('selected');
   document.getElementById('opt-nuCoDinh').classList.remove('selected');
-  document.getElementById('opt-sanNha').classList.remove('selected');
   document.getElementById('opt-' + value).classList.add('selected');
 
   if (value === 'nuCoDinh') {
@@ -219,17 +159,10 @@ function selectMethod(value, text) {
     document.getElementById('nuCoDinhWrap').style.display = 'none';
   }
 
-  if (value === 'sanNha') {
-    document.getElementById('namCoDinhWrap').style.display = 'flex';
-    document.getElementById('nuCoDinhWrap2').style.display = 'flex';
-    document.getElementById('labelNamGL').innerText = "👤 Nam Giao lưu";
-    document.getElementById('labelNuGL').innerText = "👤 Nữ Giao lưu";
-  } else {
-    document.getElementById('namCoDinhWrap').style.display = 'none';
-    document.getElementById('nuCoDinhWrap2').style.display = 'none';
-    document.getElementById('labelNamGL').innerText = "🤵🏻‍♂️ Số Nam";
-    document.getElementById('labelNuGL').innerText = "👩🏻‍💼 Số Nữ";
-  }
+  document.getElementById('namCoDinhWrap').style.display = 'none';
+  document.getElementById('nuCoDinhWrap2').style.display = 'none';
+  document.getElementById('labelNamGL').innerText = "🤵🏻‍♂️ Số Nam";
+  document.getElementById('labelNuGL').innerText = "👩🏻‍💼 Số Nữ";
 }
 
 // ======================== CAU DETAIL ==========================
@@ -443,47 +376,7 @@ async function addCustomMember(gender) {
   saveMembersState();
 }
 
-// ======================== FIXED PRICE GL ======================
 
-function toggleFixedPriceMode() {
-  triggerHaptic('light');
-  isFixedPriceMode = document.getElementById('fixedPriceToggle').checked;
-  let section = document.getElementById('fixedPriceSection');
-  if (isFixedPriceMode) {
-    section.style.display = '';
-  } else {
-    section.style.display = 'none';
-  }
-  updateFixedPricePreview();
-}
-
-function updateFixedPricePreview() {
-  let namGL = parseMoney(document.getElementById('fpNamGL').value) || 0;
-  let nuGL = parseMoney(document.getElementById('fpNuGL').value) || 0;
-  let discount = parseMoney(document.getElementById('fpDiscount').value) || 0;
-  let preview = document.getElementById('fpPreview');
-  if (namGL > 0 || nuGL > 0) {
-    let namCD = namGL > discount ? namGL - discount : 0;
-    let nuCD = nuGL > discount ? nuGL - discount : 0;
-    preview.innerText = `Nam CĐ: ${Calculator.formatCurrencyValue(namCD)}₫ | Nữ CĐ: ${Calculator.formatCurrencyValue(nuCD)}₫`;
-  } else {
-    preview.innerText = 'Nhập giá để xem preview';
-  }
-}
-
-function loadFixedPriceDefaults() {
-  let settings = Storage.getSettings();
-  if (settings.fixedPriceNamGL) {
-    document.getElementById('fpNamGL').value = Calculator.formatCurrencyValue(settings.fixedPriceNamGL);
-  }
-  if (settings.fixedPriceNuGL) {
-    document.getElementById('fpNuGL').value = Calculator.formatCurrencyValue(settings.fixedPriceNuGL);
-  }
-  if (settings.fixedPriceDiscount) {
-    document.getElementById('fpDiscount').value = Calculator.formatCurrencyValue(settings.fixedPriceDiscount);
-  }
-  updateFixedPricePreview();
-}
 
 // ======================== QR ==================================
 
@@ -818,15 +711,9 @@ function processData() {
     let totalP = activeMembers.length + namGL + nuGL;
     if (totalP === 0) { alert("Chưa ai ra sân cả!"); return; }
 
-    let result;
-    if (isFixedPriceMode) {
-      let priceNamGL = parseMoney(document.getElementById('fpNamGL').value);
-      let priceNuGL = parseMoney(document.getElementById('fpNuGL').value);
-      let discount = parseMoney(document.getElementById('fpDiscount').value);
-      result = Calculator.calcSanNhaFixedPrice(totalCost, activeMembers, namGL, nuGL, priceNamGL, priceNuGL, discount);
-    } else {
-      result = Calculator.calcSanNhaAuto(totalCost, activeMembers, namGL, nuGL, settings);
-    }
+    let nuCDPrice = parseMoney(document.getElementById('sanNhaNuCD').value);
+    let glOffset = parseMoney(document.getElementById('sanNhaGLOffset').value);
+    let result = Calculator.calcSanNhaNew(totalCost, activeMembers, namGL, nuGL, nuCDPrice, glOffset);
 
     let pNamCD = result.pNamCD;
     let pNuCD = result.pNuCD;
@@ -867,8 +754,8 @@ function processData() {
       teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\\n`;
     }
 
-    // Fixed price difference badge
-    if (isFixedPriceMode && result.difference !== undefined) {
+    // Difference badge
+    if (result && result.difference !== undefined) {
       let diff = result.difference;
       let diffLabel = diff >= 0 ? 'Dư' : 'Thiếu';
       let diffColor = diff >= 0 ? '#10b981' : '#f43f5e';
@@ -973,14 +860,21 @@ document.addEventListener("DOMContentLoaded", () => {
     saveMembersState();
   }
 
-  // Fixed price defaults
-  loadFixedPriceDefaults();
-  document.getElementById('fixedPriceSection').style.display = 'none';
+  // Sân Nhà Defaults
+  let settings = Storage.getSettings();
+  document.getElementById('sanNhaNuCD').value = Calculator.formatCurrencyValue(settings.sanNhaNuCD);
+  document.getElementById('sanNhaGLOffset').value = Calculator.formatCurrencyValue(settings.sanNhaGLOffset);
 
-  // Public mode
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('public') === 'true') {
-    isPublicMode = true;
+  document.getElementById('sanNhaNuCD').addEventListener('change', function() {
+    let s = Storage.getSettings();
+    s.sanNhaNuCD = parseMoney(this.value);
+    Storage.saveSettings(s);
+  });
+  document.getElementById('sanNhaGLOffset').addEventListener('change', function() {
+    let s = Storage.getSettings();
+    s.sanNhaGLOffset = parseMoney(this.value);
+    Storage.saveSettings(s);
+  });
     document.getElementById('tabContainer').classList.add('public-mode-hidden');
     mode = 'away';
     document.getElementById('fixedTeamWrap').classList.add('hidden');

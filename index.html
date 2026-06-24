@@ -26,32 +26,7 @@
     </div>
   </div>
 
-  <!-- Settings Modal (NEW) -->
-  <div class="settings-overlay" id="settingsOverlay">
-    <div class="settings-card">
-      <h3>⚙️ Cài đặt Offset</h3>
-      <div class="settings-group">
-        <label>Nam hơn Nữ - Sân Khách (₫)</label>
-        <input type="text" id="setOffsetNam20k" inputmode="numeric">
-      </div>
-      <div class="settings-group">
-        <label>Offset Nam Cố Định (₫)</label>
-        <input type="text" id="setOffsetNamCD" inputmode="numeric">
-      </div>
-      <div class="settings-group">
-        <label>Offset Nam Giao Lưu (₫)</label>
-        <input type="text" id="setOffsetNamGL" inputmode="numeric">
-      </div>
-      <div class="settings-group">
-        <label>Offset Nữ Giao Lưu (₫)</label>
-        <input type="text" id="setOffsetNuGL" inputmode="numeric">
-      </div>
-      <div class="settings-actions">
-        <button class="btn-cancel" onclick="closeSettings()">Hủy</button>
-        <button class="btn-confirm" onclick="saveSettings()">Lưu</button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Main App -->
   <div class="app-glass">
@@ -61,10 +36,7 @@
         <div class="header-bar">
           <div class="app-title" id="mainTitle">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
           <div class="header-actions">
-            <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Chuyển đổi giao diện">🌙</button>
-            <button type="button" class="reset-btn" onclick="openSettings()" title="Cài đặt">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
+
             <button type="button" class="reset-btn" onclick="resetForm()" title="Làm mới">
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
@@ -167,33 +139,20 @@
               </div>
             </div>
 
-            <!-- NEW: Fixed Price Toggle (only visible in Sân Nhà mode) -->
-            <div class="fixed-team-wrapper" id="fixedPriceWrap" style="margin-top: 8px;">
+            <!-- NEW: Simple Sân Nhà Inputs -->
+            <div class="fixed-team-wrapper" id="sanNhaConfigWrap" style="margin-top: 8px;">
               <div class="fixed-team-inner">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
-                  <span style="font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">CỐ ĐỊNH GIÁ GL</span>
-                  <label class="switch-small">
-                    <input type="checkbox" id="fixedPriceToggle" onchange="toggleFixedPriceMode()">
-                    <span class="slider-small"></span>
-                  </label>
+                <div class="zone-title" style="margin-bottom: 8px;">THÔNG SỐ SÂN NHÀ</div>
+                <div class="guest-row anim-pop" style="margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
+                  <span class="guest-label">💸 Giá Nữ Cố Định (₫)</span>
+                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                    <input type="text" class="guest-val" id="sanNhaNuCD" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                  </div>
                 </div>
-                <div class="fixed-price-section" id="fixedPriceSection">
-                  <div class="fixed-price-inner">
-                    <div class="fixed-price-grid">
-                      <div class="fixed-price-item">
-                        <label>Giá Nam GL</label>
-                        <input type="text" id="fpNamGL" placeholder="80.000" inputmode="numeric" oninput="formatCurrency(this); updateFixedPricePreview()">
-                      </div>
-                      <div class="fixed-price-item">
-                        <label>Giá Nữ GL</label>
-                        <input type="text" id="fpNuGL" placeholder="60.000" inputmode="numeric" oninput="formatCurrency(this); updateFixedPricePreview()">
-                      </div>
-                    </div>
-                    <div class="fixed-price-discount">
-                      <label>🏷️ Mức giảm cho CĐ</label>
-                      <input type="text" id="fpDiscount" placeholder="5.000" inputmode="numeric" oninput="formatCurrency(this); updateFixedPricePreview()">
-                    </div>
-                    <div class="fixed-price-preview" id="fpPreview">Nam CĐ: 75.000₫ | Nữ CĐ: 55.000₫</div>
+                <div class="guest-row anim-pop" style="margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                  <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
+                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                    <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
                   </div>
                 </div>
               </div>
@@ -215,7 +174,6 @@
                     <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ (Sân Khách)</div>
                     <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
                     <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
-                    <div class="custom-option" id="opt-sanNha" onclick="selectMethod('sanNha', 'Luật: Quy chế Sân Nhà')">Luật: Quy chế Sân Nhà</div>
                   </div>
                 </div>
               </div>
