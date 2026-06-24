@@ -16,6 +16,7 @@ let customCount = { nam: 1, nu: 1 };
 let promptResolve;
 let lastTeleStr = '';  // stored for copy/share
 let isFixedPriceMode = false;
+let currentReceiptData = null; // for image sharing
 
 // ======================== UTILS ==============================
 
@@ -648,6 +649,16 @@ function processData() {
   let namGL = parseInt(document.getElementById('namGL').value) || 0;
   let nuGL = parseInt(document.getElementById('nuGL').value) || 0;
 
+  // Initialize sharing data
+  currentReceiptData = {
+    date: dateStr,
+    mode: mode,
+    san: san,
+    cau: cau,
+    totalCost: totalCost,
+    items: []
+  };
+
   let html = `
     <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
     <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">🏸 Tiền Cầu:</span> ${cauDisplay}</div>
@@ -691,6 +702,38 @@ function processData() {
         teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(result.pNuGL * nuGL)}</b> (${formatMoney(result.pNuGL)}/ng)\\n`;
       }
 
+      currentReceiptData.items = [];
+      if (namCD) {
+        currentReceiptData.items.push({
+          label: `Nam Cố định x${namCD}`,
+          value: `${formatMoney(result.pNam)}/ng (Tổng: ${formatMoney(result.pNam * namCD)})`,
+          type: 'member',
+          gender: 'nam'
+        });
+      }
+      if (nuCD) {
+        currentReceiptData.items.push({
+          label: `Nữ Cố định x${nuCD}`,
+          value: `${formatMoney(result.pNu)}/ng (Tổng: ${formatMoney(result.pNu * nuCD)})`,
+          type: 'member',
+          gender: 'nu'
+        });
+      }
+      if (namGL) {
+        currentReceiptData.items.push({
+          label: `Nam Giao lưu x${namGL}`,
+          value: `${formatMoney(result.pNamGL)}/ng (Tổng: ${formatMoney(result.pNamGL * namGL)})`,
+          type: 'guest'
+        });
+      }
+      if (nuGL) {
+        currentReceiptData.items.push({
+          label: `Nữ Giao lưu x${nuGL}`,
+          value: `${formatMoney(result.pNuGL)}/ng (Tổng: ${formatMoney(result.pNuGL * nuGL)})`,
+          type: 'guest'
+        });
+      }
+
     } else {
       let totalP = namGL + nuGL;
       if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
@@ -720,6 +763,22 @@ function processData() {
       if (nuGL) {
         html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`;
         teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\\n`;
+      }
+
+      currentReceiptData.items = [];
+      if (namGL) {
+        currentReceiptData.items.push({
+          label: `Nam x${namGL}`,
+          value: `${formatMoney(pNam)}/ng (Tổng: ${formatMoney(pNam * namGL)})`,
+          type: 'guest'
+        });
+      }
+      if (nuGL) {
+        currentReceiptData.items.push({
+          label: `Nữ x${nuGL}`,
+          value: `${formatMoney(pNu)}/ng (Tổng: ${formatMoney(pNu * nuGL)})`,
+          type: 'guest'
+        });
       }
     }
 
@@ -795,6 +854,32 @@ function processData() {
       html += `<div class="receipt-item"><span style="font-weight:700;">📊 Chênh lệch:</span><span class="price-badge" style="background:${diffBg}; color:${diffColor};">${diffLabel} ${formatMoney(Math.abs(diff))}</span></div>`;
       teleStr += `------------------\\n💰 Thu: ${formatMoney(result.totalCollected)} | ${diffLabel}: ${formatMoney(Math.abs(diff))}\\n`;
     }
+
+    currentReceiptData.items = [];
+    result.memberResults.forEach(mr => {
+      currentReceiptData.items.push({
+        label: mr.name,
+        value: formatMoney(mr.price),
+        type: 'member',
+        gender: mr.gender
+      });
+    });
+    if (namGL) {
+      currentReceiptData.items.push({
+        label: `Nam Giao lưu x${namGL}`,
+        value: `${formatMoney(pNamGL)}/ng (Tổng: ${formatMoney(pNamGL * namGL)})`,
+        type: 'guest'
+      });
+    }
+    if (nuGL) {
+      currentReceiptData.items.push({
+        label: `Nữ Giao lưu x${nuGL}`,
+        value: `${formatMoney(pNuGL)}/ng (Tổng: ${formatMoney(pNuGL * nuGL)})`,
+        type: 'guest'
+      });
+    }
+    currentReceiptData.totalCollected = result.totalCollected;
+    currentReceiptData.difference = result.difference;
   }
 
   triggerHaptic('success');
@@ -937,3 +1022,225 @@ document.addEventListener('click', function (event) {
   let wrapper = document.getElementById('customSelectWrapper');
   if (wrapper && !wrapper.contains(event.target)) { wrapper.classList.remove('open'); }
 });
+
+// ======================== CANVAS IMAGE SHARE ====================
+
+function drawReceiptCanvas(data) {
+  return new Promise((resolve) => {
+    const itemHeight = 42;
+    const headerHeight = 120;
+    const totalsHeight = 110;
+    const footerHeight = data.difference !== undefined ? 110 : 70;
+    const contentHeight = data.items.length * itemHeight;
+    const width = 500;
+    const height = headerHeight + totalsHeight + contentHeight + footerHeight;
+
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // Draw Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    // Header gradient
+    const grad = ctx.createLinearGradient(0, 0, width, 6);
+    grad.addColorStop(0, '#6366f1');
+    grad.addColorStop(1, '#a855f7');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, 6);
+
+    // Title
+    ctx.font = 'bold 22px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#1e293b';
+    ctx.textAlign = 'center';
+    ctx.fillText('BIÊN LAI CHI PHÍ CẦU LÔNG 🏸', width / 2, 45);
+
+    ctx.font = '600 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#64748b';
+    const modeLabel = data.mode === 'home' ? 'CHẾ ĐỘ: SÂN NHÀ' : 'CHẾ ĐỘ: SÂN KHÁCH';
+    ctx.fillText(`${modeLabel}  •  NGÀY: ${data.date}`, width / 2, 70);
+
+    drawCanvasDashedLine(ctx, 20, 90, width - 20, 90);
+
+    // Summary Info
+    ctx.textAlign = 'left';
+    ctx.font = '500 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('Tiền sân:', 30, 120);
+    ctx.fillText('Tiền cầu:', 30, 142);
+    ctx.font = 'bold 14px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText(formatMoney(data.san), 110, 120);
+    ctx.fillText(formatMoney(data.cau), 110, 142);
+
+    // Total Cost Badge
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.06)';
+    drawCanvasRoundedRect(ctx, width - 210, 105, 180, 50, 12);
+    ctx.fill();
+
+    ctx.font = '600 10px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#6366f1';
+    ctx.fillText('TỔNG CHI PHÍ', width - 195, 121);
+    ctx.font = 'bold 18px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#6366f1';
+    ctx.fillText(formatMoney(data.totalCost), width - 195, 143);
+
+    drawCanvasDashedLine(ctx, 20, 175, width - 20, 175);
+
+    // Items details
+    let y = 205;
+    data.items.forEach(item => {
+      if (item.type === 'member') {
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.03)';
+        drawCanvasRoundedRect(ctx, 20, y - 18, width - 40, 32, 8);
+        ctx.fill();
+      }
+
+      ctx.textAlign = 'left';
+      ctx.font = item.type === 'member' ? '600 13px "Be Vietnam Pro", "Segoe UI", sans-serif' : '500 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+      ctx.fillStyle = '#1e293b';
+      const labelText = item.type === 'member' ? (item.gender === 'nam' ? `🤵🏻‍♂️ ${item.label}` : `👩🏻‍💼 ${item.label}`) : item.label;
+      ctx.fillText(labelText, 30, y);
+
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+      ctx.fillStyle = item.type === 'member' ? '#6366f1' : '#1e293b';
+      ctx.fillText(item.value, width - 30, y);
+
+      y += itemHeight;
+    });
+
+    drawCanvasDashedLine(ctx, 20, y - 10, width - 20, y - 10);
+    y += 15;
+
+    if (data.difference !== undefined) {
+      ctx.textAlign = 'left';
+      ctx.font = '600 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Thu được:', 30, y + 10);
+      ctx.fillText('Chênh lệch:', 30, y + 35);
+
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 14px "Be Vietnam Pro", "Segoe UI", sans-serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.fillText(formatMoney(data.totalCollected), width - 30, y + 10);
+
+      const diff = data.difference;
+      const diffLabel = diff >= 0 ? `Dư ${formatMoney(diff)}` : `Thiếu ${formatMoney(Math.abs(diff))}`;
+      const diffColor = diff >= 0 ? '#10b981' : '#f43f5e';
+      const diffBg = diff >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)';
+
+      ctx.fillStyle = diffBg;
+      ctx.font = 'bold 13px "Be Vietnam Pro", "Segoe UI", sans-serif';
+      const textWidth = ctx.measureText(diffLabel).width;
+      const badgeWidth = textWidth + 20;
+      drawCanvasRoundedRect(ctx, width - 30 - badgeWidth, y + 20, badgeWidth, 24, 6);
+      ctx.fill();
+
+      ctx.fillStyle = diffColor;
+      ctx.fillText(diffLabel, width - 40, y + 36);
+
+      y += 50;
+    }
+
+    ctx.textAlign = 'center';
+    ctx.font = 'italic 10px "Be Vietnam Pro", "Segoe UI", sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Cầu Lông Fluid Pro • Tính toán tự động chuẩn xác 🏸', width / 2, y + 20);
+
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, 'image/png');
+  });
+}
+
+function drawCanvasDashedLine(ctx, x1, y1, x2, y2) {
+  ctx.beginPath();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawCanvasRoundedRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+async function copyReceiptImage() {
+  triggerHaptic('light');
+  if (!currentReceiptData) return;
+  try {
+    showToast('Đang tạo ảnh để copy... ⏳');
+    const blob = await drawReceiptCanvas(currentReceiptData);
+    const item = new ClipboardItem({ 'image/png': blob });
+    await navigator.clipboard.write([item]);
+    showToast('Đã copy ảnh vào bộ nhớ! 🖼️✓');
+  } catch (e) {
+    showToast('Không thể copy ảnh, hãy dùng nút "Tải Ảnh"');
+    console.error(e);
+  }
+}
+
+async function downloadReceiptImage() {
+  triggerHaptic('light');
+  if (!currentReceiptData) return;
+  try {
+    showToast('Đang chuẩn bị tải xuống... ⏳');
+    const blob = await drawReceiptCanvas(currentReceiptData);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bien_lai_${currentReceiptData.date.replace(/\//g, '-')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Đã tải ảnh xuống thiết bị! 📥✓');
+  } catch (e) {
+    showToast('Lỗi tải ảnh');
+    console.error(e);
+  }
+}
+
+async function shareReceiptImage() {
+  triggerHaptic('light');
+  if (!currentReceiptData) return;
+  try {
+    showToast('Đang tạo ảnh chia sẻ... ⏳');
+    const blob = await drawReceiptCanvas(currentReceiptData);
+    const file = new File([blob], `bien_lai_${currentReceiptData.date.replace(/\//g, '-')}.png`, { type: 'image/png' });
+    
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Biên Lai Cầu Lông',
+        text: 'Chi tiết phân bổ chi phí chơi cầu lông 🏸'
+      });
+    } else {
+      showToast('Trình duyệt không hỗ trợ chia sẻ ảnh trực tiếp, hãy dùng "Copy Ảnh" hoặc "Tải Ảnh"');
+    }
+  } catch (e) {
+    showToast('Không hỗ trợ chia sẻ trực tiếp');
+    console.error(e);
+  }
+}

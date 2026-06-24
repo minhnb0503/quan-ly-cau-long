@@ -293,8 +293,10 @@
 
           <!-- NEW: Share Actions -->
           <div class="share-actions" id="shareActions" style="display: none;">
-            <button class="share-btn share-btn-copy" id="copyBtn" onclick="copyReceipt()">📋 Copy</button>
-            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceipt()">📤 Chia sẻ</button>
+            <button class="share-btn share-btn-copy" id="copyBtn" onclick="copyReceipt()">📋 Copy Text</button>
+            <button class="share-btn share-btn-copy" id="copyImgBtn" onclick="copyReceiptImage()">🖼️ Copy Ảnh</button>
+            <button class="share-btn share-btn-share" id="downloadImgBtn" onclick="downloadReceiptImage()">📥 Tải Ảnh</button>
+            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceiptImage()">📤 Chia Sẻ Ảnh</button>
           </div>
 
           <!-- NEW: History Section -->
@@ -305,7 +307,7 @@
           
           <!-- QR Container -->
           <div id="qrContainer" style="display: none; text-align: center; padding: 10px 0;">
-            <img src="assets/qr.jpg" alt="Mã QR" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
+            <img src="qr.jpg" alt="Mã QR" style="max-width: 100%; border-radius: 16px; box-shadow: var(--shadow-soft);">
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
           
