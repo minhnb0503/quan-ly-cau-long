@@ -8,7 +8,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNEr60FdL26zfy
 let mode = 'home';
 let isCauDetailMode = false;
 let moneyHistory = { 'tienSan': [], 'tienCau': [] };
-let isPublicMode = false;
+let isPublicMode = window.location.search.includes('public=true');
 let userIPInfo = "Đang lấy IP...";
 let currentSplitMethod = 'nam20k';
 let isShowingQR = false;
@@ -114,7 +114,7 @@ function switchTab(selected) {
     tAway.classList.remove('active');
     fTeam.classList.remove('hidden');
     gTitle.innerText = "KHÁCH GIAO LƯU";
-    splitContainer.style.display = 'none';
+    document.getElementById('splitMethodContainer').style.display = 'none';
     document.getElementById('nuCoDinhWrap').style.display = 'none';
     document.getElementById('namCoDinhWrap').style.display = 'none';
     document.getElementById('nuCoDinhWrap2').style.display = 'none';
@@ -127,7 +127,7 @@ function switchTab(selected) {
     tHome.classList.remove('active');
     fTeam.classList.add('hidden');
     gTitle.innerText = "THÔNG TIN NGƯỜI CHƠI";
-    splitContainer.style.display = 'flex';
+    document.getElementById('splitMethodContainer').style.display = 'flex';
     if (fpWrap) fpWrap.style.display = 'none';
 
     if (currentSplitMethod === 'nuCoDinh') document.getElementById('nuCoDinhWrap').style.display = 'flex';
@@ -570,13 +570,25 @@ function resetForm() {
   clearUndo('tienSan');
   clearUndo('tienCau');
 
-  // Reset fixed price
-  isFixedPriceMode = false;
-  let fpToggle = document.getElementById('fixedPriceToggle');
-  if (fpToggle) fpToggle.checked = false;
-  let fpSection = document.getElementById('fixedPriceSection');
-  if (fpSection) fpSection.style.display = 'none';
-  loadFixedPriceDefaults();
+  // Reset Sân Nhà settings/toggles
+  let customToggle = document.getElementById('sanNhaCustomToggle');
+  if (customToggle) {
+    customToggle.checked = false;
+    let customOpts = document.getElementById('sanNhaCustomOptions');
+    if (customOpts) customOpts.style.display = 'none';
+  }
+  let nuGLToggle = document.getElementById('sanNhaNuGLToggle');
+  if (nuGLToggle) {
+    nuGLToggle.checked = false;
+    let nuGLWrap = document.getElementById('sanNhaNuGLInputWrap');
+    if (nuGLWrap) nuGLWrap.style.display = 'none';
+    let namHonNuWrap = document.getElementById('sanNhaNamHonNuWrap');
+    if (namHonNuWrap) namHonNuWrap.style.display = 'flex';
+  }
+  let settings = Storage.getSettings();
+  document.getElementById('sanNhaNuGL').value = Calculator.formatCurrencyValue(settings.sanNhaNuGL);
+  document.getElementById('sanNhaGLOffset').value = Calculator.formatCurrencyValue(settings.sanNhaGLOffset);
+  document.getElementById('sanNhaNamOffset').value = Calculator.formatCurrencyValue(settings.sanNhaNamOffset);
 
   // Remove custom tags, re-render from default members
   let defaultMembers = [

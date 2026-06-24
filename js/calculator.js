@@ -63,6 +63,7 @@ const Calculator = (() => {
         memberResults: activeMembers.map(m => ({
           name: m.name,
           gender: m.gender,
+          price: m.gender === 'nam' ? pNamCD : pNuCD,
           amount: m.gender === 'nam' ? pNamCD : pNuCD
         })),
         pNamCD, pNuCD, pNamGL, pNuGL,

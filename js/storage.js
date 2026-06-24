@@ -25,24 +25,52 @@ const Storage = (() => {
 
   return {
     getSettings() {
-      return _get(KEYS.SETTINGS, {
+      const defaults = {
         offsetNam20k: 20000,
+        offsetNamCD: 25000,
+        offsetNuCD: 0,
+        offsetNamGL: 30000,
+        offsetNuGL: 5000,
         sanNhaNuGL: 50000,
         sanNhaGLOffset: 5000,
         sanNhaNamOffset: 20000,
         sanNhaNuGLToggle: false
-      });
+      };
+      let s = _get(KEYS.SETTINGS, defaults);
+      let updated = false;
+      for (let k in defaults) {
+        if (s[k] === undefined) {
+          s[k] = defaults[k];
+          updated = true;
+        }
+      }
+      if (updated) {
+        _set(KEYS.SETTINGS, s);
+      }
+      return s;
     },
     saveSettings(s) { _set(KEYS.SETTINGS, s); },
 
     getMembers() {
-      return _get(KEYS.MEMBERS, [
+      const defaults = [
         { name: 'Minh', gender: 'nam', isDefault: true },
         { name: 'Thảo', gender: 'nu', isDefault: true },
         { name: 'Tú', gender: 'nam', isDefault: true },
         { name: 'Quân', gender: 'nam', isDefault: true },
         { name: 'Ly', gender: 'nu', isDefault: true }
-      ]);
+      ];
+      let list = _get(KEYS.MEMBERS, defaults);
+      let updated = false;
+      defaults.forEach(def => {
+        if (!list.some(m => m.name.toLowerCase() === def.name.toLowerCase())) {
+          list.push(def);
+          updated = true;
+        }
+      });
+      if (updated) {
+        _set(KEYS.MEMBERS, list);
+      }
+      return list;
     },
     saveMembers(members) { _set(KEYS.MEMBERS, members); },
 
