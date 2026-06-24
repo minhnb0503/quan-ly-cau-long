@@ -1190,14 +1190,26 @@ async function copyReceiptImage() {
   triggerHaptic('light');
   if (!currentReceiptData) return;
   try {
-    showToast('Đang tạo ảnh để copy... ⏳');
+    showToast('Đang tạo ảnh... ⏳');
     const blob = await drawReceiptCanvas(currentReceiptData);
-    const item = new ClipboardItem({ 'image/png': blob });
-    await navigator.clipboard.write([item]);
-    showToast('Đã copy ảnh vào bộ nhớ! 🖼️✓');
+    
+    if (typeof ClipboardItem !== 'undefined' && navigator.clipboard && navigator.clipboard.write) {
+      const item = new ClipboardItem({ 'image/png': blob });
+      await navigator.clipboard.write([item]);
+      showToast('Đã copy ảnh vào bộ nhớ! 🖼️✓');
+    } else {
+      showImgPreview(blob);
+      showToast('Không hỗ trợ copy trực tiếp, hãy chạm giữ ảnh để Copy!');
+    }
   } catch (e) {
-    showToast('Không thể copy ảnh, hãy dùng nút "Tải Ảnh"');
     console.error(e);
+    try {
+      const blob = await drawReceiptCanvas(currentReceiptData);
+      showImgPreview(blob);
+      showToast('Chạm giữ ảnh để sao chép nhé!');
+    } catch(err) {
+      showToast('Lỗi tạo ảnh');
+    }
   }
 }
 
@@ -1205,8 +1217,17 @@ async function downloadReceiptImage() {
   triggerHaptic('light');
   if (!currentReceiptData) return;
   try {
-    showToast('Đang chuẩn bị tải xuống... ⏳');
+    showToast('Đang chuẩn bị tải... ⏳');
     const blob = await drawReceiptCanvas(currentReceiptData);
+    
+    // Check if mobile or in WebView, block direct download and show preview instead
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      showImgPreview(blob);
+      showToast('Hãy chạm giữ ảnh và chọn "Lưu ảnh" nhé!');
+      return;
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -1215,10 +1236,16 @@ async function downloadReceiptImage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Đã tải ảnh xuống thiết bị! 📥✓');
+    showToast('Đã tải ảnh xuống! 📥✓');
   } catch (e) {
-    showToast('Lỗi tải ảnh');
     console.error(e);
+    try {
+      const blob = await drawReceiptCanvas(currentReceiptData);
+      showImgPreview(blob);
+      showToast('Hãy chạm giữ ảnh và chọn "Lưu ảnh" nhé!');
+    } catch(err) {
+      showToast('Lỗi tải ảnh');
+    }
   }
 }
 
@@ -1237,10 +1264,37 @@ async function shareReceiptImage() {
         text: 'Chi tiết phân bổ chi phí chơi cầu lông 🏸'
       });
     } else {
-      showToast('Trình duyệt không hỗ trợ chia sẻ ảnh trực tiếp, hãy dùng "Copy Ảnh" hoặc "Tải Ảnh"');
+      showImgPreview(blob);
+      showToast('Không hỗ trợ chia sẻ trực tiếp, hãy chạm giữ ảnh!');
     }
   } catch (e) {
-    showToast('Không hỗ trợ chia sẻ trực tiếp');
     console.error(e);
+    try {
+      const blob = await drawReceiptCanvas(currentReceiptData);
+      showImgPreview(blob);
+      showToast('Chạm giữ ảnh để gửi qua Zalo/Messenger!');
+    } catch(err) {
+      showToast('Lỗi chia sẻ ảnh');
+    }
   }
+}
+
+function showImgPreview(blob) {
+  const url = URL.createObjectURL(blob);
+  const img = document.createElement('img');
+  img.src = url;
+  img.style.maxWidth = '100%';
+  img.style.borderRadius = '12px';
+  img.style.boxShadow = 'var(--shadow-soft)';
+  
+  const container = document.getElementById('imgPreviewContainer');
+  container.innerHTML = '';
+  container.appendChild(img);
+  
+  document.getElementById('imgPreviewOverlay').classList.add('show');
+}
+
+function closeImgPreview() {
+  triggerHaptic('light');
+  document.getElementById('imgPreviewOverlay').classList.remove('show');
 }

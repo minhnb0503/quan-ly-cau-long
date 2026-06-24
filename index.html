@@ -26,7 +26,19 @@
     </div>
   </div>
 
-
+  <!-- Image Preview Modal (for mobile sharing) -->
+  <div class="settings-overlay" id="imgPreviewOverlay">
+    <div class="settings-card" style="max-width: 420px; text-align: center;">
+      <h3 style="margin-bottom: 8px;">Biên Lai Hình Ảnh 📸</h3>
+      <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
+        Chạm giữ vào ảnh bên dưới để <strong>Lưu ảnh</strong> hoặc <strong>Sao chép</strong> sang Zalo/Messenger.
+      </div>
+      <div id="imgPreviewContainer" style="background: #f8fafc; border-radius: 16px; padding: 8px; margin-bottom: 16px; min-height: 200px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--glass-border);">
+        <!-- Generated img will go here -->
+      </div>
+      <button class="history-clear-btn" style="margin-top: 0; background: var(--accent); color: white; border: none;" onclick="closeImgPreview()">Đóng</button>
+    </div>
+  </div>
 
   <!-- Main App -->
   <div class="app-glass">
