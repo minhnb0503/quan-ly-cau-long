@@ -901,6 +901,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('sanNhaNamOffset').addEventListener('change', function() {
     let s = Storage.getSettings(); s.sanNhaNamOffset = parseMoney(this.value); Storage.saveSettings(s);
   });
+  
+  if (isPublicMode) {
     document.getElementById('tabContainer').classList.add('public-mode-hidden');
     mode = 'away';
     document.getElementById('fixedTeamWrap').classList.add('hidden');
