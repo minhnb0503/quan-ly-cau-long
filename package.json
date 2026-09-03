@@ -1,0 +1,14 @@
+{
+  "name": "quan-ly-cau-long",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Ứng dụng quản lý và chia chi phí cầu lông chạy trực tiếp trên trình duyệt.",
+  "scripts": {
+    "start": "python -m http.server 4173",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check js/app.js && node --check js/storage.js && node --check js/calculator.js && node --check js/vietqr.js && node --check js/pdf-export.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

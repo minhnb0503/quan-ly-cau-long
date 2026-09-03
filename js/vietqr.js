@@ -36,8 +36,8 @@ const VietQR = (() => {
     return id + String(val.length).padStart(2, '0') + val;
   };
 
-  const generateQRString = (amount, content) => {
-    const config = getConfig();
+  const generateQRString = (amount, content, configOverride = null) => {
+    const config = configOverride || getConfig();
     if (!config || !config.bankId || !config.accountNo) return '';
     
     let payload = '';
@@ -64,9 +64,22 @@ const VietQR = (() => {
     return payload;
   };
 
-  const getConfig = () => JSON.parse(localStorage.getItem('clp_vietqr_config'));
-  const saveConfig = (c) => localStorage.setItem('clp_vietqr_config', JSON.stringify(c));
-  const hasConfig = () => !!getConfig();
+  const getConfig = () => {
+    try {
+      const config = JSON.parse(localStorage.getItem('clp_vietqr_config'));
+      return config && typeof config === 'object' ? config : null;
+    } catch { return null; }
+  };
+  const saveConfig = (bankOrConfig, accountNo, accountName) => {
+    const config = typeof bankOrConfig === 'object'
+      ? bankOrConfig
+      : { bankId: bankOrConfig, accountNo, accountName };
+    localStorage.setItem('clp_vietqr_config', JSON.stringify(config));
+  };
+  const hasConfig = () => {
+    const config = getConfig();
+    return Boolean(config?.bankId && config?.accountNo && config?.accountName);
+  };
 
   // ----- MINIMAL QR ENCODER START -----
   // Uses Byte Mode only, Error Correction Level M
@@ -472,9 +485,8 @@ const VietQR = (() => {
 
   // ----- MINIMAL QR ENCODER END -----
 
-  const renderQR = (containerEl, { amount, playerName, sessionDate, size = 200 }) => {
-    const config = getConfig();
-    const qrString = generateQRString(amount, `Chuyen tien cau long ${playerName || ''} ${sessionDate || ''}`.trim());
+  const renderQR = (containerEl, { amount, playerName, sessionDate, size = 200, config = null }) => {
+    const qrString = generateQRString(amount, `Chuyen tien cau long ${playerName || ''} ${sessionDate || ''}`.trim(), config);
     
     containerEl.innerHTML = '';
     const canvas = document.createElement('canvas');
@@ -561,17 +573,16 @@ const VietQR = (() => {
     const info = document.createElement('div');
     info.style.textAlign = 'center';
     info.style.width = '100%';
-    info.innerHTML = `
-      <div style="font-size: 24px; font-weight: 700; color: #6366f1; margin-bottom: 8px;">
-        ${amount ? amount.toLocaleString('vi-VN') + ' đ' : 'Chưa có số tiền'}
-      </div>
-      <div style="font-size: 14px; color: #666; margin-bottom: 4px;">
-        ${bank.name} - ${config.accountNo}
-      </div>
-      <div style="font-size: 16px; font-weight: 600; color: #333;">
-        ${config.accountName}
-      </div>
-    `;
+    const amountText = document.createElement('div');
+    amountText.style.cssText = 'font-size:24px;font-weight:700;color:#087f6f;margin-bottom:8px';
+    amountText.textContent = amount ? amount.toLocaleString('vi-VN') + ' đ' : 'Chưa có số tiền';
+    const accountText = document.createElement('div');
+    accountText.style.cssText = 'font-size:14px;color:#52657a;margin-bottom:4px';
+    accountText.textContent = `${bank.name} - ${config.accountNo}`;
+    const ownerText = document.createElement('div');
+    ownerText.style.cssText = 'font-size:16px;font-weight:600;color:#263b53';
+    ownerText.textContent = config.accountName;
+    info.append(amountText, accountText, ownerText);
 
     card.appendChild(qrContainer);
     card.appendChild(info);

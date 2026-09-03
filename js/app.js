@@ -1,46 +1,62 @@
 // ============================================================
-//  app.js — Cầu Lông Fluid Pro · Main Application Logic
+//  app.js — Cầu Lông Pro · Main Application Logic
 // ============================================================
 
 // ======================== 1. Constants & State ==============================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNEr60FdL26zfy-EwqlburOHdvrr5bFBK2lN6XAZftAO4lTR4G4-h0XSU-54114PJI/exec";
-
 let mode = 'home';
 let isCauDetailMode = false;
 let moneyHistory = { 'tienSan': [], 'tienCau': [] };
-let isPublicMode = window.location.search.includes('public=true');
-let userIPInfo = "Đang lấy IP...";
+let isPublicMode = new URLSearchParams(window.location.search).get('public') === 'true';
 let currentSplitMethod = 'nam20k';
 let isShowingQR = false;
 let customCount = { nam: 1, nu: 1 };
 let promptResolve;
 let lastTeleStr = '';
-let isFixedPriceMode = false;
 let currentReceiptData = null;
+let currentReceiptMode = 'home';
 let currentView = 'dashboard';
 let currentSessionId = null;
+let toastTimer = null;
+let lastFocusedElement = null;
+let imgPreviewUrl = null;
 
 // ======================== 2. Utility Functions ==============================
 
-async function fetchUserIP() {
-  try {
-    let response = await fetch('https://api.ipify.org?format=json');
-    let data = await response.json();
-    userIPInfo = data.ip;
-  } catch (error) { userIPInfo = "Không xác định"; }
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  })[char]);
 }
 
-function getOS() {
-  let userAgent = window.navigator.userAgent, platform = window.navigator.platform,
-      macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
-      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-      iosPlatforms = ['iPhone', 'iPad', 'iPod'], os = null;
-  if (macosPlatforms.indexOf(platform) !== -1) os = 'Mac OS';
-  else if (iosPlatforms.indexOf(platform) !== -1) os = 'iOS';
-  else if (windowsPlatforms.indexOf(platform) !== -1) os = 'Windows';
-  else if (/Android/.test(userAgent)) os = 'Android';
-  else if (!os && /Linux/.test(platform)) os = 'Linux';
-  return os || 'Unknown';
+function sanitizeStoredHTML(value) {
+  const template = document.createElement('template');
+  template.innerHTML = String(value || '');
+  template.content.querySelectorAll('script, iframe, object, embed, link, meta, form').forEach(node => node.remove());
+  template.content.querySelectorAll('*').forEach(node => {
+    [...node.attributes].forEach(attribute => {
+      const name = attribute.name.toLowerCase();
+      const attrValue = attribute.value.trim().toLowerCase();
+      if (name.startsWith('on') || ((name === 'href' || name === 'src') && attrValue.startsWith('javascript:'))) {
+        node.removeAttribute(attribute.name);
+      }
+    });
+  });
+  return template.innerHTML;
+}
+
+function setOverlayState(overlay, isOpen) {
+  if (!overlay) return;
+  overlay.classList.toggle('show', isOpen);
+  overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  document.body.style.overflow = isOpen || document.querySelector('.sheet-overlay.show, .settings-overlay.show, .custom-modal-overlay.show, .profile-overlay.show') ? 'hidden' : '';
+  if (isOpen) {
+    lastFocusedElement = document.activeElement;
+    const focusable = overlay.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
+    if (focusable) setTimeout(() => focusable.focus(), 50);
+  } else if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
 }
 
 function triggerHaptic(type = 'light') {
@@ -55,15 +71,17 @@ function triggerHaptic(type = 'light') {
 function showToast(message, duration) {
   let toast = document.getElementById('toast');
   if(toast) {
+    clearTimeout(toastTimer);
     toast.innerText = message;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), duration || 2500);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), duration || 2500);
   }
 }
 
 function formatCurrency(input) {
   let v = input.value.replace(/\D/g, '');
   input.value = v ? Calculator.formatCurrencyValue(parseInt(v, 10)) : "";
+  updateLiveSummary();
 }
 
 function formatMoney(n) {
@@ -82,12 +100,50 @@ function handleInputFocus(el) {
 function validateInputEmpty(el) {
   let v = el.value.replace(/\D/g, '');
   el.value = v ? Calculator.formatCurrencyValue(parseInt(v, 10)) : '';
+  updateLiveSummary();
 }
 
 function validateInputZero(el) {
   let v = el.value.replace(/\D/g, '');
   if (v === '' || isNaN(parseInt(v, 10))) { el.value = '0'; }
   else { el.value = parseInt(v, 10).toString(); }
+  updateLiveSummary();
+}
+
+function applyTheme(theme) {
+  const selected = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = selected;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', selected === 'dark' ? '#07111f' : '#f7f9fb');
+  if (typeof Storage !== 'undefined') Storage.setTheme(selected);
+  const button = document.getElementById('themeBtn');
+  if (button) {
+    button.setAttribute('aria-label', selected === 'dark' ? 'Bật giao diện sáng' : 'Bật giao diện tối');
+    button.title = selected === 'dark' ? 'Giao diện sáng' : 'Giao diện tối';
+  }
+}
+
+function toggleTheme() {
+  triggerHaptic('light');
+  applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+}
+
+function updateLiveSummary() {
+  const costEl = document.getElementById('liveTotalCost');
+  const playerEl = document.getElementById('livePlayerCount');
+  if (!costEl || !playerEl) return;
+  const courtCost = parseMoney(document.getElementById('tienSan')?.value || '');
+  const shuttleCost = isCauDetailMode
+    ? [...document.querySelectorAll('.cau-item')].reduce((total, item) => {
+        const tube = parseMoney(item.querySelector('.giaCau')?.value || '');
+        const count = parseInt(item.querySelector('.slCau')?.value || '0', 10) || 0;
+        return total + Math.round((tube / 12) * count);
+      }, 0)
+    : parseMoney(document.getElementById('tienCau')?.value || '');
+  const fixedCount = mode === 'home' ? document.querySelectorAll('#tagsGrid .player-tag.active').length : 0;
+  const guestCount = ['namGL', 'nuGL', ...(mode === 'away' && currentSplitMethod === 'sanNha' ? ['namCD', 'nuCD'] : [])]
+    .reduce((sum, id) => sum + (parseInt(document.getElementById(id)?.value || '0', 10) || 0), 0);
+  costEl.textContent = formatMoney(courtCost + shuttleCost);
+  playerEl.textContent = String(fixedCount + guestCount);
 }
 
 function updateDateDisplay(val) {
@@ -104,6 +160,7 @@ function updateDateDisplay(val) {
 function switchMainTab(tab) {
   triggerHaptic('light');
   currentView = tab;
+  document.body.classList.toggle('calc-mode', tab === 'calc');
   
   let tDash = document.getElementById('mainTabDashboard');
   let tCalc = document.getElementById('mainTabCalc');
@@ -114,6 +171,11 @@ function switchMainTab(tab) {
   let exportBtn = document.getElementById('exportBtn');
   let qrSettingsBtn = document.getElementById('qrSettingsBtn');
   let headerBackBtn = document.getElementById('headerBackBtn');
+
+  if(tDash) tDash.setAttribute('aria-selected', tab === 'dashboard' ? 'true' : 'false');
+  if(tCalc) tCalc.setAttribute('aria-selected', tab === 'calc' ? 'true' : 'false');
+  if(dashView) dashView.setAttribute('aria-hidden', tab === 'dashboard' ? 'false' : 'true');
+  if(calcView) calcView.setAttribute('aria-hidden', tab === 'calc' ? 'false' : 'true');
 
   if (tab === 'dashboard') {
     if(tDash) tDash.classList.add('active');
@@ -136,12 +198,13 @@ function switchMainTab(tab) {
     if(headerBackBtn) headerBackBtn.style.display = 'inline-flex';
     if(exportBtn) exportBtn.style.display = 'none';
     if(qrSettingsBtn) qrSettingsBtn.style.display = 'none';
+    updateLiveSummary();
   }
 }
 
 function startNewSession() {
   switchMainTab('calc');
-  resetForm();
+  resetForm(true);
   
   let today = new Date();
   let local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
@@ -162,98 +225,95 @@ function backToDashboard() {
 
 async function refreshDashboard() {
   if (typeof Storage === 'undefined' || !Storage.getStats) return;
-  
-  const stats = await Storage.getStats();
-  
-  animateCounter('statTotalSessions', stats.totalSessions);
-  animateCounter('statUnpaidTotal', stats.unpaidTotal);
-  animateCounter('statUnpaidCount', stats.unpaidCount);
-  animateCounter('statMemberCount', stats.memberCount);
-
-  const sessions = await Storage.getAllSessions();
-  renderSessionCards(sessions);
-  renderDashboardMembers();
+  try {
+    const sessions = await Storage.getAllSessions();
+    const stats = await Storage.getStats(sessions);
+    animateCounter('statTotalSessions', stats.totalSessions);
+    animateCounter('statUnpaidTotal', stats.unpaidTotal);
+    animateCounter('statUnpaidCount', stats.unpaidCount);
+    animateCounter('statMemberCount', stats.memberCount);
+    renderSessionCards(sessions);
+    renderDashboardMembers();
+  } catch (error) {
+    showToast('Không thể đọc dữ liệu trên thiết bị này. Hãy thử tải lại trang.');
+  }
 }
 
 function animateCounter(elementId, targetValue, prefix = '', suffix = '') {
   const element = document.getElementById(elementId);
   if (!element) return;
-  
-  if (elementId === 'statUnpaidTotal') {
-    element.innerText = formatMoney(targetValue);
-    return;
-  }
-  
-  const duration = 600;
-  const start = 0;
-  const startTime = performance.now();
-  
-  function update(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    
-    // Ease out quad
-    const easeProgress = progress * (2 - progress);
-    const current = Math.floor(start + (targetValue - start) * easeProgress);
-    
-    element.innerText = prefix + current + suffix;
-    
-    if (progress < 1) {
-      requestAnimationFrame(update);
-    } else {
-      element.innerText = prefix + targetValue + suffix;
-    }
-  }
-  
-  requestAnimationFrame(update);
+  element.innerText = elementId === 'statUnpaidTotal'
+    ? formatMoney(targetValue)
+    : prefix + targetValue + suffix;
 }
 
-async function renderSessionCards(sessions) {
+function createBadge(text, className) {
+  const badge = document.createElement('span');
+  badge.className = `badge ${className}`;
+  badge.textContent = text;
+  return badge;
+}
+
+function renderSessionCards(sessions) {
   const container = document.getElementById('sessionsList');
   if (!container) return;
   
   if (!sessions || sessions.length === 0) {
-    container.innerHTML = '<div class="empty-state" style="padding: 20px;"><div class="empty-text">Chưa có buổi đánh nào. Nhấn "Bắt đầu tính tiền" để tạo buổi mới!</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-text"><strong>Chưa có buổi chơi nào</strong><br>Buổi đầu tiên sẽ xuất hiện ở đây sau khi bạn chia chi phí.</div></div>';
     return;
   }
   
   // Sort by date desc
   sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
   
-  let html = '';
-  for (let i = 0; i < sessions.length; i++) {
-    const s = sessions[i];
-    const modeBadge = s.mode === 'home' ? '<span class="badge badge-home">Sân Nhà</span>' : '<span class="badge badge-away">Sân Khách</span>';
-    const statusBadge = s.status === 'open' ? '<span class="badge badge-open">Đang mở</span>' : '<span class="badge badge-closed">Đã chốt</span>';
-    
-    let unpaidBadge = '';
-    if (s.status === 'open') {
-      const unpaidCount = s.players.filter(p => !p.paid).length;
-      if (unpaidCount > 0) {
-        unpaidBadge = `<span class="badge badge-unpaid">Thiếu ${unpaidCount}</span>`;
-      }
-    }
-    
-    html += `
-      <div class="session-card" onclick="openSessionDetail('${s.id}')">
-        <div class="session-card-header">
-          <div class="session-card-date">${s.dateDisplay}</div>
-          <div class="session-card-badges">
-            ${modeBadge}
-            ${statusBadge}
-            ${unpaidBadge}
-          </div>
-        </div>
-        <div class="session-card-body">
-          <div class="session-card-total">${formatMoney(s.totalCost)}</div>
-          <div class="session-card-players">${s.players.length} người chơi</div>
-        </div>
-        <button class="btn-delete-session" onclick="event.stopPropagation(); deleteSessionCard('${s.id}')">✕</button>
-      </div>
-    `;
-  }
-  
-  container.innerHTML = html;
+  container.replaceChildren();
+  sessions.forEach(session => {
+    const players = Array.isArray(session.players) ? session.players : [];
+    const card = document.createElement('article');
+    card.className = 'session-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Mở buổi ${session.dateDisplay || ''}, ${formatMoney(Number(session.totalCost) || 0)}`);
+    card.addEventListener('click', () => openSessionDetail(session.id));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openSessionDetail(session.id); }
+    });
+
+    const header = document.createElement('div');
+    header.className = 'session-card-header';
+    const date = document.createElement('div');
+    date.className = 'session-card-date';
+    date.textContent = session.dateDisplay || session.date || 'Không rõ ngày';
+    const badges = document.createElement('div');
+    badges.className = 'session-card-badges';
+    badges.append(createBadge(session.mode === 'home' ? 'Sân nhà' : 'Sân khách', session.mode === 'home' ? 'badge-home' : 'badge-away'));
+    badges.append(createBadge(session.status === 'open' ? 'Đang mở' : 'Đã chốt', session.status === 'open' ? 'badge-open' : 'badge-closed'));
+    const unpaidCount = session.status === 'open'
+      ? players.reduce((sum, player) => sum + (!player.paid ? Math.max(1, Number(player.count) || 1) : 0), 0)
+      : 0;
+    if (unpaidCount) badges.append(createBadge(`Thiếu ${unpaidCount}`, 'badge-unpaid'));
+    header.append(date, badges);
+
+    const body = document.createElement('div');
+    body.className = 'session-card-body';
+    const total = document.createElement('div');
+    total.className = 'session-card-total';
+    total.textContent = formatMoney(Number(session.totalCost) || 0);
+    const count = document.createElement('div');
+    count.className = 'session-card-players';
+    const playerCount = players.reduce((sum, player) => sum + Math.max(1, Number(player.count) || 1), 0);
+    count.textContent = `${playerCount} người chơi`;
+    body.append(total, count);
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn-delete-session';
+    remove.setAttribute('aria-label', `Xóa buổi ${date.textContent}`);
+    remove.textContent = '✕';
+    remove.addEventListener('click', event => { event.stopPropagation(); deleteSessionCard(session.id); });
+    card.append(header, body, remove);
+    container.append(card);
+  });
 }
 
 function renderDashboardMembers() {
@@ -266,17 +326,20 @@ function renderDashboardMembers() {
     return;
   }
   
-  let html = '';
-  members.forEach(m => {
-    const emoji = m.emoji || (m.gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️');
-    html += `
-      <div class="dash-member-chip" onclick="openProfile('${m.name}')">
-        <span class="dash-member-avatar">${emoji}</span>
-        <span>${m.name}</span>
-      </div>`;
+  container.replaceChildren();
+  members.forEach(member => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'dash-member-chip';
+    button.addEventListener('click', () => openProfile(member.name));
+    const avatar = document.createElement('span');
+    avatar.className = 'dash-member-avatar';
+    avatar.textContent = member.emoji || (member.gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️');
+    const name = document.createElement('span');
+    name.textContent = member.name;
+    button.append(avatar, name);
+    container.append(button);
   });
-  
-  container.innerHTML = html;
 }
 
 // ======================== 5. Tab Switching (Home/Away) ==============================
@@ -291,6 +354,9 @@ function switchTab(selected) {
   let fTeam = document.getElementById('fixedTeamWrap');
   let gTitle = document.getElementById('guestTitle');
   let fpWrap = document.getElementById('sanNhaConfigWrap');
+
+  if(tHome) tHome.setAttribute('aria-selected', selected === 'home' ? 'true' : 'false');
+  if(tAway) tAway.setAttribute('aria-selected', selected === 'away' ? 'true' : 'false');
 
   if (selected === 'home') {
     if(ind) ind.style.transform = 'translateX(0)';
@@ -330,11 +396,14 @@ function switchTab(selected) {
     
     if (fpWrap) fpWrap.style.display = 'none';
 
-    if (currentSplitMethod === 'nuCoDinh') {
-      let nuCoDinhWrap = document.getElementById('nuCoDinhWrap');
-      if(nuCoDinhWrap) nuCoDinhWrap.style.display = 'flex';
-    }
+    let nuCoDinhWrap = document.getElementById('nuCoDinhWrap');
+    if(nuCoDinhWrap) nuCoDinhWrap.style.display = currentSplitMethod === 'nuCoDinh' ? 'flex' : 'none';
+    let namCoDinhWrap = document.getElementById('namCoDinhWrap');
+    if(namCoDinhWrap) namCoDinhWrap.style.display = currentSplitMethod === 'sanNha' ? 'flex' : 'none';
+    let nuCoDinhWrap2 = document.getElementById('nuCoDinhWrap2');
+    if(nuCoDinhWrap2) nuCoDinhWrap2.style.display = currentSplitMethod === 'sanNha' ? 'flex' : 'none';
   }
+  updateLiveSummary();
 }
 
 // ======================== 6. Dropdown ==============================
@@ -342,7 +411,10 @@ function switchTab(selected) {
 function toggleDropdown() {
   triggerHaptic('light');
   let wrapper = document.getElementById('customSelectWrapper');
-  if(wrapper) wrapper.classList.toggle('open');
+  if(wrapper) {
+    wrapper.classList.toggle('open');
+    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', wrapper.classList.contains('open') ? 'true' : 'false');
+  }
 }
 
 function selectMethod(value, text) {
@@ -353,9 +425,12 @@ function selectMethod(value, text) {
   if(splitMethodText) splitMethodText.innerText = text;
   
   let wrapper = document.getElementById('customSelectWrapper');
-  if(wrapper) wrapper.classList.remove('open');
+  if(wrapper) {
+    wrapper.classList.remove('open');
+    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
+  }
 
-  ['nam20k', 'chiaDeu', 'nuCoDinh'].forEach(v => {
+  ['nam20k', 'chiaDeu', 'nuCoDinh', 'sanNha'].forEach(v => {
     let opt = document.getElementById('opt-' + v);
     if (opt) opt.classList.remove('selected');
   });
@@ -373,16 +448,17 @@ function selectMethod(value, text) {
   }
 
   let namCoDinhWrap = document.getElementById('namCoDinhWrap');
-  if(namCoDinhWrap) namCoDinhWrap.style.display = 'none';
+  if(namCoDinhWrap) namCoDinhWrap.style.display = value === 'sanNha' ? 'flex' : 'none';
   
   let nuCoDinhWrap2 = document.getElementById('nuCoDinhWrap2');
-  if(nuCoDinhWrap2) nuCoDinhWrap2.style.display = 'none';
+  if(nuCoDinhWrap2) nuCoDinhWrap2.style.display = value === 'sanNha' ? 'flex' : 'none';
   
   let labelNamGL = document.getElementById('labelNamGL');
   if(labelNamGL) labelNamGL.innerText = "🤵🏻‍♂️ Số Nam";
   
   let labelNuGL = document.getElementById('labelNuGL');
   if(labelNuGL) labelNuGL.innerText = "👩🏻‍💼 Số Nữ";
+  updateLiveSummary();
 }
 
 // ======================== 7. Cau Detail ==============================
@@ -406,6 +482,7 @@ function toggleCauMode() {
     m2.style.gridTemplateRows = '0fr'; if(inner2) inner2.style.opacity = '0';
     m1.style.gridTemplateRows = '1fr'; if(inner1) inner1.style.opacity = '1';
   }
+  updateLiveSummary();
 }
 
 function addCauRow() {
@@ -430,6 +507,7 @@ function addCauRow() {
       </div>
   `;
   container.appendChild(row);
+  updateLiveSummary();
 }
 
 function updateCauTotal() {
@@ -451,6 +529,7 @@ function updateCauTotal() {
   let result = Calculator.calcCauDetail(items);
   let ind = document.getElementById('cauTotalIndicator');
   if(ind) ind.innerText = "Thành tiền: " + formatMoney(result.total);
+  updateLiveSummary();
   return result.total;
 }
 
@@ -471,6 +550,7 @@ function addMoney(id, amount) {
   let undoBtn = document.getElementById('undo_' + id);
   if (undoBtn) undoBtn.classList.remove('disabled');
   if (id === 'giaCau') updateCauTotal();
+  updateLiveSummary();
 }
 
 function clearMoney(id) {
@@ -489,6 +569,7 @@ function clearMoney(id) {
   let undoBtn = document.getElementById('undo_' + id);
   if (undoBtn) undoBtn.classList.remove('disabled');
   if (id === 'giaCau') updateCauTotal();
+  updateLiveSummary();
 }
 
 function undoMoney(id) {
@@ -507,6 +588,7 @@ function undoMoney(id) {
     if (undoBtn) undoBtn.classList.add('disabled');
   }
   if (id === 'giaCau') updateCauTotal();
+  updateLiveSummary();
 }
 
 function clearUndo(id) {
@@ -526,6 +608,7 @@ function stepVal(id, step) {
   let val = (parseInt(el.value, 10) || 0) + step;
   if (val < 0) val = 0;
   el.value = val;
+  updateLiveSummary();
 }
 
 // ======================== 10. Custom Prompt ==============================
@@ -548,16 +631,14 @@ function openCustomPrompt(title, defaultText) {
     }
     
     let overlay = document.getElementById('customPromptOverlay');
-    if(overlay) overlay.classList.add('show');
-
-    if(input) setTimeout(() => input.focus(), 100);
+    setOverlayState(overlay, true);
   });
 }
 
 function closeCustomPrompt(isConfirm) {
   triggerHaptic('light');
   let overlay = document.getElementById('customPromptOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
   
   if (isConfirm) {
     let input = document.getElementById('customPromptInput');
@@ -575,36 +656,62 @@ function renderMembersFromStorage() {
   let grid = document.getElementById('tagsGrid');
   if(!grid) return;
   
-  grid.innerHTML = '';
-  members.forEach(m => {
-    let tag = document.createElement('div');
-    tag.className = 'player-tag' + (m.isDefault !== false ? ' active' : '');
-    if (!m.isDefault) tag.classList.add('custom-tag');
-    tag.setAttribute('data-name', m.name);
-    tag.setAttribute('data-gender', m.gender);
-    
-    // Add long-press / double-click for profile
-    tag.onclick = function (e) { 
-      toggleTag(this); 
-    };
-    
-    let pressTimer;
-    tag.onmousedown = tag.ontouchstart = function(e) {
-      pressTimer = setTimeout(() => {
-        openProfile(m.name);
-      }, 500); // 500ms long press
-    };
-    tag.onmouseup = tag.onmouseleave = tag.ontouchend = function(e) {
-      clearTimeout(pressTimer);
-    };
+  grid.replaceChildren();
+  members.forEach(member => grid.appendChild(createMemberTag(member)));
+}
 
-    if (m.isDefault) {
-      tag.textContent = m.name;
-    } else {
-      tag.innerHTML = `${m.name} <span style="margin-left:6px; font-size:12px; color:inherit; opacity:0.6; padding: 2px 6px; border-radius:50%; background:rgba(0,0,0,0.1)" onclick="event.stopPropagation(); triggerHaptic('heavy'); this.parentElement.remove(); saveMembersState();">✕</span>`;
-    }
-    grid.appendChild(tag);
+function createMemberTag(member) {
+  const tag = document.createElement('div');
+  tag.className = `player-tag${member.active !== false ? ' active' : ''}${member.isDefault === false ? ' custom-tag' : ''}`;
+  tag.tabIndex = 0;
+  tag.setAttribute('role', 'button');
+  tag.setAttribute('aria-pressed', member.active !== false ? 'true' : 'false');
+  tag.dataset.name = member.name;
+  tag.dataset.gender = member.gender;
+  tag.dataset.default = member.isDefault === false ? 'false' : 'true';
+  tag.dataset.emoji = member.emoji || (member.gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️');
+
+  const name = document.createElement('span');
+  name.textContent = member.name;
+  tag.appendChild(name);
+
+  if (member.isDefault === false) {
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'member-remove';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', `Xóa thành viên ${member.name}`);
+    remove.addEventListener('click', event => {
+      event.stopPropagation();
+      removeMember(tag);
+    });
+    tag.appendChild(remove);
+  }
+
+  let pressTimer = null;
+  let openedProfile = false;
+  const startPress = () => {
+    openedProfile = false;
+    pressTimer = setTimeout(() => {
+      openedProfile = true;
+      openProfile(member.name);
+    }, 550);
+  };
+  const stopPress = () => clearTimeout(pressTimer);
+  tag.addEventListener('pointerdown', startPress);
+  tag.addEventListener('pointerup', stopPress);
+  tag.addEventListener('pointerleave', stopPress);
+  tag.addEventListener('click', () => {
+    if (openedProfile) { openedProfile = false; return; }
+    toggleTag(tag);
   });
+  tag.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleTag(tag);
+    }
+  });
+  return tag;
 }
 
 function saveMembersState() {
@@ -613,7 +720,9 @@ function saveMembersState() {
     members.push({
       name: tag.getAttribute('data-name'),
       gender: tag.getAttribute('data-gender'),
-      isDefault: !tag.classList.contains('custom-tag')
+      isDefault: tag.dataset.default !== 'false',
+      active: tag.classList.contains('active'),
+      emoji: tag.dataset.emoji
     });
   });
   if(typeof Storage !== 'undefined') Storage.saveMembers(members);
@@ -622,7 +731,19 @@ function saveMembersState() {
 function toggleTag(el) {
   triggerHaptic('light');
   el.classList.toggle('active');
+  el.setAttribute('aria-pressed', el.classList.contains('active') ? 'true' : 'false');
   saveMembersState();
+  updateLiveSummary();
+}
+
+function removeMember(tag) {
+  const name = tag.dataset.name || 'này';
+  if (!confirm(`Xóa ${name} khỏi danh sách thành viên?`)) return;
+  triggerHaptic('heavy');
+  tag.remove();
+  saveMembersState();
+  updateLiveSummary();
+  showToast(`Đã xóa ${name}.`);
 }
 
 async function addCustomMember(gender) {
@@ -640,28 +761,28 @@ async function addCustomMember(gender) {
     customCount[gender]++;
   }
 
+  const existingNames = [...document.querySelectorAll('#tagsGrid .player-tag')]
+    .map(tag => (tag.dataset.name || '').toLocaleLowerCase('vi'));
+  if (existingNames.includes(finalName.toLocaleLowerCase('vi'))) {
+    showToast('Tên này đã có trong danh sách.');
+    return;
+  }
+
   let grid = document.getElementById('tagsGrid');
   if(!grid) return;
   
-  let newTag = document.createElement('div');
-  newTag.className = 'player-tag active custom-tag anim-pop';
-  newTag.setAttribute('data-name', finalName);
-  newTag.setAttribute('data-gender', gender);
-  newTag.innerHTML = `${finalName} <span style="margin-left:6px; font-size:12px; color:inherit; opacity:0.6; padding: 2px 6px; border-radius:50%; background:rgba(0,0,0,0.1)" onclick="event.stopPropagation(); triggerHaptic('heavy'); this.parentElement.remove(); saveMembersState();">✕</span>`;
-  
-  let pressTimer;
-  newTag.onmousedown = newTag.ontouchstart = function(e) {
-    pressTimer = setTimeout(() => {
-      openProfile(finalName);
-    }, 500);
-  };
-  newTag.onmouseup = newTag.onmouseleave = newTag.ontouchend = function(e) {
-    clearTimeout(pressTimer);
-  };
-  
-  newTag.onclick = function () { toggleTag(this); };
+  let newTag = createMemberTag({
+    name: finalName,
+    gender,
+    isDefault: false,
+    active: true,
+    emoji: gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️'
+  });
+  newTag.classList.add('anim-pop');
   grid.appendChild(newTag);
   saveMembersState();
+  updateLiveSummary();
+  showToast(`Đã thêm ${finalName}.`);
 }
 
 // ======================== 12. Sân Nhà Config ==============================
@@ -693,13 +814,21 @@ function toggleSanNhaNuGL() {
 
 function closeSheet() {
   let sheet = document.getElementById('resultSheet');
-  if(sheet) sheet.classList.remove('show');
+  setOverlayState(sheet, false);
 }
 
 function toggleQR() {
   triggerHaptic('light');
+  if (typeof VietQR === 'undefined' || !VietQR.hasConfig()) {
+    showToast('Thiết lập tài khoản ngân hàng để tạo QR.');
+    openQRSettings();
+    return;
+  }
   isShowingQR = !isShowingQR;
   let qrBtn = document.getElementById('qrBtn');
+
+  if(tabReceipt) tabReceipt.setAttribute('aria-selected', tab === 'receipt' ? 'true' : 'false');
+  if(tabHistory) tabHistory.setAttribute('aria-selected', tab === 'history' ? 'true' : 'false');
   let content = document.getElementById('receiptContainer');
   let qrCont = document.getElementById('qrContainer');
 
@@ -707,6 +836,17 @@ function toggleQR() {
     if (isShowingQR) {
       content.style.display = 'none';
       qrCont.style.display = 'block';
+      qrCont.replaceChildren();
+      VietQR.renderQR(qrCont, {
+        amount: 0,
+        playerName: 'Chi phí cầu lông',
+        sessionDate: currentReceiptData?.date || '',
+        size: 250
+      });
+      const hint = document.createElement('p');
+      hint.textContent = 'QR nhận tiền của chủ sân';
+      hint.style.cssText = 'margin:10px 0 0;color:var(--text-sub);font-size:13px;font-weight:700';
+      qrCont.appendChild(hint);
       qrBtn.innerHTML = '🧾 Xem Biên Lai';
     } else {
       content.style.display = 'block';
@@ -736,7 +876,7 @@ function switchReceiptTab(tab) {
     if (lastTeleStr && shareActions) shareActions.style.display = '';
     if(historySection) historySection.style.display = 'none';
     if(syncStatus) syncStatus.style.display = '';
-    if (!isPublicMode && mode === 'home' && qrBtn) qrBtn.style.display = '';
+    if (qrBtn) qrBtn.style.display = !isPublicMode && currentReceiptMode === 'home' ? '' : 'none';
   } else {
     if(tabReceipt) tabReceipt.classList.remove('active');
     if(tabHistory) tabHistory.classList.add('active');
@@ -770,8 +910,8 @@ function renderHistory() {
       <div class="history-item" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 16px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-soft);" onclick="viewHistoryItem(${idx})">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">${item.date}</div>
-            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${modeLabel} · ${formatMoney(item.totalCost)}</div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">${escapeHTML(item.date)}</div>
+            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${modeLabel} · ${formatMoney(Number(item.totalCost) || 0)}</div>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <button type="button" class="btn-remove-cau" onclick="event.stopPropagation(); deleteHistoryItem(${idx})" title="Xóa">✕</button>
@@ -782,7 +922,7 @@ function renderHistory() {
   container.innerHTML = html;
 }
 
-function viewHistoryItem(idx) {
+async function viewHistoryItem(idx) {
   triggerHaptic('light');
   if(typeof Storage === 'undefined') return;
   let history = Storage.getHistory();
@@ -790,7 +930,14 @@ function viewHistoryItem(idx) {
   
   let item = history[idx];
   let content = document.getElementById('receiptContent');
-  if(content) content.innerHTML = item.receipt;
+  if(content) content.innerHTML = sanitizeStoredHTML(item.receipt);
+  currentSessionId = item.sessionId || null;
+  const tracking = document.getElementById('paymentTrackingSection');
+  if (currentSessionId && Storage.getSession) {
+    const session = await Storage.getSession(currentSessionId);
+    if (session) renderPaymentTracking(session);
+    else if (tracking) tracking.style.display = 'none';
+  } else if (tracking) tracking.style.display = 'none';
   
   lastTeleStr = item.teleStr || '';
   switchReceiptTab('receipt');
@@ -798,6 +945,7 @@ function viewHistoryItem(idx) {
 
 function deleteHistoryItem(idx) {
   triggerHaptic('heavy');
+  if (!confirm('Xóa mục lịch sử này?')) return;
   if(typeof Storage !== 'undefined') Storage.removeFromHistory(idx);
   renderHistory();
   showToast('Đã xóa! 🗑️');
@@ -805,6 +953,7 @@ function deleteHistoryItem(idx) {
 
 function clearAllHistory() {
   triggerHaptic('heavy');
+  if (!confirm('Xóa toàn bộ lịch sử tính tiền? Thao tác này không thể hoàn tác.')) return;
   if(typeof Storage !== 'undefined') Storage.clearHistory();
   renderHistory();
   showToast('Đã xóa toàn bộ lịch sử! 🗑️');
@@ -854,7 +1003,7 @@ function shareReceipt() {
 
 // ======================== 17. Reset ==============================
 
-function resetForm() {
+function resetForm(silent = false) {
   triggerHaptic('heavy');
   
   let fields = ['tienSan', 'tienCau', 'namGL', 'nuGL', 'namCD', 'nuCD'];
@@ -886,7 +1035,7 @@ function resetForm() {
     `;
   }
 
-  selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k');
+  selectMethod('nam20k', 'Nam trả hơn Nữ 20.000đ');
   clearUndo('tienSan');
   clearUndo('tienCau');
 
@@ -899,14 +1048,6 @@ function resetForm() {
   }
   
   let nuGLToggle = document.getElementById('sanNhaNuGLToggle');
-  if (nuGLToggle) {
-    nuGLToggle.checked = false;
-    let nuGLWrap = document.getElementById('sanNhaNuGLInputWrap');
-    if (nuGLWrap) nuGLWrap.style.display = 'none';
-    let namHonNuWrap = document.getElementById('sanNhaNamHonNuWrap');
-    if (namHonNuWrap) namHonNuWrap.style.display = 'flex';
-  }
-  
   if(typeof Storage !== 'undefined' && typeof Calculator !== 'undefined') {
     let settings = Storage.getSettings();
     let sanNhaNuGL = document.getElementById('sanNhaNuGL');
@@ -916,17 +1057,11 @@ function resetForm() {
     if(sanNhaNuGL) sanNhaNuGL.value = Calculator.formatCurrencyValue(settings.sanNhaNuGL);
     if(sanNhaGLOffset) sanNhaGLOffset.value = Calculator.formatCurrencyValue(settings.sanNhaGLOffset);
     if(sanNhaNamOffset) sanNhaNamOffset.value = Calculator.formatCurrencyValue(settings.sanNhaNamOffset);
-
-    // Remove custom tags, re-render from default members
-    let defaultMembers = [
-      { name: 'Minh', gender: 'nam', isDefault: true },
-      { name: 'Thảo', gender: 'nu', isDefault: true },
-      { name: 'Tú', gender: 'nam', isDefault: true },
-      { name: 'Quân', gender: 'nam', isDefault: true },
-      { name: 'Ly', gender: 'nu', isDefault: true }
-    ];
-    Storage.saveMembers(defaultMembers);
-    renderMembersFromStorage();
+    if (nuGLToggle) nuGLToggle.checked = settings.sanNhaNuGLToggle;
+    const nuGLWrap = document.getElementById('sanNhaNuGLInputWrap');
+    const namHonNuWrap = document.getElementById('sanNhaNamHonNuWrap');
+    if (nuGLWrap) nuGLWrap.style.display = settings.sanNhaNuGLToggle ? 'flex' : 'none';
+    if (namHonNuWrap) namHonNuWrap.style.display = settings.sanNhaNuGLToggle ? 'none' : 'flex';
   }
 
   if (!isPublicMode) { switchTab('home'); }
@@ -949,7 +1084,8 @@ function resetForm() {
   lastTeleStr = '';
   updateCauTotal();
   currentSessionId = null;
-  showToast('Đã làm sạch form sẵn sàng cho trận mới! 🏸');
+  updateLiveSummary();
+  if (!silent) showToast('Đã xóa nội dung buổi này.');
 }
 
 // ======================== 18. Process Data ==============================
@@ -957,7 +1093,11 @@ function resetForm() {
 async function processData() {
   let dateInput = document.getElementById('dateInput');
   let dateRaw = dateInput ? dateInput.value : '';
-  if (!dateRaw) { alert("Chọn ngày đi đã!"); return; }
+  if (!dateRaw) {
+    showToast('Vui lòng chọn ngày chơi.');
+    dateInput?.focus();
+    return;
+  }
   let dateStr = dateRaw.split('-').reverse().join('/');
 
   let tienSanEl = document.getElementById('tienSan');
@@ -991,6 +1131,11 @@ async function processData() {
   }
 
   let totalCost = san + cau;
+  if (totalCost <= 0) {
+    showToast('Nhập tiền sân hoặc tiền cầu trước khi chia.');
+    tienSanEl?.focus();
+    return;
+  }
   
   let namGLEl = document.getElementById('namGL');
   let nuGLEl = document.getElementById('nuGL');
@@ -1005,6 +1150,7 @@ async function processData() {
     totalCost: totalCost,
     items: []
   };
+  currentReceiptMode = mode;
 
   let html = `
     <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
@@ -1029,7 +1175,7 @@ async function processData() {
       let namCD = namCDEl ? parseInt(namCDEl.value, 10) || 0 : 0;
       let nuCD = nuCDEl ? parseInt(nuCDEl.value, 10) || 0 : 0;
       let totalP = namCD + nuCD + namGL + nuGL;
-      if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+      if (totalP === 0) { showToast('Hãy nhập số lượng người chơi.'); return; }
 
       let result = Calculator.calcSanNhaRule(totalCost, namCD, nuCD, namGL, nuGL, settings);
       
@@ -1068,7 +1214,7 @@ async function processData() {
 
     } else {
       let totalP = namGL + nuGL;
-      if (totalP === 0) { alert("Nhập số lượng người chơi nhé!"); return; }
+      if (totalP === 0) { showToast('Hãy nhập số lượng người chơi.'); return; }
 
       let pNam = 0, pNu = 0;
 
@@ -1119,7 +1265,7 @@ async function processData() {
     });
 
     let totalP = activeMembers.length + namGL + nuGL;
-    if (totalP === 0) { alert("Chưa ai ra sân cả!"); return; }
+    if (totalP === 0) { showToast('Hãy chọn ít nhất một người tham gia.'); return; }
 
     let sanNhaNuGL = document.getElementById('sanNhaNuGL');
     let sanNhaGLOffset = document.getElementById('sanNhaGLOffset');
@@ -1142,8 +1288,8 @@ async function processData() {
     let fixedMembersHtml = "";
     result.memberResults.forEach(mr => {
       let icon = mr.gender === 'nam' ? '🤵🏻‍♂️' : '👩🏻‍💼';
-      fixedMembersHtml += `<div class="receipt-item fixed-member"><span>${mr.name}</span> <strong class="price-badge">${formatMoney(mr.price)}</strong></div>`;
-      teleStr += `${icon} ${mr.name}: <b>${formatMoney(mr.price)}</b>\\n`;
+      fixedMembersHtml += `<div class="receipt-item fixed-member"><span>${escapeHTML(mr.name)}</span> <strong class="price-badge">${formatMoney(mr.price)}</strong></div>`;
+      teleStr += `${icon} ${String(mr.name).replace(/[<>]/g, '')}: <b>${formatMoney(mr.price)}</b>\\n`;
       playersList.push({ name: mr.name, amount: mr.price, count: 1, isGuest: false });
     });
 
@@ -1210,7 +1356,7 @@ async function processData() {
 
   if(receiptContainer) receiptContainer.style.display = 'block';
   if(qrContainer) qrContainer.style.display = 'none';
-  if (!isPublicMode && mode === 'home' && qrBtn) qrBtn.innerHTML = '💳 QR Chủ sân';
+  if (!isPublicMode && currentReceiptMode === 'home' && qrBtn) qrBtn.innerHTML = '💳 QR Chủ sân';
 
   if(receiptContainer && contentInner) {
     receiptContainer.classList.remove('anim-pop');
@@ -1228,18 +1374,9 @@ async function processData() {
   }
 
   switchReceiptTab('receipt');
-  if(resultSheet) resultSheet.classList.add('show');
+  setOverlayState(resultSheet, true);
 
   if(typeof Storage !== 'undefined') {
-    Storage.addToHistory({
-      date: dateStr,
-      mode: mode,
-      totalCost: totalCost,
-      receipt: html,
-      teleStr: teleStr,
-      timestamp: Date.now()
-    });
-    
     // Convert to session format
     let finalPlayers = playersList.map(p => ({
       name: p.name,
@@ -1265,13 +1402,35 @@ async function processData() {
       pNuGL: resultData.pNuGL || 0,
       receipt: html,
       teleStr: teleStr,
+      receiptData: currentReceiptData,
       totalCollected: resultData.totalCollected || 0,
       difference: resultData.difference || 0
     };
     
     if (Storage.createSession) {
-      const savedSession = await Storage.createSession(sessionData);
-      currentSessionId = savedSession.id;
+      let savedSession = currentSessionId ? await Storage.getSession(currentSessionId) : null;
+      if (savedSession && savedSession.status === 'open') {
+        const previousPlayers = Array.isArray(savedSession.players) ? savedSession.players : [];
+        sessionData.players = sessionData.players.map(player => {
+          const previous = previousPlayers.find(item => item.name === player.name && item.amount === player.amount);
+          return previous ? { ...player, paid: previous.paid, paidAt: previous.paidAt || null } : player;
+        });
+        savedSession = await Storage.updateSession(currentSessionId, sessionData);
+      } else {
+        savedSession = await Storage.createSession(sessionData);
+        currentSessionId = savedSession.id;
+      }
+      if (Storage.upsertHistory) {
+        Storage.upsertHistory({
+          sessionId: currentSessionId,
+          date: dateStr,
+          mode,
+          totalCost,
+          receipt: html,
+          teleStr,
+          timestamp: Date.now()
+        });
+      }
       renderPaymentTracking(savedSession);
     }
   }
@@ -1279,25 +1438,7 @@ async function processData() {
   if(statusEl) {
     statusEl.style.display = 'block';
     statusEl.style.color = '#10b981';
-
-    let payloadInfo = {
-      source: "github_web",
-      reportText: teleStr,
-      tracking: { ip: userIPInfo, os: getOS(), total_cost: totalCost, mode: mode, isPublic: isPublicMode ? "Có" : "Không" }
-    };
-
-    if (isPublicMode || APPS_SCRIPT_URL === "") {
-      statusEl.innerText = 'Tính toán thành công! ✅';
-      if (APPS_SCRIPT_URL !== "") { fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payloadInfo) }).catch(e => e); }
-    } else {
-      statusEl.innerText = 'Ting ting! Đã báo cáo cho Minh! 💸✅';
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadInfo)
-      }).catch(err => {
-        statusEl.style.color = '#f43f5e';
-        statusEl.innerText = 'Lỗi mạng, chưa gửi được báo cáo!';
-      });
-    }
+    statusEl.innerText = 'Đã lưu an toàn trên thiết bị này.';
   }
 }
 
@@ -1309,37 +1450,51 @@ function renderPaymentTracking(session) {
   if(!section || !list) return;
   
   section.style.display = 'block';
-  list.innerHTML = '';
-  
+  list.replaceChildren();
+  const players = Array.isArray(session.players) ? session.players : [];
   let hasVietQR = typeof VietQR !== 'undefined' && VietQR.hasConfig();
   
-  session.players.forEach((p, idx) => {
-    let checked = p.paid ? 'checked' : '';
-    let badgeClass = p.paid ? 'paid' : 'unpaid';
-    let badgeText = p.paid ? 'Đã thu' : 'Chưa thu';
-    
-    let qrBtnHtml = '';
-    if (!p.paid && hasVietQR && p.amount > 0) {
-      qrBtnHtml = `<button class="btn-qr-mini" onclick="openQRForPlayer('${p.name}', ${p.amount}, '${session.dateDisplay}')">💳 QR</button>`;
+  players.forEach((player, index) => {
+    const item = document.createElement('div');
+    item.className = 'payment-item';
+
+    const label = document.createElement('label');
+    label.className = 'payment-checkbox';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = Boolean(player.paid);
+    checkbox.setAttribute('aria-label', `Đánh dấu ${player.name} đã thanh toán`);
+    checkbox.addEventListener('change', () => togglePayment(session.id, index));
+    const checkmark = document.createElement('span');
+    checkmark.className = 'checkmark';
+    label.append(checkbox, checkmark);
+
+    const info = document.createElement('div');
+    info.className = 'payment-info';
+    const name = document.createElement('div');
+    name.className = 'payment-name';
+    name.textContent = player.name;
+    const amount = document.createElement('div');
+    amount.className = 'payment-amount';
+    amount.textContent = formatMoney(Number(player.amount) || 0);
+    info.append(name, amount);
+
+    const actions = document.createElement('div');
+    actions.className = 'payment-actions';
+    if (!player.paid && hasVietQR && Number(player.amount) > 0) {
+      const qr = document.createElement('button');
+      qr.type = 'button';
+      qr.className = 'btn-qr-mini';
+      qr.textContent = 'QR';
+      qr.addEventListener('click', () => openQRForPlayer(player.name, Number(player.amount), session.dateDisplay));
+      actions.appendChild(qr);
     }
-    
-    let html = `
-      <div class="payment-item">
-        <label class="payment-checkbox">
-          <input type="checkbox" onchange="togglePayment('${session.id}', ${idx})" ${checked}>
-          <span class="checkmark"></span>
-        </label>
-        <div class="payment-info">
-          <div class="payment-name">${p.name}</div>
-          <div class="payment-amount">${formatMoney(p.amount)}</div>
-        </div>
-        <div class="payment-actions">
-          ${qrBtnHtml}
-          <span class="payment-badge payment-badge-${badgeClass}">${badgeText}</span>
-        </div>
-      </div>
-    `;
-    list.insertAdjacentHTML('beforeend', html);
+    const badge = document.createElement('span');
+    badge.className = `payment-badge payment-badge-${player.paid ? 'paid' : 'unpaid'}`;
+    badge.textContent = player.paid ? 'Đã thu' : 'Chưa thu';
+    actions.appendChild(badge);
+    item.append(label, info, actions);
+    list.appendChild(item);
   });
   
   updatePaymentProgress(session);
@@ -1350,7 +1505,7 @@ async function togglePayment(sessionId, playerIdx) {
   if(typeof Storage === 'undefined') return;
   
   let session = await Storage.getSession(sessionId);
-  if (!session) return;
+  if (!session || !Array.isArray(session.players) || !session.players[playerIdx]) return;
   
   session.players[playerIdx].paid = !session.players[playerIdx].paid;
   session.players[playerIdx].paidAt = session.players[playerIdx].paid ? Date.now() : null;
@@ -1372,8 +1527,9 @@ function updatePaymentProgress(session) {
   let text = document.getElementById('paymentProgressText');
   if(!bar || !text) return;
   
-  let total = session.players.length;
-  let paid = session.players.filter(p => p.paid).length;
+  const players = Array.isArray(session.players) ? session.players : [];
+  let total = players.reduce((sum, player) => sum + Math.max(1, Number(player.count) || 1), 0);
+  let paid = players.reduce((sum, player) => sum + (player.paid ? Math.max(1, Number(player.count) || 1) : 0), 0);
   let percent = total === 0 ? 0 : Math.round((paid / total) * 100);
   
   bar.style.width = `${percent}%`;
@@ -1398,6 +1554,7 @@ async function closeCurrentSession() {
   
   await Storage.closeSession(currentSessionId);
   showToast('Đã chốt buổi thành công! ✅');
+  closeSheet();
   backToDashboard();
 }
 
@@ -1411,17 +1568,19 @@ async function openProfile(memberName) {
   if(!overlay) return;
   
   let stats = await Storage.getPlayerStats(memberName);
+  const member = Storage.getMembers().find(item => item.name === memberName);
   
   document.getElementById('profileName').innerText = memberName;
   document.getElementById('profileAvatar').innerText = memberName.charAt(0).toUpperCase();
+  document.getElementById('profileMeta').innerText = `${member?.gender === 'nu' ? 'Nữ' : 'Nam'} · Thành viên CLB`;
   document.getElementById('profTotalSessions').innerText = stats.totalSessions;
   document.getElementById('profAvgPerSession').innerText = formatMoney(stats.avgPerSession);
   document.getElementById('profTotalPaid').innerText = formatMoney(stats.totalPaid);
   
   let debtEl = document.getElementById('profDebt');
   if(debtEl) {
-    if (stats.debt > 0) {
-      debtEl.innerText = formatMoney(stats.debt);
+    if (stats.debtAmount > 0) {
+      debtEl.innerText = formatMoney(stats.debtAmount);
       debtEl.style.color = '#f43f5e';
     } else {
       debtEl.innerText = '0 đ';
@@ -1433,31 +1592,30 @@ async function openProfile(memberName) {
   let histList = document.getElementById('profileHistory');
   if(histList) {
     histList.innerHTML = '';
-    if (stats.recentSessions.length === 0) {
-      histList.innerHTML = '<div style="color:var(--text-sub); font-size:13px;">Chưa có lịch sử chơi.</div>';
+    if (stats.history.length === 0) {
+      histList.innerHTML = '<div class="empty-state"><div class="empty-text">Chưa có lịch sử chơi.</div></div>';
     } else {
-      stats.recentSessions.forEach(s => {
-        let status = s.paid ? '<span style="color:#10b981; font-size:12px;">Đã đóng</span>' : '<span style="color:#f43f5e; font-size:12px;">Chưa đóng</span>';
-        histList.innerHTML += `
-          <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--glass-border);">
-            <div style="font-size:13px;">${s.date}</div>
-            <div style="text-align:right;">
-              <div style="font-weight:600;">${formatMoney(s.amount)}</div>
-              ${status}
-            </div>
-          </div>
-        `;
+      stats.history.forEach(session => {
+        const row = document.createElement('div');
+        row.className = 'profile-history-item';
+        const date = document.createElement('span');
+        date.textContent = session.date || 'Không rõ ngày';
+        const summary = document.createElement('span');
+        summary.className = `payment-badge payment-badge-${session.paid ? 'paid' : 'unpaid'}`;
+        summary.textContent = `${formatMoney(session.amount)} · ${session.paid ? 'Đã đóng' : 'Chưa đóng'}`;
+        row.append(date, summary);
+        histList.appendChild(row);
       });
     }
   }
   
-  overlay.classList.add('show');
+  setOverlayState(overlay, true);
 }
 
 function closeProfile() {
   triggerHaptic('light');
   let overlay = document.getElementById('profileOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
 }
 
 // ======================== 21. QR Payment Functions ==============================
@@ -1480,26 +1638,52 @@ function openQRForPlayer(playerName, amount, sessionDate) {
     amtEl.innerText = formatMoney(amount);
     
     let cfg = VietQR.getConfig();
-    if(bankEl) bankEl.innerText = `${cfg.bankId} - ${cfg.accountNo}`;
+    const bank = VietQR.BANKS.find(item => item.id === cfg.bankId);
+    if(bankEl) bankEl.innerText = `${bank?.shortName || cfg.bankId} · ${cfg.accountNo}`;
     
     VietQR.renderQR(wrap, { amount: amount, playerName: playerName, sessionDate: sessionDate, size: 250 });
-    overlay.classList.add('show');
+    setOverlayState(overlay, true);
   }
 }
 
 function closeQRPayment() {
   triggerHaptic('light');
   let overlay = document.getElementById('qrPaymentOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
 }
 
 async function saveQRImage() {
-  // Uses VietQR createPaymentCard internally if needed, or simply exports the canvas
-  showToast("Chạm giữ mã QR để lưu ảnh!");
+  const canvas = document.querySelector('#qrCanvasWrap canvas');
+  if (!canvas) { showToast('Chưa có mã QR để lưu.'); return; }
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) { showToast('Không thể tạo ảnh QR.'); return; }
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `qr-cau-long-${new Date().toISOString().slice(0, 10)}.png`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast('Đã lưu ảnh QR.');
 }
 
 async function shareQRImage() {
-  showToast("Chạm giữ mã QR để sao chép/chia sẻ!");
+  const canvas = document.querySelector('#qrCanvasWrap canvas');
+  if (!canvas) { showToast('Chưa có mã QR để chia sẻ.'); return; }
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) { showToast('Không thể tạo ảnh QR.'); return; }
+  const file = new File([blob], 'qr-cau-long.png', { type: 'image/png' });
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Thanh toán chi phí cầu lông' });
+      return;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+    }
+  }
+  await saveQRImage();
+  showToast('Thiết bị không hỗ trợ chia sẻ trực tiếp; ảnh QR đã được lưu.');
 }
 
 // ======================== 22. QR Settings ==============================
@@ -1513,7 +1697,7 @@ function openQRSettings() {
   if (typeof VietQR !== 'undefined' && select.options.length <= 1) {
     VietQR.BANKS.forEach(b => {
       let opt = document.createElement('option');
-      opt.value = b.bin;
+      opt.value = b.id;
       opt.text = `${b.shortName} - ${b.name}`;
       select.add(opt);
     });
@@ -1527,28 +1711,31 @@ function openQRSettings() {
     updateQRPreview();
   }
   
-  overlay.classList.add('show');
+  setOverlayState(overlay, true);
 }
 
 function closeQRSettings() {
   triggerHaptic('light');
   let overlay = document.getElementById('qrSettingsOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
 }
 
 function saveQRSettings() {
   triggerHaptic('heavy');
   let bankId = document.getElementById('qrBankSelect').value;
-  let accountNo = document.getElementById('qrAccountNo').value.trim();
-  let accountName = document.getElementById('qrAccountName').value.trim().toUpperCase();
+  let accountNo = document.getElementById('qrAccountNo').value.replace(/\D/g, '').slice(0, 20);
+  let accountName = document.getElementById('qrAccountName').value.trim().replace(/\s+/g, ' ').toUpperCase().slice(0, 50);
+  document.getElementById('qrAccountNo').value = accountNo;
+  document.getElementById('qrAccountName').value = accountName;
   
-  if (!bankId || !accountNo || !accountName) {
+  const knownBank = typeof VietQR !== 'undefined' && VietQR.BANKS.some(bank => bank.id === bankId);
+  if (!knownBank || accountNo.length < 4 || !accountName) {
     showToast("Vui lòng nhập đủ thông tin ngân hàng!");
     return;
   }
   
   if (typeof VietQR !== 'undefined') {
-    VietQR.saveConfig(bankId, accountNo, accountName);
+    VietQR.saveConfig({ bankId, accountNo, accountName });
     showToast("Đã lưu cấu hình QR! ✅");
     closeQRSettings();
   }
@@ -1556,15 +1743,25 @@ function saveQRSettings() {
 
 function updateQRPreview() {
   let bankId = document.getElementById('qrBankSelect').value;
-  let accountNo = document.getElementById('qrAccountNo').value.trim();
+  let accountInput = document.getElementById('qrAccountNo');
+  let accountNo = accountInput.value.replace(/\D/g, '').slice(0, 20);
+  accountInput.value = accountNo;
   let accountName = document.getElementById('qrAccountName').value.trim().toUpperCase();
   let previewCont = document.getElementById('qrPreviewContainer');
+  let previewWrap = document.getElementById('qrSettingsPreview');
   
   if(bankId && accountNo && accountName && previewCont && typeof VietQR !== 'undefined') {
-    // Temporary config object for preview
-    let tempCfg = { bankId, accountNo, accountName };
-    let tempStr = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=50000&addInfo=TEST&accountName=${encodeURIComponent(accountName)}`;
-    previewCont.innerHTML = `<img src="${tempStr}" style="width:100%; border-radius:12px;">`;
+    previewCont.replaceChildren();
+    VietQR.renderQR(previewCont, {
+      amount: 50000,
+      playerName: 'Xem trước',
+      sessionDate: '',
+      size: 210,
+      config: { bankId, accountNo, accountName }
+    });
+    if (previewWrap) previewWrap.style.display = 'block';
+  } else if (previewWrap) {
+    previewWrap.style.display = 'none';
   }
 }
 
@@ -1573,13 +1770,13 @@ function updateQRPreview() {
 function openExportModal() {
   triggerHaptic('light');
   let overlay = document.getElementById('exportOverlay');
-  if(overlay) overlay.classList.add('show');
+  setOverlayState(overlay, true);
 }
 
 function closeExportModal() {
   triggerHaptic('light');
   let overlay = document.getElementById('exportOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
 }
 
 async function exportData() {
@@ -1650,12 +1847,32 @@ async function openSessionDetail(sessionId) {
   if (!session) return;
   
   currentSessionId = sessionId;
+  currentReceiptMode = session.mode === 'away' ? 'away' : 'home';
   
   // Render receipt
   let contentInner = document.getElementById('receiptContent');
-  if(contentInner) contentInner.innerHTML = session.receipt;
+  if(contentInner) contentInner.innerHTML = sanitizeStoredHTML(session.receipt);
+  currentReceiptData = session.receiptData || {
+    date: session.dateDisplay,
+    mode: session.mode,
+    san: Number(session.tienSan) || 0,
+    cau: Number(session.tienCau) || 0,
+    totalCost: Number(session.totalCost) || 0,
+    items: (Array.isArray(session.players) ? session.players : []).map(player => ({
+      label: player.name,
+      value: formatMoney(Number(player.amount) || 0),
+      type: player.isGuest ? 'guest' : 'member'
+    })),
+    totalCollected: Number(session.totalCollected) || 0,
+    difference: Number(session.difference) || 0
+  };
   
   lastTeleStr = session.teleStr || '';
+  const status = document.getElementById('syncStatus');
+  if (status) {
+    status.textContent = 'Đã lưu an toàn trên thiết bị này.';
+    status.style.color = '#10b981';
+  }
   
   // Render payment tracking
   renderPaymentTracking(session);
@@ -1664,7 +1881,7 @@ async function openSessionDetail(sessionId) {
   switchReceiptTab('receipt');
   
   let resultSheet = document.getElementById('resultSheet');
-  if(resultSheet) resultSheet.classList.add('show');
+  setOverlayState(resultSheet, true);
   
   let shareActions = document.getElementById('shareActions');
   if(shareActions) shareActions.style.display = '';
@@ -1937,7 +2154,9 @@ async function shareReceiptImage() {
 }
 
 function showImgPreview(blob) {
+  if (imgPreviewUrl) URL.revokeObjectURL(imgPreviewUrl);
   const url = URL.createObjectURL(blob);
+  imgPreviewUrl = url;
   const img = document.createElement('img');
   img.src = url;
   img.style.maxWidth = '100%';
@@ -1951,21 +2170,23 @@ function showImgPreview(blob) {
   }
   
   let overlay = document.getElementById('imgPreviewOverlay');
-  if(overlay) overlay.classList.add('show');
+  setOverlayState(overlay, true);
 }
 
 function closeImgPreview() {
   triggerHaptic('light');
   let overlay = document.getElementById('imgPreviewOverlay');
-  if(overlay) overlay.classList.remove('show');
+  setOverlayState(overlay, false);
+  if (imgPreviewUrl) {
+    URL.revokeObjectURL(imgPreviewUrl);
+    imgPreviewUrl = null;
+  }
 }
 
 // ======================== 26. Initialization ==============================
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-  // IP
-  fetchUserIP();
+  applyTheme(typeof Storage !== 'undefined' ? Storage.getTheme() : 'light');
 
   // Date
   let today = new Date();
@@ -2036,6 +2257,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Public mode
   if (isPublicMode) {
+    document.body.classList.add('public-mode');
+    let mainTabs = document.getElementById('mainTabContainer');
+    if(mainTabs) mainTabs.classList.add('public-mode-hidden');
     let tabContainer = document.getElementById('tabContainer');
     if(tabContainer) tabContainer.classList.add('public-mode-hidden');
     mode = 'away';
@@ -2052,8 +2276,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let splitMethod = document.getElementById('splitMethodContainer');
     if(splitMethod) splitMethod.style.display = 'flex';
     
-    let fpWrap = document.getElementById('fixedPriceWrap');
-    if (fpWrap) fpWrap.style.display = 'none';
   }
 
   // Share button visibility
@@ -2062,11 +2284,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (shareBtn) shareBtn.style.display = 'none';
   }
 
-  // Initialize dashboard
-  await refreshDashboard();
-
-  // Start on dashboard view
-  switchMainTab('dashboard');
+  // Start on the private dashboard or the public calculator.
+  switchMainTab(isPublicMode ? 'calc' : 'dashboard');
+  if (isPublicMode) {
+    const backButton = document.getElementById('headerBackBtn');
+    if (backButton) backButton.style.display = 'none';
+  }
+  updateLiveSummary();
 });
 
 // ======================== 27. Global click handlers ==============================
@@ -2074,6 +2298,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 document.addEventListener('click', function (event) {
   let wrapper = document.getElementById('customSelectWrapper');
   if (wrapper && !wrapper.contains(event.target)) { 
-    wrapper.classList.remove('open'); 
+    wrapper.classList.remove('open');
+    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
   }
+
+  const overlayClosers = {
+    customPromptOverlay: () => closeCustomPrompt(false),
+    profileOverlay: closeProfile,
+    qrPaymentOverlay: closeQRPayment,
+    qrSettingsOverlay: closeQRSettings,
+    exportOverlay: closeExportModal,
+    imgPreviewOverlay: closeImgPreview,
+    resultSheet: closeSheet
+  };
+  if (event.target === event.currentTarget) return;
+  const closer = event.target?.id ? overlayClosers[event.target.id] : null;
+  if (closer && event.target.classList.contains('show')) closer();
 });
+
+document.addEventListener('keydown', function (event) {
+  if (event.key !== 'Escape') return;
+  const prompt = document.getElementById('customPromptOverlay');
+  if (prompt?.classList.contains('show')) { closeCustomPrompt(false); return; }
+  const overlays = [
+    ['imgPreviewOverlay', closeImgPreview],
+    ['qrPaymentOverlay', closeQRPayment],
+    ['profileOverlay', closeProfile],
+    ['qrSettingsOverlay', closeQRSettings],
+    ['exportOverlay', closeExportModal],
+    ['resultSheet', closeSheet]
+  ];
+  const active = overlays.find(([id]) => document.getElementById(id)?.classList.contains('show'));
+  if (active) active[1]();
+});
+
+document.getElementById('calcView')?.addEventListener('input', updateLiveSummary);

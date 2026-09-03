@@ -2,23 +2,23 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Cầu Lông Fluid Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="color-scheme" content="light dark">
+  <title>Cầu Lông Pro — Quản lý chi phí CLB</title>
   <meta name="description" content="Ứng dụng quản lý CLB cầu lông - Tính tiền, theo dõi thu chi, QR thanh toán">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.0.0">
 </head>
 <body>
   <!-- Toast -->
-  <div id="toast" class="toast">Đã làm sạch form sẵn sàng cho trận mới! 🏸</div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Custom Prompt Modal -->
-  <div class="custom-modal-overlay" id="customPromptOverlay">
-    <div class="custom-modal">
+  <div class="custom-modal-overlay" id="customPromptOverlay" aria-hidden="true">
+    <div class="custom-modal" role="dialog" aria-modal="true" aria-labelledby="customPromptTitle">
       <h3 id="customPromptTitle">Nhập tên thành viên</h3>
-      <input type="text" id="customPromptInput" placeholder="Nhập tên vào đây..." autocomplete="off">
+      <label class="sr-only" for="customPromptInput">Tên thành viên</label>
+      <input type="text" id="customPromptInput" placeholder="Nhập tên vào đây..." autocomplete="off" maxlength="40">
       <div class="custom-modal-actions">
         <button class="btn-cancel" onclick="closeCustomPrompt(false)">Hủy</button>
         <button class="btn-confirm" onclick="closeCustomPrompt(true)">Xác nhận</button>
@@ -27,9 +27,9 @@
   </div>
 
   <!-- Image Preview Modal (for mobile sharing) -->
-  <div class="settings-overlay" id="imgPreviewOverlay">
-    <div class="settings-card" style="max-width: 420px; text-align: center;">
-      <h3 style="margin-bottom: 8px;">Biên Lai Hình Ảnh 📸</h3>
+  <div class="settings-overlay" id="imgPreviewOverlay" aria-hidden="true">
+    <div class="settings-card" role="dialog" aria-modal="true" aria-labelledby="imgPreviewTitle" style="max-width: 420px; text-align: center;">
+      <h3 id="imgPreviewTitle" style="margin-bottom: 8px;">Biên lai hình ảnh</h3>
       <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
         Chạm giữ vào ảnh bên dưới để <strong>Lưu ảnh</strong> hoặc <strong>Sao chép</strong> sang Zalo/Messenger.
       </div>
@@ -41,8 +41,8 @@
   </div>
 
   <!-- ===== PROFILE MODAL ===== -->
-  <div class="profile-overlay" id="profileOverlay">
-    <div class="profile-card">
+  <div class="profile-overlay" id="profileOverlay" aria-hidden="true">
+    <div class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profileName">
       <div class="profile-avatar" id="profileAvatar">🤵🏻‍♂️</div>
       <div class="profile-name" id="profileName">Minh</div>
       <div class="profile-meta" id="profileMeta">Nam · Cố định</div>
@@ -78,9 +78,9 @@
   </div>
 
   <!-- ===== QR PAYMENT MODAL ===== -->
-  <div class="profile-overlay" id="qrPaymentOverlay">
-    <div class="profile-card" style="max-width: 360px;">
-      <h3 style="text-align: center; margin-bottom: 16px;">💳 Thanh Toán QR</h3>
+  <div class="profile-overlay" id="qrPaymentOverlay" aria-hidden="true">
+    <div class="profile-card" role="dialog" aria-modal="true" aria-labelledby="qrPaymentTitle" style="max-width: 360px;">
+      <h3 id="qrPaymentTitle" style="text-align: center; margin-bottom: 16px;">Thanh toán QR</h3>
       <div class="qr-canvas-wrap" id="qrCanvasWrap">
         <!-- QR canvas will be rendered here -->
       </div>
@@ -98,21 +98,21 @@
   </div>
 
   <!-- ===== QR SETTINGS MODAL ===== -->
-  <div class="settings-overlay" id="qrSettingsOverlay">
-    <div class="settings-card" style="max-width: 380px;">
-      <h3>⚙️ Cài Đặt Thanh Toán QR</h3>
+  <div class="settings-overlay" id="qrSettingsOverlay" aria-hidden="true">
+    <div class="settings-card" role="dialog" aria-modal="true" aria-labelledby="qrSettingsTitle" style="max-width: 380px;">
+      <h3 id="qrSettingsTitle">Cài đặt thanh toán QR</h3>
       <div class="settings-group">
-        <label>Ngân hàng</label>
+        <label for="qrBankSelect">Ngân hàng</label>
         <select id="qrBankSelect" class="bank-select" onchange="updateQRPreview()">
           <option value="">-- Chọn ngân hàng --</option>
         </select>
       </div>
       <div class="settings-group">
-        <label>Số tài khoản</label>
+        <label for="qrAccountNo">Số tài khoản</label>
         <input type="text" id="qrAccountNo" placeholder="Nhập số tài khoản" inputmode="numeric" oninput="updateQRPreview()">
       </div>
       <div class="settings-group">
-        <label>Tên chủ tài khoản</label>
+        <label for="qrAccountName">Tên chủ tài khoản</label>
         <input type="text" id="qrAccountName" placeholder="VD: NGUYEN VAN A" oninput="updateQRPreview()">
       </div>
       <div id="qrSettingsPreview" style="text-align: center; padding: 16px; margin-top: 8px; background: rgba(99,102,241,0.05); border-radius: 16px; display: none;">
@@ -127,9 +127,9 @@
   </div>
 
   <!-- ===== EXPORT MODAL ===== -->
-  <div class="settings-overlay" id="exportOverlay">
-    <div class="settings-card" style="max-width: 380px;">
-      <h3>📦 Quản Lý Dữ Liệu</h3>
+  <div class="settings-overlay" id="exportOverlay" aria-hidden="true">
+    <div class="settings-card" role="dialog" aria-modal="true" aria-labelledby="dataTitle" style="max-width: 380px;">
+      <h3 id="dataTitle">Sao lưu dữ liệu</h3>
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <button class="share-btn share-btn-share" style="width: 100%; min-width: auto; padding: 16px;" onclick="exportData()">
           📤 Xuất dữ liệu (JSON Backup)
@@ -148,7 +148,7 @@
     <div class="main-wrapper">
 
       <!-- ===== LEFT COL ===== -->
-      <div class="left-col">
+      <main class="left-col" id="mainContent">
 
         <!-- Header -->
         <div class="header-bar">
@@ -156,16 +156,22 @@
             <button type="button" class="header-back-btn" id="headerBackBtn" onclick="backToDashboard()" title="Quay lại" style="display: none;">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            <div class="app-title" id="mainTitle">Cầu Lông <span style="color: var(--accent)">Pro</span></div>
+            <div class="brand-mark" aria-hidden="true">CL</div>
+            <div class="app-title" id="mainTitle">Cầu Lông <span>Pro</span></div>
           </div>
           <div class="header-actions">
-            <button type="button" class="reset-btn" id="exportBtn" onclick="openExportModal()" title="Dữ liệu">
+            <button type="button" class="reset-btn tool-btn" id="exportBtn" onclick="openExportModal()" title="Sao lưu dữ liệu" aria-label="Sao lưu dữ liệu">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Dữ liệu</span>
             </button>
-            <button type="button" class="reset-btn" id="qrSettingsBtn" onclick="openQRSettings()" title="Cài QR">
+            <button type="button" class="reset-btn tool-btn" id="qrSettingsBtn" onclick="openQRSettings()" title="Cài đặt QR" aria-label="Cài đặt QR">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v3h-3"/><path d="M14 20h3"/><path d="M20 20h0"/></svg>
+              <span>QR</span>
             </button>
-            <button type="button" class="reset-btn" id="resetBtn" onclick="resetForm()" title="Làm mới" style="display: none;">
+            <button type="button" class="reset-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện" aria-label="Bật giao diện tối">
+              <svg id="themeIcon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+            </button>
+            <button type="button" class="reset-btn" id="resetBtn" onclick="resetForm()" title="Xóa nội dung buổi này" aria-label="Xóa nội dung buổi này" style="display: none;">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
             <div class="date-chip" id="dateChip" style="display: none;" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
@@ -176,17 +182,24 @@
         </div>
 
         <!-- ===== MAIN TABS: Dashboard / Tính Tiền ===== -->
-        <div class="main-tabs" id="mainTabContainer">
-          <div class="main-tab active" id="mainTabDashboard" onclick="switchMainTab('dashboard')">
+        <nav class="main-tabs" id="mainTabContainer" aria-label="Điều hướng chính" role="tablist">
+          <button type="button" class="main-tab active" id="mainTabDashboard" onclick="switchMainTab('dashboard')" role="tab" aria-controls="dashboardView" aria-selected="true">
             <span>📊</span> <span>Tổng Quan</span>
-          </div>
-          <div class="main-tab" id="mainTabCalc" onclick="switchMainTab('calc')">
+          </button>
+          <button type="button" class="main-tab" id="mainTabCalc" onclick="switchMainTab('calc')" role="tab" aria-controls="calcView" aria-selected="false">
             <span>🏸</span> <span>Tính Tiền</span>
-          </div>
-        </div>
+          </button>
+        </nav>
 
         <!-- ==================== DASHBOARD VIEW ==================== -->
-        <div class="dashboard-view" id="dashboardView">
+        <section class="dashboard-view" id="dashboardView" role="tabpanel" aria-labelledby="mainTabDashboard">
+          <div class="dashboard-heading">
+            <div>
+              <p class="eyebrow">TỔNG QUAN CÂU LẠC BỘ</p>
+              <h1>Hôm nay mình đánh thế nào?</h1>
+            </div>
+            <p class="dashboard-copy">Theo dõi tiền chưa thu, thành viên và các buổi gần nhất ngay tại đây.</p>
+          </div>
 
           <!-- Stats Cards -->
           <div class="stats-grid">
@@ -224,7 +237,7 @@
           <button type="button" class="btn-new-session-banner" onclick="startNewSession()">
             <div class="banner-left">
               <span class="banner-icon">🏸</span>
-              <span>Tạo Buổi Chơi Mới</span>
+              <span><strong>Tạo buổi chơi mới</strong><small>Nhập chi phí và chia tiền trong khoảng một phút</small></span>
             </div>
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
@@ -245,19 +258,24 @@
           </div>
           <div class="sessions-list" id="sessionsList">
             <div class="empty-state" style="padding: 24px;">
-              <div class="empty-text">Chưa có buổi chơi nào.<br>Bấm <strong>"Tạo buổi chơi mới"</strong> ở trên để bắt đầu! 🏸</div>
+              <div class="empty-text"><strong>Chưa có buổi chơi nào</strong><br>Buổi đầu tiên sẽ xuất hiện ở đây sau khi bạn chia chi phí.</div>
             </div>
           </div>
 
-        </div>
+        </section>
 
         <!-- ==================== CALC VIEW (original form) ==================== -->
-        <div class="calc-view" id="calcView" style="display: none;">
+        <section class="calc-view" id="calcView" style="display: none;" role="tabpanel" aria-labelledby="mainTabCalc">
 
-          <div class="fluid-tabs" id="tabContainer">
+          <div class="calc-heading">
+            <div><p class="eyebrow">BUỔI CHƠI MỚI</p><h1>Chia chi phí</h1></div>
+            <p>Nhập tổng chi phí, chọn người tham gia rồi kiểm tra kết quả trước khi thu tiền.</p>
+          </div>
+
+          <div class="fluid-tabs" id="tabContainer" role="tablist" aria-label="Loại sân">
             <div class="tab-indicator" id="tabIndicator"></div>
-            <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
-            <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
+            <button type="button" class="tab active" id="tabHome" onclick="switchTab('home')" role="tab" aria-selected="true">Sân Nhà</button>
+            <button type="button" class="tab" id="tabAway" onclick="switchTab('away')" role="tab" aria-selected="false">Sân Khách</button>
           </div>
 
           <div class="form-content-grid">
@@ -265,7 +283,7 @@
             <div class="money-display-zone">
               <div class="money-input-group">
                 <div class="money-header">
-                   <span class="money-label">TỔNG TIỀN SÂN</span>
+                   <label class="money-label" for="tienSan"><span class="step-number">1</span> Tổng tiền sân</label>
                 </div>
                 <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
                 <div class="quick-chips">
@@ -281,11 +299,11 @@
 
               <div class="money-input-group" style="padding-bottom: 16px;">
                 <div class="money-header">
-                   <span class="money-label">TIỀN CẦU</span>
+                   <label class="money-label" for="tienCau"><span class="step-number">2</span> Tiền cầu</label>
                    <div class="switch-small-wrap">
                      <span>CHI TIẾT</span>
                      <label class="switch-small">
-                       <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                       <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()" aria-label="Nhập chi tiết giá và số lượng cầu">
                        <span class="slider-small"></span>
                      </label>
                    </div>
@@ -334,7 +352,8 @@
             <div class="members-zone">
               <div class="fixed-team-wrapper" id="fixedTeamWrap">
                 <div class="fixed-team-inner">
-                  <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
+                  <div class="zone-title"><span class="step-number">3</span> Chọn thành viên tham gia</div>
+                  <p class="section-help">Chạm vào tên để chọn hoặc bỏ chọn. Giữ lâu để xem hồ sơ.</p>
                   <div class="tags-grid" id="tagsGrid">
                     <!-- Rendered from Storage -->
                   </div>
@@ -396,16 +415,17 @@
                 
                 <div class="split-method-container" id="splitMethodContainer" style="display: none;">
                   <div class="custom-select-wrapper" id="customSelectWrapper">
-                    <div class="custom-select-trigger" onclick="toggleDropdown()">
-                      <span id="splitMethodText">Luật: Nam nộp hơn Nữ 20k</span>
+                    <button type="button" class="custom-select-trigger" onclick="toggleDropdown()" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="splitMethodText">Nam trả hơn Nữ 20.000đ</span>
                       <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="6 9 12 15 18 9"></polyline>
                       </svg>
-                    </div>
-                    <div class="custom-select-options">
-                      <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ (Sân Khách)</div>
-                      <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
-                      <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
+                    </button>
+                    <div class="custom-select-options" role="listbox" aria-label="Cách chia chi phí">
+                      <button type="button" class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Nam trả hơn Nữ 20.000đ')">Nam trả hơn Nữ 20.000đ</button>
+                      <button type="button" class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Chia đều cho mọi người')">Chia đều cho mọi người</button>
+                      <button type="button" class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Nữ trả mức cố định')">Nữ trả mức cố định</button>
+                      <button type="button" class="custom-option" id="opt-sanNha" onclick="selectMethod('sanNha', 'Áp dụng luật sân nhà')">Áp dụng luật sân nhà</button>
                     </div>
                   </div>
                 </div>
@@ -456,31 +476,36 @@
 
           </div> 
           
+          <div class="live-summary" id="liveSummary" aria-live="polite">
+            <div><span>Tổng chi phí</span><strong id="liveTotalCost">0 ₫</strong></div>
+            <div><span>Người tham gia</span><strong id="livePlayerCount">0</strong></div>
+          </div>
+
           <div class="calc-action-bar">
             <button type="button" class="btn-massive" onclick="processData()">
               <svg class="icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-              Phân Bổ Chi Phí
+              Chia chi phí
             </button>
           </div>
 
-        </div> <!-- end calc-view -->
+        </section> <!-- end calc-view -->
 
-      </div> <!-- end left-col -->
+      </main> <!-- end left-col -->
 
       <!-- ===== RESULT SHEET ===== -->
-      <div class="sheet-overlay" id="resultSheet">
-        <div class="sheet-card">
+      <div class="sheet-overlay" id="resultSheet" aria-hidden="true">
+        <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
           <div class="receipt-header-flex">
-            <div class="receipt-title">Biên Lai 🎉</div>
+            <div class="receipt-title" id="receiptTitle">Kết quả chia tiền</div>
             <div style="display: flex; gap: 8px;">
               <button type="button" class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
             </div>
           </div>
           
           <!-- Receipt/History Tabs -->
-          <div class="receipt-tabs">
-            <div class="receipt-tab active" id="tabReceipt" onclick="switchReceiptTab('receipt')">🧾 Biên Lai</div>
-            <div class="receipt-tab" id="tabHistory" onclick="switchReceiptTab('history')">📋 Lịch Sử</div>
+          <div class="receipt-tabs" role="tablist" aria-label="Nội dung kết quả">
+            <button type="button" class="receipt-tab active" id="tabReceipt" onclick="switchReceiptTab('receipt')" role="tab" aria-selected="true">🧾 Biên lai</button>
+            <button type="button" class="receipt-tab" id="tabHistory" onclick="switchReceiptTab('history')" role="tab" aria-selected="false">📋 Lịch sử</button>
           </div>
 
           <div id="syncStatus">Trạng thái đồng bộ...</div>
@@ -526,7 +551,7 @@
           <!-- History Section -->
           <div class="history-section" id="historySection" style="display: none;">
             <div id="historyList"></div>
-            <button class="history-clear-btn" id="clearHistoryBtn" onclick="clearHistory()" style="display: none;">🗑️ Xóa toàn bộ lịch sử</button>
+            <button class="history-clear-btn" id="clearHistoryBtn" onclick="clearAllHistory()" style="display: none;">🗑️ Xóa toàn bộ lịch sử</button>
           </div>
           
           <!-- QR Container -->
@@ -541,10 +566,10 @@
     </div>
   </div>
 
-  <script src="js/storage.js"></script>
-  <script src="js/calculator.js"></script>
-  <script src="js/vietqr.js"></script>
-  <script src="js/pdf-export.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/storage.js?v=2.0.0"></script>
+  <script src="js/calculator.js?v=2.0.0"></script>
+  <script src="js/vietqr.js?v=2.0.0"></script>
+  <script src="js/pdf-export.js?v=2.0.0"></script>
+  <script src="js/app.js?v=2.0.0"></script>
 </body>
 </html>

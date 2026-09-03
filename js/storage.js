@@ -1,5 +1,30 @@
 const Storage = (() => {
-    // Legacy Sync methods
+    const DEFAULT_MEMBERS = [
+        { name: 'Minh', gender: 'nam', isDefault: true, active: true, emoji: '🤵🏻‍♂️' },
+        { name: 'Thảo', gender: 'nu', isDefault: true, active: true, emoji: '👩🏻‍💼' },
+        { name: 'Tú', gender: 'nam', isDefault: true, active: true, emoji: '🤵🏻‍♂️' },
+        { name: 'Quân', gender: 'nam', isDefault: true, active: true, emoji: '🤵🏻‍♂️' },
+        { name: 'Ly', gender: 'nu', isDefault: true, active: true, emoji: '👩🏻‍💼' }
+    ];
+
+    const safeParse = (value, fallback) => {
+        if (!value) return fallback;
+        try { return JSON.parse(value); } catch { return fallback; }
+    };
+
+    const normalizeMember = (member) => {
+        const name = String(member?.name || '').trim().slice(0, 40);
+        const gender = member?.gender === 'nu' ? 'nu' : 'nam';
+        return {
+            name,
+            gender,
+            isDefault: member?.isDefault !== false,
+            active: member?.active !== false,
+            emoji: member?.emoji || (gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️')
+        };
+    };
+
+    // Synchronous preferences kept small for fast startup.
     const getSettings = () => {
         const defaults = {
             offsetNam20k: 20000,
@@ -12,7 +37,8 @@ const Storage = (() => {
             sanNhaNamOffset: 20000,
             sanNhaNuGLToggle: false
         };
-        let s = JSON.parse(localStorage.getItem('clp_settings')) || {};
+        let s = safeParse(localStorage.getItem('clp_settings'), {});
+        if (!s || typeof s !== 'object' || Array.isArray(s)) s = {};
         let updated = false;
         for (let k in defaults) {
             if (s[k] === undefined) { s[k] = defaults[k]; updated = true; }
@@ -23,27 +49,38 @@ const Storage = (() => {
     const saveSettings = (s) => localStorage.setItem('clp_settings', JSON.stringify(s));
     
     const getMembers = () => {
-        let m = JSON.parse(localStorage.getItem('clp_members'));
-        if (!m || m.length === 0) {
-            m = [
-              { name: 'Minh', gender: 'nam', isDefault: true, emoji: '🤵🏻‍♂️' },
-              { name: 'Thảo', gender: 'nu', isDefault: true, emoji: '👩🏻‍💼' },
-              { name: 'Tú', gender: 'nam', isDefault: true, emoji: '🤵🏻‍♂️' },
-              { name: 'Quân', gender: 'nam', isDefault: true, emoji: '🤵🏻‍♂️' },
-              { name: 'Ly', gender: 'nu', isDefault: true, emoji: '👩🏻‍💼' }
-            ];
+        const stored = localStorage.getItem('clp_members');
+        let m = stored === null ? null : safeParse(stored, null);
+        if (!Array.isArray(m)) {
+            m = DEFAULT_MEMBERS.map(member => ({ ...member }));
             saveMembers(m);
+            return m;
         }
-        return m;
+        const names = new Set();
+        const normalized = m
+            .map(normalizeMember)
+            .filter(member => member.name && !names.has(member.name.toLocaleLowerCase('vi')) && names.add(member.name.toLocaleLowerCase('vi')));
+        return normalized;
     };
-    const saveMembers = (m) => localStorage.setItem('clp_members', JSON.stringify(m));
+    const saveMembers = (m) => localStorage.setItem('clp_members', JSON.stringify(Array.isArray(m) ? m.map(normalizeMember).filter(member => member.name) : []));
 
-    const getHistory = () => JSON.parse(localStorage.getItem('clp_history')) || [];
+    const getHistory = () => {
+        const history = safeParse(localStorage.getItem('clp_history'), []);
+        return Array.isArray(history) ? history : [];
+    };
     const saveHistory = (h) => localStorage.setItem('clp_history', JSON.stringify(h));
     const addToHistory = (entry) => {
         const h = getHistory();
         h.unshift({ ...entry, id: Date.now() });
         saveHistory(h);
+    };
+    const upsertHistory = (entry) => {
+        const history = getHistory();
+        const index = entry.sessionId ? history.findIndex(item => item.sessionId === entry.sessionId) : -1;
+        const normalized = { ...entry, id: index >= 0 ? history[index].id : Date.now() };
+        if (index >= 0) history[index] = normalized;
+        else history.unshift(normalized);
+        saveHistory(history.slice(0, 200));
     };
     const removeFromHistory = (idx) => {
         const h = getHistory();
@@ -52,10 +89,10 @@ const Storage = (() => {
     };
     const clearHistory = () => localStorage.removeItem('clp_history');
 
-    const getTheme = () => localStorage.getItem('clp_theme') || 'light';
-    const setTheme = (t) => localStorage.setItem('clp_theme', t);
+    const getTheme = () => localStorage.getItem('clp_theme') === 'dark' ? 'dark' : 'light';
+    const setTheme = (t) => localStorage.setItem('clp_theme', t === 'dark' ? 'dark' : 'light');
 
-    const getFormState = () => JSON.parse(localStorage.getItem('clp_form'));
+    const getFormState = () => safeParse(localStorage.getItem('clp_form'), null);
     const saveFormState = (s) => localStorage.setItem('clp_form', JSON.stringify(s));
     const clearFormState = () => localStorage.removeItem('clp_form');
 
@@ -103,7 +140,7 @@ const Storage = (() => {
     // New Async methods
     const createSession = async (sessionData) => {
         const db = await getDB();
-        const id = 'ses_' + Date.now();
+        const id = `ses_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
         const session = { ...sessionData, id, createdAt: Date.now() };
         return new Promise((resolve, reject) => {
             const tx = db.transaction(['sessions'], 'readwrite');
@@ -217,18 +254,18 @@ const Storage = (() => {
         return total;
     };
 
-    const getStats = async () => {
-        const sessions = await getAllSessions();
-        const openSessions = await getOpenSessions();
+    const getStats = async (knownSessions = null) => {
+        const sessions = Array.isArray(knownSessions) ? knownSessions : await getAllSessions();
+        const openSessions = sessions.filter(session => session.status === 'open');
         let unpaidTotal = 0;
-        let unpaidCount = 0;
+        const unpaidPlayers = new Set();
         
         openSessions.forEach(s => {
             if (s.players) {
                 s.players.forEach(p => {
                     if (!p.paid) {
                         unpaidTotal += (p.amount || 0);
-                        unpaidCount++;
+                        unpaidPlayers.add(p.name);
                     }
                 });
             }
@@ -239,7 +276,7 @@ const Storage = (() => {
         return {
             totalSessions: sessions.length,
             unpaidTotal,
-            unpaidCount,
+            unpaidCount: unpaidPlayers.size,
             memberCount: m.length
         };
     };
@@ -248,6 +285,7 @@ const Storage = (() => {
         const sessions = await getAllSessions();
         let totalSessions = 0;
         let totalPaid = 0;
+        let totalAmount = 0;
         let debtAmount = 0;
         const history = [];
 
@@ -256,6 +294,7 @@ const Storage = (() => {
                 const p = s.players.find(pl => pl.name === playerName);
                 if (p) {
                     totalSessions++;
+                    totalAmount += (p.amount || 0);
                     history.push({
                         sessionId: s.id,
                         date: s.dateDisplay,
@@ -271,7 +310,7 @@ const Storage = (() => {
             }
         });
 
-        const avgPerSession = totalSessions ? Math.round(totalPaid / totalSessions) : 0;
+        const avgPerSession = totalSessions ? Math.round(totalAmount / totalSessions) : 0;
 
         return {
             totalSessions,
@@ -305,31 +344,34 @@ const Storage = (() => {
         data.localMembers = getMembers();
         data.localHistory = getHistory();
         data.theme = getTheme();
+        data.schemaVersion = 2;
+        data.exportedAt = new Date().toISOString();
         
         return JSON.stringify(data);
     };
 
     const importAll = async (jsonString) => {
         const data = JSON.parse(jsonString);
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid backup');
         const db = await getDB();
         const collections = ['sessions', 'members', 'settings', 'payments'];
         
         for (const col of collections) {
-            if (data[col] && data[col].length) {
+            if (Array.isArray(data[col])) {
                 await new Promise((resolve, reject) => {
                     const tx = db.transaction([col], 'readwrite');
                     const store = tx.objectStore(col);
                     tx.oncomplete = () => resolve();
                     tx.onerror = () => reject(tx.error);
-                    
+                    store.clear();
                     data[col].forEach(item => store.put(item));
                 });
             }
         }
         
-        if (data.localSettings) saveSettings(data.localSettings);
-        if (data.localMembers) saveMembers(data.localMembers);
-        if (data.localHistory) localStorage.setItem('clp_history', JSON.stringify(data.localHistory));
+        if (data.localSettings && typeof data.localSettings === 'object') saveSettings(data.localSettings);
+        if (Array.isArray(data.localMembers)) saveMembers(data.localMembers);
+        if (Array.isArray(data.localHistory)) saveHistory(data.localHistory.slice(0, 200));
         if (data.theme) setTheme(data.theme);
         
         return true;
@@ -339,7 +381,7 @@ const Storage = (() => {
         // Sync
         getSettings, saveSettings,
         getMembers, saveMembers,
-        getHistory, addToHistory, removeFromHistory, clearHistory,
+        getHistory, addToHistory, upsertHistory, removeFromHistory, clearHistory,
         getTheme, setTheme,
         getFormState, saveFormState, clearFormState,
         

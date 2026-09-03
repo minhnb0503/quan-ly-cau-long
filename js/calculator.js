@@ -118,9 +118,9 @@ const Calculator = (() => {
       const totalP = namCD + nuCD + namGL + nuGL;
       if (totalP === 0) return null;
 
-      const oNamCD = settings.offsetNamCD || 25000;
-      const oNamGL = settings.offsetNamGL || 30000;
-      const oNuGL = settings.offsetNuGL || 5000;
+      const oNamCD = settings.offsetNamCD ?? 25000;
+      const oNamGL = settings.offsetNamGL ?? 30000;
+      const oNuGL = settings.offsetNuGL ?? 5000;
 
       const offsetGL = (namGL * oNamGL) + (nuGL * oNuGL);
       const offsetFixed = namCD * oNamCD;
@@ -154,3 +154,7 @@ const Calculator = (() => {
     }
   };
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Calculator;
+}
