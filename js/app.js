@@ -102,7 +102,6 @@ function updateDateDisplay(val) {
 // ======================== 3. Main Tab Switching ==============================
 
 function switchMainTab(tab) {
-  if (currentView === tab) return;
   triggerHaptic('light');
   currentView = tab;
   
@@ -112,22 +111,31 @@ function switchMainTab(tab) {
   let calcView = document.getElementById('calcView');
   let resetBtn = document.getElementById('resetBtn');
   let dateChip = document.getElementById('dateChip');
+  let exportBtn = document.getElementById('exportBtn');
+  let qrSettingsBtn = document.getElementById('qrSettingsBtn');
+  let headerBackBtn = document.getElementById('headerBackBtn');
 
   if (tab === 'dashboard') {
     if(tDash) tDash.classList.add('active');
     if(tCalc) tCalc.classList.remove('active');
-    if(dashView) dashView.style.display = '';
+    if(dashView) dashView.style.display = 'flex';
     if(calcView) calcView.style.display = 'none';
     if(resetBtn) resetBtn.style.display = 'none';
     if(dateChip) dateChip.style.display = 'none';
+    if(headerBackBtn) headerBackBtn.style.display = 'none';
+    if(exportBtn) exportBtn.style.display = '';
+    if(qrSettingsBtn) qrSettingsBtn.style.display = '';
     refreshDashboard();
   } else {
     if(tCalc) tCalc.classList.add('active');
     if(tDash) tDash.classList.remove('active');
     if(dashView) dashView.style.display = 'none';
-    if(calcView) calcView.style.display = '';
+    if(calcView) calcView.style.display = 'flex';
     if(resetBtn) resetBtn.style.display = '';
     if(dateChip) dateChip.style.display = '';
+    if(headerBackBtn) headerBackBtn.style.display = 'inline-flex';
+    if(exportBtn) exportBtn.style.display = 'none';
+    if(qrSettingsBtn) qrSettingsBtn.style.display = 'none';
   }
 }
 
@@ -260,7 +268,12 @@ function renderDashboardMembers() {
   
   let html = '';
   members.forEach(m => {
-    html += `<div class="dashboard-member-tag" onclick="openProfile('${m.name}')">${m.name}</div>`;
+    const emoji = m.emoji || (m.gender === 'nu' ? '👩🏻‍💼' : '🤵🏻‍♂️');
+    html += `
+      <div class="dash-member-chip" onclick="openProfile('${m.name}')">
+        <span class="dash-member-avatar">${emoji}</span>
+        <span>${m.name}</span>
+      </div>`;
   });
   
   container.innerHTML = html;

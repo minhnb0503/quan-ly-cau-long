@@ -152,16 +152,21 @@
 
         <!-- Header -->
         <div class="header-bar">
-          <div class="app-title" id="mainTitle">Cầu Lông <span style="color: var(--accent)">Pro</span></div>
-          <div class="header-actions">
-            <button type="button" class="reset-btn" onclick="openExportModal()" title="Dữ liệu">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <div class="header-left">
+            <button type="button" class="header-back-btn" id="headerBackBtn" onclick="backToDashboard()" title="Quay lại" style="display: none;">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
             </button>
-            <button type="button" class="reset-btn" onclick="openQRSettings()" title="Cài QR">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v3h-3"/><path d="M14 20h3"/><path d="M20 20h0"/></svg>
+            <div class="app-title" id="mainTitle">Cầu Lông <span style="color: var(--accent)">Pro</span></div>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="reset-btn" id="exportBtn" onclick="openExportModal()" title="Dữ liệu">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button type="button" class="reset-btn" id="qrSettingsBtn" onclick="openQRSettings()" title="Cài QR">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v3h-3"/><path d="M14 20h3"/><path d="M20 20h0"/></svg>
             </button>
             <button type="button" class="reset-btn" id="resetBtn" onclick="resetForm()" title="Làm mới" style="display: none;">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
             <div class="date-chip" id="dateChip" style="display: none;" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
               <span id="displayDate">00/00/0000</span>
@@ -172,65 +177,78 @@
 
         <!-- ===== MAIN TABS: Dashboard / Tính Tiền ===== -->
         <div class="main-tabs" id="mainTabContainer">
-          <div class="main-tab-indicator" id="mainTabIndicator"></div>
-          <div class="main-tab active" id="mainTabDashboard" onclick="switchMainTab('dashboard')">📊 Tổng Quan</div>
-          <div class="main-tab" id="mainTabCalc" onclick="switchMainTab('calc')">🏸 Tính Tiền</div>
+          <div class="main-tab active" id="mainTabDashboard" onclick="switchMainTab('dashboard')">
+            <span>📊</span> <span>Tổng Quan</span>
+          </div>
+          <div class="main-tab" id="mainTabCalc" onclick="switchMainTab('calc')">
+            <span>🏸</span> <span>Tính Tiền</span>
+          </div>
         </div>
 
         <!-- ==================== DASHBOARD VIEW ==================== -->
         <div class="dashboard-view" id="dashboardView">
-          <div class="form-content-grid" style="padding-bottom: 80px;">
 
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-icon">🏸</div>
+          <!-- Stats Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">🏸</div>
+              <div class="stat-card-info">
                 <div class="stat-value" id="statTotalSessions">0</div>
                 <div class="stat-label">Tổng buổi</div>
               </div>
-              <div class="stat-card warn">
-                <div class="stat-icon">💸</div>
+            </div>
+            <div class="stat-card warn">
+              <div class="stat-icon">💸</div>
+              <div class="stat-card-info">
                 <div class="stat-value" id="statUnpaidTotal">0đ</div>
                 <div class="stat-label">Chưa thu</div>
               </div>
-              <div class="stat-card warn">
-                <div class="stat-icon">👤</div>
+            </div>
+            <div class="stat-card warn">
+              <div class="stat-icon">👤</div>
+              <div class="stat-card-info">
                 <div class="stat-value" id="statUnpaidCount">0</div>
                 <div class="stat-label">Đang nợ</div>
               </div>
-              <div class="stat-card">
-                <div class="stat-icon">👥</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-card-info">
                 <div class="stat-value" id="statMemberCount">0</div>
                 <div class="stat-label">Thành viên</div>
               </div>
             </div>
-
-            <!-- Members Quick View -->
-            <div class="zone-title" style="margin-top: 20px;">THÀNH VIÊN CLB</div>
-            <div class="tags-grid" id="dashboardMemberTags" style="margin-bottom: 20px;">
-              <!-- Rendered by JS -->
-            </div>
-
-            <!-- Sessions List -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <div class="zone-title" style="margin: 0;">CÁC BUỔI GẦN ĐÂY</div>
-              <button type="button" class="chip" onclick="exportMonthlyReport()" style="font-size: 10px;">📊 Báo cáo tháng</button>
-            </div>
-            <div class="sessions-list" id="sessionsList">
-              <div class="empty-state" style="padding: 30px;">
-                <div class="empty-text">Chưa có buổi chơi nào.<br>Bấm <strong>"+ Tạo buổi mới"</strong> để bắt đầu! 🏸</div>
-              </div>
-            </div>
-
           </div>
 
-          <!-- Floating Action Button -->
-          <div class="action-zone" style="padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));">
-            <button type="button" class="btn-massive" onclick="startNewSession()">
-              <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Tạo Buổi Mới
-            </button>
+          <!-- Quick Action: Tạo Buổi Mới Banner -->
+          <button type="button" class="btn-new-session-banner" onclick="startNewSession()">
+            <div class="banner-left">
+              <span class="banner-icon">🏸</span>
+              <span>Tạo Buổi Chơi Mới</span>
+            </div>
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+
+          <!-- Members Quick View -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 6px 0;">
+            <div class="zone-title" style="margin: 0;">THÀNH VIÊN CLB</div>
+            <span style="font-size: 11px; color: var(--text-sub);">Chạm để xem hồ sơ</span>
           </div>
+          <div class="dash-members-scroll" id="dashboardMemberTags">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Sessions List -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px 0;">
+            <div class="zone-title" style="margin: 0;">CÁC BUỔI GẦN ĐÂY</div>
+            <button type="button" class="chip" onclick="exportMonthlyReport()" style="font-size: 10px;">📊 Báo cáo tháng</button>
+          </div>
+          <div class="sessions-list" id="sessionsList">
+            <div class="empty-state" style="padding: 24px;">
+              <div class="empty-text">Chưa có buổi chơi nào.<br>Bấm <strong>"Tạo buổi chơi mới"</strong> ở trên để bắt đầu! 🏸</div>
+            </div>
+          </div>
+
         </div>
 
         <!-- ==================== CALC VIEW (original form) ==================== -->
@@ -438,16 +456,11 @@
 
           </div> 
           
-          <div class="action-zone">
-            <div style="display: flex; gap: 10px;">
-              <button type="button" class="btn-close" style="flex: 0 0 auto; padding: 18px; margin-top: 0; border-radius: 20px;" onclick="backToDashboard()">
-                ← Quay lại
-              </button>
-              <button type="button" class="btn-massive" style="flex: 1;" onclick="processData()">
-                <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-                Phân Bổ Chi Phí
-              </button>
-            </div>
+          <div class="calc-action-bar">
+            <button type="button" class="btn-massive" onclick="processData()">
+              <svg class="icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+              Phân Bổ Chi Phí
+            </button>
           </div>
 
         </div> <!-- end calc-view -->
