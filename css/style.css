@@ -707,3 +707,208 @@ html[data-theme="dark"] .fluid-tabs { background: rgba(255,255,255,0.05); }
 @keyframes smoothPop { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
 .anim-pop { animation: smoothPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 .public-mode-hidden { display: none !important; }
+
+/* ============================================
+   31. DASHBOARD
+   ============================================ */
+.dashboard-view { display: flex; flex-direction: column; width: 100%; height: 100%; overflow-y: auto; padding-bottom: 80px; }
+.main-tabs { display: flex; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 100px; padding: 4px; margin-bottom: 16px; box-shadow: var(--shadow-soft); }
+.main-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 15px; font-weight: 700; color: var(--text-sub); cursor: pointer; transition: var(--smooth-curve) 0.3s; border-radius: 100px; }
+.main-tab.active { background: var(--text-main); color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+html[data-theme="dark"] .main-tab.active { background: var(--accent); }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; }
+.stat-card .stat-value { font-size: 24px; font-weight: 800; color: var(--text-main); margin-top: 8px; font-variant-numeric: tabular-nums; animation: countUp 0.6s ease-out forwards; }
+.stat-card .stat-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .stat-icon { font-size: 24px; margin-bottom: 8px; }
+.stat-card.warn .stat-value { color: #e11d48; }
+html[data-theme="dark"] .stat-card.warn .stat-value { color: #f43f5e; }
+.sessions-list { display: flex; flex-direction: column; gap: 12px; }
+.session-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-soft); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); min-height: 44px; }
+.session-card:active { transform: scale(0.96); }
+.session-card-left { display: flex; flex-direction: column; gap: 4px; }
+.session-card .session-date { font-weight: 700; font-size: 15px; color: var(--text-main); }
+.session-card .session-amount { font-size: 14px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.session-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.session-card .session-status { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.session-status.open { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
+.session-status.closed { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+html[data-theme="dark"] .session-status.open { color: #fde047; }
+html[data-theme="dark"] .session-status.closed { color: #4ade80; }
+.session-card .session-unpaid { font-size: 12px; font-weight: 600; color: #e11d48; }
+html[data-theme="dark"] .session-card .session-unpaid { color: #f43f5e; }
+.btn-new-session { position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 32px; background: var(--accent); color: #fff; display: flex; justify-content: center; align-items: center; box-shadow: var(--shadow-btn); cursor: pointer; transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); z-index: 100; font-size: 28px; }
+.btn-new-session:active { transform: scale(0.9); }
+
+/* ============================================
+   32. PAYMENT TRACKING
+   ============================================ */
+.payment-row { display: flex; align-items: center; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; box-shadow: var(--shadow-soft); transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); }
+.payment-row:active { transform: scale(0.98); }
+.payment-check { width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--glass-border); margin-right: 12px; display: flex; justify-content: center; align-items: center; transition: 0.2s; cursor: pointer; flex-shrink: 0; min-width: 44px; min-height: 44px; }
+.payment-check.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+.payment-info { flex: 1; display: flex; flex-direction: column; }
+.payment-name { font-weight: 700; font-size: 15px; color: var(--text-main); }
+.payment-amount { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+.payment-badge { padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-left: 8px; flex-shrink: 0; }
+.payment-badge.paid { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.payment-badge.unpaid { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+html[data-theme="dark"] .payment-badge.paid { color: #4ade80; }
+html[data-theme="dark"] .payment-badge.unpaid { color: #f87171; }
+.payment-actions { display: flex; gap: 8px; margin-left: 12px; flex-shrink: 0; }
+.payment-actions button { width: 36px; height: 36px; border-radius: 12px; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; font-size: 16px; min-width: 44px; min-height: 44px; }
+.btn-qr { background: rgba(99, 102, 241, 0.1); color: var(--accent); }
+.btn-edit { background: rgba(100, 116, 139, 0.1); color: var(--text-sub); }
+.payment-actions button:active { transform: scale(0.9); }
+.payment-progress { margin: 20px 0; background: var(--glass-bg); padding: 16px; border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-soft); }
+.payment-progress-bar-wrap { height: 12px; background: rgba(0,0,0,0.05); border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+html[data-theme="dark"] .payment-progress-bar-wrap { background: rgba(255,255,255,0.1); }
+.payment-progress-bar { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 100px; transition: width 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
+.payment-progress-text { font-size: 13px; font-weight: 600; color: var(--text-sub); text-align: center; }
+.payment-edit-input { width: 100px; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 4px 8px; font-family: monospace; font-size: 14px; font-weight: bold; color: var(--text-main); outline: none; }
+.btn-close-session { background: #10b981; color: #fff; width: 100%; padding: 16px; border-radius: 20px; font-weight: 700; font-size: 16px; border: none; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4); margin-top: 10px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); min-height: 44px; }
+.btn-close-session:active { transform: scale(0.96); }
+.btn-send-all-qr { background: #8b5cf6; color: #fff; width: 100%; padding: 16px; border-radius: 20px; font-weight: 700; font-size: 16px; border: none; box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4); margin-top: 10px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); min-height: 44px; }
+.btn-send-all-qr:active { transform: scale(0.96); }
+
+/* ============================================
+   33. MEMBER PROFILE MODAL
+   ============================================ */
+.profile-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 2000; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.profile-overlay.show { opacity: 1; pointer-events: auto; }
+.profile-card { background: #fff; border-radius: 32px 32px 0 0; padding: 32px 24px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); max-height: 85vh; overflow-y: auto; }
+html[data-theme="dark"] .profile-card { background: #1e293b; }
+.profile-overlay.show .profile-card { transform: translateY(0); }
+.profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; }
+.profile-avatar { font-size: 64px; margin-bottom: 12px; }
+.profile-name { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+.profile-meta { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+.profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.profile-stat { background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 16px; padding: 16px; text-align: center; }
+html[data-theme="dark"] .profile-stat { background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+.profile-stat-value { font-size: 24px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.profile-stat-label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+.profile-history { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.profile-history-item { display: flex; justify-content: space-between; padding: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; font-size: 14px; font-weight: 600; }
+.profile-actions { display: flex; gap: 12px; }
+.profile-actions button { flex: 1; padding: 16px; border-radius: 20px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; transition: 0.2s cubic-bezier(0.32, 0.72, 0, 1); min-height: 44px; }
+.btn-profile-edit { background: rgba(99, 102, 241, 0.1); color: var(--accent); }
+.btn-profile-close { background: #f1f5f9; color: var(--text-main); }
+html[data-theme="dark"] .btn-profile-close { background: #334155; color: #f1f5f9; }
+
+/* ============================================
+   34. QR PAYMENT DISPLAY
+   ============================================ */
+.qr-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); z-index: 2100; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; padding: 20px; }
+.qr-modal.show { opacity: 1; pointer-events: auto; }
+.qr-card { background: #fff; border-radius: 24px; padding: 24px; width: 100%; max-width: 360px; transform: scale(0.9); transition: 0.4s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; }
+html[data-theme="dark"] .qr-card { background: #1e293b; }
+.qr-modal.show .qr-card { transform: scale(1); }
+.qr-canvas-wrap { background: #fff; padding: 16px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: inline-block; }
+.qr-canvas-wrap canvas, .qr-canvas-wrap img { max-width: 100%; border-radius: 8px; }
+.qr-info { margin-bottom: 20px; }
+.qr-amount { font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+.qr-bank-info { font-size: 14px; font-weight: 600; color: var(--text-sub); line-height: 1.5; }
+.qr-actions { display: flex; gap: 12px; }
+.qr-actions button { flex: 1; padding: 14px; border-radius: 16px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; min-height: 44px; }
+.btn-qr-share { background: var(--accent); color: #fff; }
+.btn-qr-close { background: #f1f5f9; color: var(--text-main); }
+html[data-theme="dark"] .btn-qr-close { background: #334155; color: #f1f5f9; }
+
+/* ============================================
+   35. QR SETTINGS
+   ============================================ */
+.qr-settings-section { background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 20px; padding: 16px; margin-bottom: 20px; }
+html[data-theme="dark"] .qr-settings-section { background: rgba(129, 140, 248, 0.05); border-color: rgba(129, 140, 248, 0.2); }
+.bank-select { width: 100%; background: #fff; border: 1px solid var(--glass-border); padding: 12px 14px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--text-main); font-family: inherit; margin-bottom: 12px; outline: none; appearance: none; min-height: 44px; }
+html[data-theme="dark"] .bank-select { background: #334155; color: #f1f5f9; border-color: #475569; }
+.qr-preview { margin-top: 12px; text-align: center; font-size: 12px; color: var(--text-sub); font-weight: 600; }
+.qr-preview img { width: 100px; height: 100px; border-radius: 8px; margin-top: 8px; border: 1px solid #e2e8f0; }
+
+/* ============================================
+   36. EXPORT/PRINT
+   ============================================ */
+.export-actions { display: flex; gap: 12px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; }
+.export-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 16px; min-width: 100px; font-size: 12px; font-weight: 700; color: var(--text-main); cursor: pointer; transition: 0.2s cubic-bezier(0.32, 0.72, 0, 1); min-height: 44px; box-shadow: var(--shadow-soft); }
+.export-btn:active { transform: scale(0.95); }
+.export-btn svg { width: 24px; height: 24px; stroke: var(--accent); }
+@media print {
+  body * { visibility: hidden; }
+  .print-container, .print-container * { visibility: visible; }
+  .print-container { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+/* ============================================
+   37. SESSION DETAIL VIEW
+   ============================================ */
+.session-detail { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+.session-header { text-align: center; margin-bottom: 8px; }
+.session-header h2 { font-size: 24px; font-weight: 800; margin-bottom: 4px; color: var(--text-main); }
+.session-header p { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+.session-costs { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 16px; box-shadow: var(--shadow-soft); }
+.session-cost-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; font-weight: 600; }
+.session-cost-item:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px dashed var(--glass-border); font-weight: 800; font-size: 18px; color: var(--accent); }
+
+/* ============================================
+   38. COUNTER ANIMATION
+   ============================================ */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   39. CONFETTI ANIMATION
+   ============================================ */
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(1000px) rotate(720deg); opacity: 0; }
+}
+.confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+.confetti { position: absolute; width: 10px; height: 10px; background: #6366f1; top: -10px; animation: confetti 3s linear infinite; }
+
+/* ============================================
+   40. ADDITIONAL APP CLASSES
+   ============================================ */
+.calc-view { display: flex; flex-direction: column; width: 100%; flex: 1; min-height: 0; }
+.main-tab-indicator { display: none; }
+
+.payment-item { display: flex; align-items: center; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 16px; margin-bottom: 10px; box-shadow: var(--shadow-soft); transition: transform 0.2s var(--smooth-curve); gap: 12px; }
+.payment-item:active { transform: scale(0.98); }
+.payment-checkbox { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+.payment-checkbox input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
+.payment-checkbox .checkmark { display: none; }
+.payment-info { flex: 1; display: flex; justify-content: space-between; align-items: center; }
+.payment-name { font-weight: 700; font-size: 14px; color: var(--text-main); }
+.payment-amount { font-size: 14px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.payment-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.payment-badge-paid { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.payment-badge-unpaid { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+html[data-theme="dark"] .payment-badge-paid { color: #4ade80; }
+html[data-theme="dark"] .payment-badge-unpaid { color: #f87171; }
+.btn-qr-mini { background: rgba(99,102,241,0.1); color: var(--accent); border: 1px solid rgba(99,102,241,0.2); padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; white-space: nowrap; }
+.btn-qr-mini:active { transform: scale(0.9); background: rgba(99,102,241,0.2); }
+
+.qr-canvas-wrap { display: flex; justify-content: center; padding: 16px; background: #fff; border-radius: 16px; margin-bottom: 16px; }
+html[data-theme="dark"] .qr-canvas-wrap { background: #f8fafc; }
+.qr-info { text-align: center; }
+.qr-amount { font-size: 28px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.qr-bank-info { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+.qr-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+.profile-stat-value.warn { color: #e11d48 !important; }
+html[data-theme="dark"] .profile-stat-value.warn { color: #f87171 !important; }
+
+.session-card-actions { display: flex; align-items: center; gap: 6px; }
+.session-del-btn { background: rgba(244,63,94,0.1); color: #f43f5e; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.session-del-btn:active { transform: scale(0.85); }
+
+@media print {
+  body * { visibility: hidden !important; }
+  #resultSheet, #resultSheet * { visibility: visible !important; }
+  #resultSheet { position: absolute; left: 0; top: 0; width: 100%; }
+  .sheet-overlay { background: #fff !important; position: static !important; }
+  .sheet-card { transform: none !important; box-shadow: none !important; max-width: 100% !important; }
+  .btn-close, .share-actions, .receipt-tabs, #paymentTrackingSection, .export-actions { display: none !important; }
+}
+

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Cầu Lông Fluid Pro</title>
-  <meta name="description" content="Ứng dụng tính tiền chia phí chơi cầu lông - Hỗ trợ sân nhà, sân khách, nhiều luật chia tiền">
+  <meta name="description" content="Ứng dụng quản lý CLB cầu lông - Tính tiền, theo dõi thu chi, QR thanh toán">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -40,241 +40,421 @@
     </div>
   </div>
 
-  <!-- Main App -->
+  <!-- ===== PROFILE MODAL ===== -->
+  <div class="profile-overlay" id="profileOverlay">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar">🤵🏻‍♂️</div>
+      <div class="profile-name" id="profileName">Minh</div>
+      <div class="profile-meta" id="profileMeta">Nam · Cố định</div>
+      
+      <div class="profile-stats-grid">
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profTotalSessions">0</div>
+          <div class="profile-stat-label">Buổi chơi</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profAvgPerSession">0đ</div>
+          <div class="profile-stat-label">TB / buổi</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value" id="profTotalPaid">0đ</div>
+          <div class="profile-stat-label">Tổng đóng</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-value warn" id="profDebt">0đ</div>
+          <div class="profile-stat-label">Đang nợ</div>
+        </div>
+      </div>
+
+      <div class="zone-title" style="margin-top: 20px;">LỊCH SỬ THAM GIA</div>
+      <div class="profile-history" id="profileHistory">
+        <div class="empty-state" style="padding: 20px;"><div class="empty-text">Chưa có lịch sử.</div></div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn-cancel" onclick="closeProfile()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== QR PAYMENT MODAL ===== -->
+  <div class="profile-overlay" id="qrPaymentOverlay">
+    <div class="profile-card" style="max-width: 360px;">
+      <h3 style="text-align: center; margin-bottom: 16px;">💳 Thanh Toán QR</h3>
+      <div class="qr-canvas-wrap" id="qrCanvasWrap">
+        <!-- QR canvas will be rendered here -->
+      </div>
+      <div class="qr-info">
+        <div class="qr-amount" id="qrPayAmount">0 ₫</div>
+        <div class="qr-bank-info" id="qrBankInfo">Chưa cài đặt ngân hàng</div>
+        <div style="font-size: 13px; color: var(--text-sub); margin-top: 4px;" id="qrPlayerName">—</div>
+      </div>
+      <div class="qr-actions">
+        <button class="share-btn share-btn-copy" onclick="saveQRImage()">📥 Lưu ảnh QR</button>
+        <button class="share-btn share-btn-share" onclick="shareQRImage()">📤 Chia sẻ</button>
+      </div>
+      <button class="btn-close" style="margin-top: 12px;" onclick="closeQRPayment()">Đóng</button>
+    </div>
+  </div>
+
+  <!-- ===== QR SETTINGS MODAL ===== -->
+  <div class="settings-overlay" id="qrSettingsOverlay">
+    <div class="settings-card" style="max-width: 380px;">
+      <h3>⚙️ Cài Đặt Thanh Toán QR</h3>
+      <div class="settings-group">
+        <label>Ngân hàng</label>
+        <select id="qrBankSelect" class="bank-select" onchange="updateQRPreview()">
+          <option value="">-- Chọn ngân hàng --</option>
+        </select>
+      </div>
+      <div class="settings-group">
+        <label>Số tài khoản</label>
+        <input type="text" id="qrAccountNo" placeholder="Nhập số tài khoản" inputmode="numeric" oninput="updateQRPreview()">
+      </div>
+      <div class="settings-group">
+        <label>Tên chủ tài khoản</label>
+        <input type="text" id="qrAccountName" placeholder="VD: NGUYEN VAN A" oninput="updateQRPreview()">
+      </div>
+      <div id="qrSettingsPreview" style="text-align: center; padding: 16px; margin-top: 8px; background: rgba(99,102,241,0.05); border-radius: 16px; display: none;">
+        <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px;">Xem trước</div>
+        <div id="qrPreviewContainer"></div>
+      </div>
+      <div class="settings-actions">
+        <button class="btn-cancel" onclick="closeQRSettings()">Hủy</button>
+        <button class="btn-confirm" onclick="saveQRSettings()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EXPORT MODAL ===== -->
+  <div class="settings-overlay" id="exportOverlay">
+    <div class="settings-card" style="max-width: 380px;">
+      <h3>📦 Quản Lý Dữ Liệu</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="share-btn share-btn-share" style="width: 100%; min-width: auto; padding: 16px;" onclick="exportData()">
+          📤 Xuất dữ liệu (JSON Backup)
+        </button>
+        <label class="share-btn share-btn-copy" style="width: 100%; min-width: auto; padding: 16px; cursor: pointer; text-align: center;">
+          📥 Nhập dữ liệu (Khôi phục)
+          <input type="file" accept=".json" style="display: none;" onchange="importData(event)">
+        </label>
+      </div>
+      <button class="btn-close" style="margin-top: 16px;" onclick="closeExportModal()">Đóng</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
   <div class="app-glass">
     <div class="main-wrapper">
-      <div class="left-col">
-        <!-- Header with NEW buttons -->
-        <div class="header-bar">
-          <div class="app-title" id="mainTitle">Tính Tiền <span style="color: var(--accent)">Cầu</span></div>
-          <div class="header-actions">
 
-            <button type="button" class="reset-btn" onclick="resetForm()" title="Làm mới">
+      <!-- ===== LEFT COL ===== -->
+      <div class="left-col">
+
+        <!-- Header -->
+        <div class="header-bar">
+          <div class="app-title" id="mainTitle">Cầu Lông <span style="color: var(--accent)">Pro</span></div>
+          <div class="header-actions">
+            <button type="button" class="reset-btn" onclick="openExportModal()" title="Dữ liệu">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button type="button" class="reset-btn" onclick="openQRSettings()" title="Cài QR">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M20 14v3h-3"/><path d="M14 20h3"/><path d="M20 20h0"/></svg>
+            </button>
+            <button type="button" class="reset-btn" id="resetBtn" onclick="resetForm()" title="Làm mới" style="display: none;">
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
-            <div class="date-chip" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
+            <div class="date-chip" id="dateChip" style="display: none;" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
               <span id="displayDate">00/00/0000</span>
               <input type="date" id="dateInput" required>
             </div>
           </div>
         </div>
 
-        <div class="fluid-tabs" id="tabContainer">
-          <div class="tab-indicator" id="tabIndicator"></div>
-          <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
-          <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
+        <!-- ===== MAIN TABS: Dashboard / Tính Tiền ===== -->
+        <div class="main-tabs" id="mainTabContainer">
+          <div class="main-tab-indicator" id="mainTabIndicator"></div>
+          <div class="main-tab active" id="mainTabDashboard" onclick="switchMainTab('dashboard')">📊 Tổng Quan</div>
+          <div class="main-tab" id="mainTabCalc" onclick="switchMainTab('calc')">🏸 Tính Tiền</div>
         </div>
 
-        <div class="form-content-grid">
-          <!-- Money inputs -->
-          <div class="money-display-zone">
-            <div class="money-input-group">
-              <div class="money-header">
-                 <span class="money-label">TỔNG TIỀN SÂN</span>
+        <!-- ==================== DASHBOARD VIEW ==================== -->
+        <div class="dashboard-view" id="dashboardView">
+          <div class="form-content-grid" style="padding-bottom: 80px;">
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">🏸</div>
+                <div class="stat-value" id="statTotalSessions">0</div>
+                <div class="stat-label">Tổng buổi</div>
               </div>
-              <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
-              <div class="quick-chips">
-                <button type="button" class="chip chip-clear" onclick="clearMoney('tienSan')">✕ Xóa</button>
-                <button type="button" class="chip chip-undo disabled" id="undo_tienSan" onclick="undoMoney('tienSan')">↺ Lùi</button>
-                <button type="button" class="chip" onclick="addMoney('tienSan', 10000)">+10k</button>
-                <button type="button" class="chip" onclick="addMoney('tienSan', 20000)">+20k</button>
-                <button type="button" class="chip" onclick="addMoney('tienSan', 50000)">+50k</button>
-                <button type="button" class="chip" onclick="addMoney('tienSan', 100000)">+100k</button>
-                <button type="button" class="chip" onclick="addMoney('tienSan', 200000)">+200k</button>
+              <div class="stat-card warn">
+                <div class="stat-icon">💸</div>
+                <div class="stat-value" id="statUnpaidTotal">0đ</div>
+                <div class="stat-label">Chưa thu</div>
+              </div>
+              <div class="stat-card warn">
+                <div class="stat-icon">👤</div>
+                <div class="stat-value" id="statUnpaidCount">0</div>
+                <div class="stat-label">Đang nợ</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="statMemberCount">0</div>
+                <div class="stat-label">Thành viên</div>
               </div>
             </div>
 
-            <div class="money-input-group" style="padding-bottom: 16px;">
-              <div class="money-header">
-                 <span class="money-label">TIỀN CẦU</span>
-                 <div class="switch-small-wrap">
-                   <span>CHI TIẾT</span>
-                   <label class="switch-small">
-                     <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
-                     <span class="slider-small"></span>
-                   </label>
-                 </div>
+            <!-- Members Quick View -->
+            <div class="zone-title" style="margin-top: 20px;">THÀNH VIÊN CLB</div>
+            <div class="tags-grid" id="dashboardMemberTags" style="margin-bottom: 20px;">
+              <!-- Rendered by JS -->
+            </div>
+
+            <!-- Sessions List -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="zone-title" style="margin: 0;">CÁC BUỔI GẦN ĐÂY</div>
+              <button type="button" class="chip" onclick="exportMonthlyReport()" style="font-size: 10px;">📊 Báo cáo tháng</button>
+            </div>
+            <div class="sessions-list" id="sessionsList">
+              <div class="empty-state" style="padding: 30px;">
+                <div class="empty-text">Chưa có buổi chơi nào.<br>Bấm <strong>"+ Tạo buổi mới"</strong> để bắt đầu! 🏸</div>
               </div>
-              
-              <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
-                <div class="mode-inner" style="opacity: 1;">
-                  <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienCau');">
-                  <div class="quick-chips">
-                    <button type="button" class="chip chip-clear" onclick="clearMoney('tienCau')">✕ Xóa</button>
-                    <button type="button" class="chip chip-undo disabled" id="undo_tienCau" onclick="undoMoney('tienCau')">↺ Lùi</button>
-                    <button type="button" class="chip" onclick="addMoney('tienCau', 10000)">+10k</button>
-                    <button type="button" class="chip" onclick="addMoney('tienCau', 20000)">+20k</button>
-                    <button type="button" class="chip" onclick="addMoney('tienCau', 50000)">+50k</button>
-                    <button type="button" class="chip" onclick="addMoney('tienCau', 100000)">+100k</button>
+            </div>
+
+          </div>
+
+          <!-- Floating Action Button -->
+          <div class="action-zone" style="padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));">
+            <button type="button" class="btn-massive" onclick="startNewSession()">
+              <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tạo Buổi Mới
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================== CALC VIEW (original form) ==================== -->
+        <div class="calc-view" id="calcView" style="display: none;">
+
+          <div class="fluid-tabs" id="tabContainer">
+            <div class="tab-indicator" id="tabIndicator"></div>
+            <div class="tab active" id="tabHome" onclick="switchTab('home')">Sân Nhà</div>
+            <div class="tab" id="tabAway" onclick="switchTab('away')">Sân Khách</div>
+          </div>
+
+          <div class="form-content-grid">
+            <!-- Money inputs -->
+            <div class="money-display-zone">
+              <div class="money-input-group">
+                <div class="money-header">
+                   <span class="money-label">TỔNG TIỀN SÂN</span>
+                </div>
+                <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
+                <div class="quick-chips">
+                  <button type="button" class="chip chip-clear" onclick="clearMoney('tienSan')">✕ Xóa</button>
+                  <button type="button" class="chip chip-undo disabled" id="undo_tienSan" onclick="undoMoney('tienSan')">↺ Lùi</button>
+                  <button type="button" class="chip" onclick="addMoney('tienSan', 10000)">+10k</button>
+                  <button type="button" class="chip" onclick="addMoney('tienSan', 20000)">+20k</button>
+                  <button type="button" class="chip" onclick="addMoney('tienSan', 50000)">+50k</button>
+                  <button type="button" class="chip" onclick="addMoney('tienSan', 100000)">+100k</button>
+                  <button type="button" class="chip" onclick="addMoney('tienSan', 200000)">+200k</button>
+                </div>
+              </div>
+
+              <div class="money-input-group" style="padding-bottom: 16px;">
+                <div class="money-header">
+                   <span class="money-label">TIỀN CẦU</span>
+                   <div class="switch-small-wrap">
+                     <span>CHI TIẾT</span>
+                     <label class="switch-small">
+                       <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()">
+                       <span class="slider-small"></span>
+                     </label>
+                   </div>
+                </div>
+                
+                <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
+                  <div class="mode-inner" style="opacity: 1;">
+                    <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienCau');">
+                    <div class="quick-chips">
+                      <button type="button" class="chip chip-clear" onclick="clearMoney('tienCau')">✕ Xóa</button>
+                      <button type="button" class="chip chip-undo disabled" id="undo_tienCau" onclick="undoMoney('tienCau')">↺ Lùi</button>
+                      <button type="button" class="chip" onclick="addMoney('tienCau', 10000)">+10k</button>
+                      <button type="button" class="chip" onclick="addMoney('tienCau', 20000)">+20k</button>
+                      <button type="button" class="chip" onclick="addMoney('tienCau', 50000)">+50k</button>
+                      <button type="button" class="chip" onclick="addMoney('tienCau', 100000)">+100k</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
+                  <div class="mode-inner" style="opacity: 0;">
+                    <div id="cauListContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                        <div class="cau-detail-flex cau-item">
+                          <div class="cau-col">
+                            <span>GIÁ 1 TÚP (12 QUẢ)</span>
+                            <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+                          </div>
+                          <div class="divider-vert"></div>
+                          <div class="cau-col">
+                            <span>SỐ QUẢ</span>
+                            <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+                          </div>
+                          <div class="cau-action-col"></div> 
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="chip chip-undo" style="margin-top: 12px; width: auto; align-self: center;" onclick="addCauRow()">+ Thêm loại cầu khác</button>
+
+                    <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Members Zone -->
+            <div class="members-zone">
+              <div class="fixed-team-wrapper" id="fixedTeamWrap">
+                <div class="fixed-team-inner">
+                  <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
+                  <div class="tags-grid" id="tagsGrid">
+                    <!-- Rendered from Storage -->
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
+                    <button type="button" class="chip" style="background: rgba(99,102,241,0.05);" onclick="addCustomMember('nam')">+ Thêm Nam cố định</button>
+                    <button type="button" class="chip" style="background: rgba(244,63,94,0.05); color: #f43f5e; border-color: rgba(244,63,94,0.15);" onclick="addCustomMember('nu')">+ Thêm Nữ cố định</button>
                   </div>
                 </div>
               </div>
 
-              <div class="mode-grid" id="cauMode2Wrap" style="grid-template-rows: 0fr;">
-                <div class="mode-inner" style="opacity: 0;">
-                  <div id="cauListContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
-                      <div class="cau-detail-flex cau-item">
-                        <div class="cau-col">
-                          <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                          <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
-                        </div>
-                        <div class="divider-vert"></div>
-                        <div class="cau-col">
-                          <span>SỐ QUẢ</span>
-                          <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
-                        </div>
-                        <div class="cau-action-col"></div> 
+              <!-- TÙY CHỈNH LUẬT SÂN NHÀ -->
+              <div class="fixed-team-wrapper" id="sanNhaConfigWrap" style="margin-top: 8px;">
+                <div class="fixed-team-inner">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                     <span style="font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">⚙️ TÙY CHỈNH LUẬT SÂN NHÀ</span>
+                     <label class="switch-small">
+                       <input type="checkbox" id="sanNhaCustomToggle" onchange="document.getElementById('sanNhaCustomOptions').style.display = this.checked ? 'flex' : 'none';">
+                       <span class="slider-small"></span>
+                     </label>
+                  </div>
+                  
+                  <div id="sanNhaCustomOptions" style="display: none; flex-direction: column; gap: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span class="guest-label">💸 Nữ Giao Lưu thu một giá</span>
+                      <label class="switch-small">
+                        <input type="checkbox" id="sanNhaNuGLToggle" onchange="toggleSanNhaNuGL()">
+                        <span class="slider-small"></span>
+                      </label>
+                    </div>
+                    
+                    <div id="sanNhaNuGLInputWrap" style="display: none; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                      <span class="guest-label" style="font-size: 12px; color: var(--text-sub); padding-left: 12px;">↳ Giá Nữ GL (₫)</span>
+                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                        <input type="text" class="guest-val" id="sanNhaNuGL" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
                       </div>
-                  </div>
-                  
-                  <button type="button" class="chip chip-undo" style="margin-top: 12px; width: auto; align-self: center;" onclick="addCauRow()">+ Thêm loại cầu khác</button>
+                    </div>
 
-                  <div id="cauTotalIndicator">Thành tiền: 0 ₫</div>
+                    <div id="sanNhaNamHonNuWrap" style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                      <span class="guest-label">🏅 Nam nộp hơn Nữ (₫)</span>
+                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                        <input type="text" class="guest-val" id="sanNhaNamOffset" placeholder="20.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                      </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
+                      <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
+                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                        <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <!-- Guest container -->
+              <div class="guest-container" id="guestWrap">
+                <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
+                
+                <div class="split-method-container" id="splitMethodContainer" style="display: none;">
+                  <div class="custom-select-wrapper" id="customSelectWrapper">
+                    <div class="custom-select-trigger" onclick="toggleDropdown()">
+                      <span id="splitMethodText">Luật: Nam nộp hơn Nữ 20k</span>
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+                    <div class="custom-select-options">
+                      <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ (Sân Khách)</div>
+                      <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
+                      <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="guest-row anim-pop" id="nuCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
+                  <span class="guest-label">💸 Mức thu Nữ (₫)</span>
+                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
+                    <input type="text" class="guest-val" id="nuCoDinhGia" value="50.000" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                  </div>
+                </div>
+                
+                <div class="guest-row anim-pop public-only-row" id="namCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                  <span class="guest-label">🏅 Nam Cố định</span>
+                  <div class="guest-stepper">
+                    <button type="button" class="step-btn" onclick="stepVal('namCD', -1)">-</button>
+                    <input type="text" class="guest-val" id="namCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <button type="button" class="step-btn" onclick="stepVal('namCD', 1)">+</button>
+                  </div>
+                </div>
+                
+                <div class="guest-row anim-pop public-only-row" id="nuCoDinhWrap2" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                  <span class="guest-label">🏅 Nữ Cố định</span>
+                  <div class="guest-stepper">
+                    <button type="button" class="step-btn" onclick="stepVal('nuCD', -1)">-</button>
+                    <input type="text" class="guest-val" id="nuCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <button type="button" class="step-btn" onclick="stepVal('nuCD', 1)">+</button>
+                  </div>
+                </div>
+
+                <div class="guest-row">
+                  <span class="guest-label" id="labelNamGL">🤵🏻‍♂️ Số Nam</span>
+                  <div class="guest-stepper">
+                    <button type="button" class="step-btn" onclick="stepVal('namGL', -1)">-</button>
+                    <input type="text" class="guest-val" id="namGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <button type="button" class="step-btn" onclick="stepVal('namGL', 1)">+</button>
+                  </div>
+                </div>
+                <div class="guest-row">
+                  <span class="guest-label" id="labelNuGL">👩🏻‍💼 Số Nữ</span>
+                  <div class="guest-stepper">
+                    <button type="button" class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
+                    <input type="text" class="guest-val" id="nuGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <button type="button" class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div> 
+          
+          <div class="action-zone">
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn-close" style="flex: 0 0 auto; padding: 18px; margin-top: 0; border-radius: 20px;" onclick="backToDashboard()">
+                ← Quay lại
+              </button>
+              <button type="button" class="btn-massive" style="flex: 1;" onclick="processData()">
+                <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+                Phân Bổ Chi Phí
+              </button>
             </div>
           </div>
 
-          <!-- Members Zone -->
-          <div class="members-zone">
-            <div class="fixed-team-wrapper" id="fixedTeamWrap">
-              <div class="fixed-team-inner">
-                <div class="zone-title">ĐỘI HÌNH CỐ ĐỊNH</div>
-                <div class="tags-grid" id="tagsGrid">
-                  <div class="player-tag active" data-name="Minh" data-gender="nam" onclick="toggleTag(this)">Minh</div>
-                  <div class="player-tag active" data-name="Thảo" data-gender="nu" onclick="toggleTag(this)">Thảo</div>
-                  <div class="player-tag active" data-name="Tú" data-gender="nam" onclick="toggleTag(this)">Tú</div>
-                  <div class="player-tag active" data-name="Quân" data-gender="nam" onclick="toggleTag(this)">Quân</div>
-                  <div class="player-tag active" data-name="Ly" data-gender="nu" onclick="toggleTag(this)">Ly</div>
-                </div>
-                
-                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
-                  <button type="button" class="chip" style="background: rgba(99,102,241,0.05);" onclick="addCustomMember('nam')">+ Thêm Nam cố định</button>
-                  <button type="button" class="chip" style="background: rgba(244,63,94,0.05); color: #f43f5e; border-color: rgba(244,63,94,0.15);" onclick="addCustomMember('nu')">+ Thêm Nữ cố định</button>
-                </div>
-              </div>
-            </div>
+        </div> <!-- end calc-view -->
 
-            <!-- TÙY CHỈNH LUẬT SÂN NHÀ -->
-            <div class="fixed-team-wrapper" id="sanNhaConfigWrap" style="margin-top: 8px;">
-              <div class="fixed-team-inner">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                   <span style="font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">⚙️ TÙY CHỈNH LUẬT SÂN NHÀ</span>
-                   <label class="switch-small">
-                     <input type="checkbox" id="sanNhaCustomToggle" onchange="document.getElementById('sanNhaCustomOptions').style.display = this.checked ? 'flex' : 'none';">
-                     <span class="slider-small"></span>
-                   </label>
-                </div>
-                
-                <div id="sanNhaCustomOptions" style="display: none; flex-direction: column; gap: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span class="guest-label">💸 Nữ Giao Lưu thu một giá</span>
-                    <label class="switch-small">
-                      <input type="checkbox" id="sanNhaNuGLToggle" onchange="toggleSanNhaNuGL()">
-                      <span class="slider-small"></span>
-                    </label>
-                  </div>
-                  
-                  <div id="sanNhaNuGLInputWrap" style="display: none; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                    <span class="guest-label" style="font-size: 12px; color: var(--text-sub); padding-left: 12px;">↳ Giá Nữ GL (₫)</span>
-                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                      <input type="text" class="guest-val" id="sanNhaNuGL" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
-                    </div>
-                  </div>
+      </div> <!-- end left-col -->
 
-                  <div id="sanNhaNamHonNuWrap" style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                    <span class="guest-label">🏅 Nam nộp hơn Nữ (₫)</span>
-                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                      <input type="text" class="guest-val" id="sanNhaNamOffset" placeholder="20.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
-                    </div>
-                  </div>
-
-                  <div style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                    <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
-                    <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                      <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Guest container -->
-            <div class="guest-container" id="guestWrap">
-              <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
-              
-              <div class="split-method-container" id="splitMethodContainer" style="display: none;">
-                <div class="custom-select-wrapper" id="customSelectWrapper">
-                  <div class="custom-select-trigger" onclick="toggleDropdown()">
-                    <span id="splitMethodText">Luật: Nam nộp hơn Nữ 20k</span>
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </div>
-                  <div class="custom-select-options">
-                    <div class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Luật: Nam nộp hơn Nữ 20k')">Luật: Nam nộp hơn Nữ (Sân Khách)</div>
-                    <div class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Luật: Nam Nữ chia đều 100%')">Luật: Nam Nữ chia đều 100%</div>
-                    <div class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Luật: Nữ cố định, Nam chia đều')">Luật: Nữ cố định, Nam chia đều</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="guest-row anim-pop" id="nuCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
-                <span class="guest-label">💸 Mức thu Nữ (₫)</span>
-                <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                  <input type="text" class="guest-val" id="nuCoDinhGia" value="50.000" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
-                </div>
-              </div>
-              
-              <div class="guest-row anim-pop public-only-row" id="namCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
-                <span class="guest-label">🏅 Nam Cố định</span>
-                <div class="guest-stepper">
-                  <button type="button" class="step-btn" onclick="stepVal('namCD', -1)">-</button>
-                  <input type="text" class="guest-val" id="namCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button type="button" class="step-btn" onclick="stepVal('namCD', 1)">+</button>
-                </div>
-              </div>
-              
-              <div class="guest-row anim-pop public-only-row" id="nuCoDinhWrap2" style="display: none; margin-bottom: 10px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
-                <span class="guest-label">🏅 Nữ Cố định</span>
-                <div class="guest-stepper">
-                  <button type="button" class="step-btn" onclick="stepVal('nuCD', -1)">-</button>
-                  <input type="text" class="guest-val" id="nuCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button type="button" class="step-btn" onclick="stepVal('nuCD', 1)">+</button>
-                </div>
-              </div>
-
-              <div class="guest-row">
-                <span class="guest-label" id="labelNamGL">🤵🏻‍♂️ Số Nam</span>
-                <div class="guest-stepper">
-                  <button type="button" class="step-btn" onclick="stepVal('namGL', -1)">-</button>
-                  <input type="text" class="guest-val" id="namGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button type="button" class="step-btn" onclick="stepVal('namGL', 1)">+</button>
-                </div>
-              </div>
-              <div class="guest-row">
-                <span class="guest-label" id="labelNuGL">👩🏻‍💼 Số Nữ</span>
-                <div class="guest-stepper">
-                  <button type="button" class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
-                  <input type="text" class="guest-val" id="nuGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
-                  <button type="button" class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div> 
-        
-        <div class="action-zone">
-          <button type="button" class="btn-massive" onclick="processData()">
-            <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-            Phân Bổ Chi Phí
-          </button>
-        </div>
-
-      </div> 
-
-      <!-- Result Sheet -->
+      <!-- ===== RESULT SHEET ===== -->
       <div class="sheet-overlay" id="resultSheet">
         <div class="sheet-card">
           <div class="receipt-header-flex">
@@ -284,7 +464,7 @@
             </div>
           </div>
           
-          <!-- NEW: Receipt/History Tabs -->
+          <!-- Receipt/History Tabs -->
           <div class="receipt-tabs">
             <div class="receipt-tab active" id="tabReceipt" onclick="switchReceiptTab('receipt')">🧾 Biên Lai</div>
             <div class="receipt-tab" id="tabHistory" onclick="switchReceiptTab('history')">📋 Lịch Sử</div>
@@ -303,15 +483,34 @@
             </div>
           </div>
 
-          <!-- NEW: Share Actions -->
+          <!-- Payment Tracking Section -->
+          <div id="paymentTrackingSection" style="display: none;">
+            <div class="divider"></div>
+            <div class="zone-title">THEO DÕI THANH TOÁN</div>
+            <div id="paymentList"></div>
+            <div class="payment-progress" id="paymentProgress" style="display: none;">
+              <div class="payment-progress-bar" id="paymentProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="payment-progress-text" id="paymentProgressText"></div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="share-btn share-btn-share" style="flex: 1;" id="btnCloseSession" onclick="closeCurrentSession()">✅ Chốt buổi</button>
+            </div>
+          </div>
+
+          <!-- Share Actions -->
           <div class="share-actions" id="shareActions" style="display: none;">
             <button class="share-btn share-btn-copy" id="copyBtn" onclick="copyReceipt()">📋 Copy Text</button>
             <button class="share-btn share-btn-copy" id="copyImgBtn" onclick="copyReceiptImage()">🖼️ Copy Ảnh</button>
             <button class="share-btn share-btn-share" id="downloadImgBtn" onclick="downloadReceiptImage()">📥 Tải Ảnh</button>
-            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceiptImage()">📤 Chia Sẻ Ảnh</button>
+            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceiptImage()">📤 Chia Sẻ</button>
           </div>
 
-          <!-- NEW: History Section -->
+          <!-- Export Actions for this session -->
+          <div class="export-actions" id="sessionExportActions" style="display: none;">
+            <button class="export-btn" onclick="exportSessionPDF()">🖨️ In / PDF</button>
+          </div>
+
+          <!-- History Section -->
           <div class="history-section" id="historySection" style="display: none;">
             <div id="historyList"></div>
             <button class="history-clear-btn" id="clearHistoryBtn" onclick="clearHistory()" style="display: none;">🗑️ Xóa toàn bộ lịch sử</button>
@@ -331,6 +530,8 @@
 
   <script src="js/storage.js"></script>
   <script src="js/calculator.js"></script>
+  <script src="js/vietqr.js"></script>
+  <script src="js/pdf-export.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
