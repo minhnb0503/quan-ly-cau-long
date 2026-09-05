@@ -18,7 +18,11 @@
 - Bàn phím số, ô tùy chỉnh rộng hơn, giữ con trỏ khi sửa giữa số tiền. Enter ở tiền sân chuyển đến tiền cầu; Enter ở các ô còn lại kết thúc nhập.
 - Kết quả ưu tiên số tiền mỗi người đóng, phân biệt giá/người với tổng của nhóm và hiển thị tổng cần thu, dư hoặc thiếu cho mọi cách chia.
 - Theo dõi thanh toán được thu gọn; mở lịch sử không thay đổi buổi đang nhập.
-- Các tài nguyên dùng phiên bản `2.1.0` để trình duyệt tải bản CSS/JS mới sau khi cập nhật website.
+- Các tài nguyên dùng phiên bản `2.1.1` để trình duyệt tải bản CSS/JS mới sau khi cập nhật website.
+
+### 2.1.1 — chuyển động nhẹ
+
+Đổi tab mờ chuyển nhẹ, thanh chọn sân trượt 200ms, nút phản hồi khi chạm và kết quả xuất hiện trong khoảng 180–220ms. Không co giãn ô nhập, không hiệu ứng lặp; tôn trọng cài đặt Giảm chuyển động của thiết bị.
 
 Khi kiểm tra trên iPhone, thử nhập/sửa tiền sân, tiền cầu, số người và mức thu tùy chỉnh; mở/đóng bàn phím rồi tính lại. Kiểm thử trên máy tính với viewport nhỏ không thay thế hoàn toàn Safari và bàn phím iPhone thật.
 

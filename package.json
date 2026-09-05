@@ -1,6 +1,6 @@
 {
   "name": "quan-ly-cau-long",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Ứng dụng quản lý và chia chi phí cầu lông chạy trực tiếp trên trình duyệt.",
   "scripts": {

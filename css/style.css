@@ -1352,6 +1352,64 @@ body::before { display: none; }
   .result-cost strong { font-size: 20px; }
 }
 
+/* Small, one-shot transitions. Never scale inputs or transform their page wrapper:
+   the calculator action bar must stay fixed to the viewport. */
+@media (prefers-reduced-motion: no-preference) {
+  .dashboard-view, .calc-view {
+    animation: view-fade-in 160ms ease-out;
+  }
+
+  .tab-indicator { transition: transform 200ms var(--ease); }
+  .main-tab, .tab, .receipt-tab {
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .chip, .step-btn, .share-btn, .btn-close, .btn-confirm, .btn-cancel,
+  .receipt-close, .calc-action-bar .btn-massive {
+    transition: background-color 140ms ease, border-color 140ms ease,
+      box-shadow 140ms ease, transform 120ms ease;
+  }
+
+  .chip:active, .step-btn:active, .share-btn:active, .btn-close:active,
+  .btn-confirm:active, .btn-cancel:active, .receipt-close:active,
+  .calc-action-bar .btn-massive:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .player-tag { transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease; }
+  .player-tag:active { transform: translateY(1px); }
+  .money-input-group { transition: border-color 160ms ease; }
+
+  #resultSheet { transition: opacity 180ms ease; }
+  #resultSheet .sheet-card {
+    transform: translateY(10px);
+    transition: transform 220ms var(--ease);
+  }
+  #resultSheet.show .sheet-card { transform: translateY(0); }
+
+  #resultSheet.show .result-player {
+    animation: result-row-in 180ms ease-out both;
+    animation-delay: 25ms;
+  }
+  #resultSheet.show .result-player:nth-child(2) { animation-delay: 45ms; }
+  #resultSheet.show .result-player:nth-child(3) { animation-delay: 65ms; }
+  #resultSheet.show .result-player:nth-child(4) { animation-delay: 85ms; }
+  #resultSheet.show .result-player:nth-child(n+5) { animation-delay: 105ms; }
+
+  .anim-pop, .result-details[open] > :not(summary),
+  .payment-details[open] > :not(summary) { animation: view-fade-in 160ms ease-out; }
+}
+
+@keyframes view-fade-in {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+@keyframes result-row-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
