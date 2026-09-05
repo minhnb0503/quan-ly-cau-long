@@ -48,3 +48,37 @@ test('cho phép cấu hình mức chênh lệch bằng 0', () => {
   });
   assert.deepEqual(result, { pNu: 100000, pNam: 100000, pNamGL: 100000, pNuGL: 100000 });
 });
+
+test('sửa số tiền ở giữa giữ con trỏ theo chữ số thay vì nhảy về cuối', () => {
+  assert.deepEqual(Calculator.formatCurrencyEdit('2500.000', 3), { value: '2.500.000', caret: 4 });
+  assert.deepEqual(Calculator.formatCurrencyEdit('250.00', 6), { value: '25.000', caret: 6 });
+  assert.deepEqual(Calculator.formatCurrencyEdit('', 0), { value: '', caret: 0 });
+  assert.deepEqual(Calculator.formatCurrencyEdit('00125000', 8), { value: '125.000', caret: 7 });
+});
+
+test('thu nữ cố định vượt tổng chi không tạo tiền âm cho nam', () => {
+  const result = Calculator.calcSanNha(10000, [
+    { name: 'A', gender: 'nam' }, { name: 'B', gender: 'nu' }
+  ], 1, 0, true, 50000, 20000, 5000);
+  assert.equal(result.pNamCD, 0);
+  assert.equal(result.pNamGL, 5000);
+  assert.ok(result.memberResults.every(player => player.price >= 0));
+  assert.equal(result.difference, 40000);
+});
+
+test('sân khách hiển thị và lưu đúng tổng cần thu, tiền dư của cả nhóm', () => {
+  const result = Calculator.calcChiaDeu(605000, 4, 3);
+  const totals = Calculator.summarizePlayers(605000, [
+    { amount: result.pNam * 4, count: 4 }, { amount: result.pNu * 3, count: 3 }
+  ]);
+  assert.deepEqual(totals, { totalCollected: 609000, difference: 4000, playerCount: 7 });
+});
+
+test('mức thu cố định chưa đủ phải báo số tiền còn thiếu', () => {
+  const result = Calculator.calcSanNha(200000, [{ name: 'B', gender: 'nu' }], 0, 1, true, 50000, 20000, 5000);
+  const totals = Calculator.summarizePlayers(200000, [
+    { amount: result.pNuCD, count: 1 }, { amount: result.pNuGL, count: 1 }
+  ]);
+  assert.equal(totals.difference, -105000);
+  assert.equal(totals.totalCollected, 95000);
+});

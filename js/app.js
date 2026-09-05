@@ -16,6 +16,9 @@ let currentReceiptData = null;
 let currentReceiptMode = 'home';
 let currentView = 'dashboard';
 let currentSessionId = null;
+// Viewing an old receipt must never change which session the input form updates.
+let editingSessionId = null;
+let isCalculating = false;
 let toastTimer = null;
 let lastFocusedElement = null;
 let imgPreviewUrl = null;
@@ -51,10 +54,13 @@ function setOverlayState(overlay, isOpen) {
   document.body.style.overflow = isOpen || document.querySelector('.sheet-overlay.show, .settings-overlay.show, .custom-modal-overlay.show, .profile-overlay.show') ? 'hidden' : '';
   if (isOpen) {
     lastFocusedElement = document.activeElement;
-    const focusable = overlay.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
-    if (focusable) setTimeout(() => focusable.focus(), 50);
+    const dialog = overlay.querySelector('[role="dialog"]');
+    if (dialog) {
+      dialog.tabIndex = -1;
+      dialog.focus({ preventScroll: true });
+    }
   } else if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
-    lastFocusedElement.focus();
+    lastFocusedElement.focus({ preventScroll: true });
     lastFocusedElement = null;
   }
 }
@@ -79,8 +85,11 @@ function showToast(message, duration) {
 }
 
 function formatCurrency(input) {
-  let v = input.value.replace(/\D/g, '');
-  input.value = v ? Calculator.formatCurrencyValue(parseInt(v, 10)) : "";
+  const edit = Calculator.formatCurrencyEdit(input.value, input.selectionStart ?? input.value.length);
+  if (input.value !== edit.value) {
+    input.value = edit.value;
+    input.setSelectionRange(edit.caret, edit.caret);
+  }
   updateLiveSummary();
 }
 
@@ -94,7 +103,6 @@ function parseMoney(str) {
 
 function handleInputFocus(el) {
   if (el.value === '0') { el.value = ''; }
-  setTimeout(function () { el.selectionStart = el.selectionEnd = el.value.length; }, 10);
 }
 
 function validateInputEmpty(el) {
@@ -144,6 +152,10 @@ function updateLiveSummary() {
     .reduce((sum, id) => sum + (parseInt(document.getElementById(id)?.value || '0', 10) || 0), 0);
   costEl.textContent = formatMoney(courtCost + shuttleCost);
   playerEl.textContent = String(fixedCount + guestCount);
+  const rule = document.getElementById('homeRuleSummary');
+  if (rule) rule.textContent = getCurrentRuleLabel();
+  const actionSummary = document.getElementById('actionSummary');
+  if (actionSummary) actionSummary.textContent = `${formatMoney(courtCost + shuttleCost)} · ${fixedCount + guestCount} người`;
 }
 
 function updateDateDisplay(val) {
@@ -406,58 +418,16 @@ function switchTab(selected) {
   updateLiveSummary();
 }
 
-// ======================== 6. Dropdown ==============================
+// ======================== 6. Split Method ==============================
 
-function toggleDropdown() {
-  triggerHaptic('light');
-  let wrapper = document.getElementById('customSelectWrapper');
-  if(wrapper) {
-    wrapper.classList.toggle('open');
-    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', wrapper.classList.contains('open') ? 'true' : 'false');
-  }
-}
-
-function selectMethod(value, text) {
+function selectMethod(value) {
   triggerHaptic('light');
   currentSplitMethod = value;
-  
-  let splitMethodText = document.getElementById('splitMethodText');
-  if(splitMethodText) splitMethodText.innerText = text;
-  
-  let wrapper = document.getElementById('customSelectWrapper');
-  if(wrapper) {
-    wrapper.classList.remove('open');
-    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
-  }
-
-  ['nam20k', 'chiaDeu', 'nuCoDinh', 'sanNha'].forEach(v => {
-    let opt = document.getElementById('opt-' + v);
-    if (opt) opt.classList.remove('selected');
-  });
-  
-  let selectedOpt = document.getElementById('opt-' + value);
-  if(selectedOpt) selectedOpt.classList.add('selected');
-
-  let nuCoDinhWrap = document.getElementById('nuCoDinhWrap');
-  if(nuCoDinhWrap) {
-    if (value === 'nuCoDinh') {
-      nuCoDinhWrap.style.display = 'flex';
-    } else {
-      nuCoDinhWrap.style.display = 'none';
-    }
-  }
-
-  let namCoDinhWrap = document.getElementById('namCoDinhWrap');
-  if(namCoDinhWrap) namCoDinhWrap.style.display = value === 'sanNha' ? 'flex' : 'none';
-  
-  let nuCoDinhWrap2 = document.getElementById('nuCoDinhWrap2');
-  if(nuCoDinhWrap2) nuCoDinhWrap2.style.display = value === 'sanNha' ? 'flex' : 'none';
-  
-  let labelNamGL = document.getElementById('labelNamGL');
-  if(labelNamGL) labelNamGL.innerText = "🤵🏻‍♂️ Số Nam";
-  
-  let labelNuGL = document.getElementById('labelNuGL');
-  if(labelNuGL) labelNuGL.innerText = "👩🏻‍💼 Số Nữ";
+  const select = document.getElementById('splitMethodSelect');
+  if (select) select.value = value;
+  document.getElementById('nuCoDinhWrap').style.display = value === 'nuCoDinh' ? 'flex' : 'none';
+  document.getElementById('namCoDinhWrap').style.display = value === 'sanNha' ? 'flex' : 'none';
+  document.getElementById('nuCoDinhWrap2').style.display = value === 'sanNha' ? 'flex' : 'none';
   updateLiveSummary();
 }
 
@@ -474,6 +444,8 @@ function toggleCauMode() {
   
   let inner1 = m1.querySelector('.mode-inner');
   let inner2 = m2.querySelector('.mode-inner');
+  m1.inert = isCauDetailMode;
+  m2.inert = !isCauDetailMode;
   
   if (isCauDetailMode) {
     m1.style.gridTemplateRows = '0fr'; if(inner1) inner1.style.opacity = '0';
@@ -507,6 +479,7 @@ function addCauRow() {
       </div>
   `;
   container.appendChild(row);
+  configureNumericFields(row);
   updateLiveSummary();
 }
 
@@ -826,9 +799,6 @@ function toggleQR() {
   }
   isShowingQR = !isShowingQR;
   let qrBtn = document.getElementById('qrBtn');
-
-  if(tabReceipt) tabReceipt.setAttribute('aria-selected', tab === 'receipt' ? 'true' : 'false');
-  if(tabHistory) tabHistory.setAttribute('aria-selected', tab === 'history' ? 'true' : 'false');
   let content = document.getElementById('receiptContainer');
   let qrCont = document.getElementById('qrContainer');
 
@@ -847,11 +817,11 @@ function toggleQR() {
       hint.textContent = 'QR nhận tiền của chủ sân';
       hint.style.cssText = 'margin:10px 0 0;color:var(--text-sub);font-size:13px;font-weight:700';
       qrCont.appendChild(hint);
-      qrBtn.innerHTML = '🧾 Xem Biên Lai';
+      qrBtn.textContent = 'Kết quả';
     } else {
       content.style.display = 'block';
       qrCont.style.display = 'none';
-      qrBtn.innerHTML = '💳 QR Chủ sân';
+      qrBtn.textContent = 'QR';
     }
   }
 }
@@ -868,6 +838,19 @@ function switchReceiptTab(tab) {
   let syncStatus = document.getElementById('syncStatus');
   let qrContainer = document.getElementById('qrContainer');
   let qrBtn = document.getElementById('qrBtn');
+  tabReceipt?.setAttribute('aria-selected', tab === 'receipt' ? 'true' : 'false');
+  tabHistory?.setAttribute('aria-selected', tab === 'history' ? 'true' : 'false');
+  isShowingQR = false;
+  if (qrContainer) qrContainer.style.display = 'none';
+  if (qrBtn) qrBtn.textContent = 'QR';
+  const tracking = document.getElementById('paymentTrackingSection');
+  if (tracking) tracking.style.display = tab === 'receipt' && currentSessionId ? 'block' : 'none';
+  const exports = document.getElementById('sessionExportActions');
+  if (exports) exports.style.display = tab === 'receipt' && currentSessionId ? '' : 'none';
+  ['copyImgBtn', 'downloadImgBtn', 'shareBtn'].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.style.display = currentReceiptData && (id !== 'shareBtn' || navigator.share) ? '' : 'none';
+  });
 
   if (tab === 'receipt') {
     if(tabReceipt) tabReceipt.classList.add('active');
@@ -929,6 +912,12 @@ async function viewHistoryItem(idx) {
   if (!history[idx]) return;
   
   let item = history[idx];
+  if (item.sessionId && await Storage.getSession(item.sessionId)) {
+    await openSessionDetail(item.sessionId);
+    return;
+  }
+  currentReceiptData = null;
+  currentReceiptMode = item.mode === 'away' ? 'away' : 'home';
   let content = document.getElementById('receiptContent');
   if(content) content.innerHTML = sanitizeStoredHTML(item.receipt);
   currentSessionId = item.sessionId || null;
@@ -1022,12 +1011,12 @@ function resetForm(silent = false) {
     cauList.innerHTML = `
         <div class="cau-detail-flex cau-item">
           <div class="cau-col">
-            <span>GIÁ 1 TÚP (12 QUẢ)</span>
+            <span>Giá 1 ống (12 quả)</span>
             <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
           </div>
           <div class="divider-vert"></div>
           <div class="cau-col">
-            <span>SỐ QUẢ</span>
+            <span>Số quả đã dùng</span>
             <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
           </div>
           <div class="cau-action-col"></div>
@@ -1084,17 +1073,78 @@ function resetForm(silent = false) {
   lastTeleStr = '';
   updateCauTotal();
   currentSessionId = null;
+  editingSessionId = null;
+  document.getElementById('formError').hidden = true;
+  configureNumericFields();
   updateLiveSummary();
   if (!silent) showToast('Đã xóa nội dung buổi này.');
 }
 
 // ======================== 18. Process Data ==============================
 
+function getCurrentRuleLabel() {
+  const money = id => formatMoney(parseMoney(document.getElementById(id)?.value || ''));
+  if (mode === 'away') {
+    if (currentSplitMethod === 'chiaDeu') return 'Chia đều cho tất cả người tham gia.';
+    if (currentSplitMethod === 'nuCoDinh') return `Nữ đóng ${money('nuCoDinhGia')}/người; nam chia phần còn lại. Nếu chỉ có nữ: chia đều chi phí.`;
+    const settings = typeof Storage !== 'undefined' ? Storage.getSettings() : {};
+    if (currentSplitMethod === 'sanNha') return `So với nữ cố định: nam cố định +${formatMoney(settings.offsetNamCD ?? 25000)}, nam giao lưu +${formatMoney(settings.offsetNamGL ?? 30000)}, nữ giao lưu +${formatMoney(settings.offsetNuGL ?? 5000)}.`;
+    return `Nam cao hơn nữ ${formatMoney(settings.offsetNam20k ?? 20000)}/người.`;
+  }
+  if (document.getElementById('sanNhaNuGLToggle')?.checked) {
+    return `Nữ giao lưu ${money('sanNhaNuGL')}/người; nữ cố định thấp hơn ${money('sanNhaGLOffset')}. Nam chia phần còn lại.`;
+  }
+  return `Nam cao hơn nữ ${money('sanNhaNamOffset')}; giao lưu cao hơn cố định ${money('sanNhaGLOffset')}.`;
+}
+
+function showFormError(message, field) {
+  const error = document.getElementById('formError');
+  if (error) { error.textContent = message; error.hidden = false; }
+  showToast(message, 4000);
+  field?.focus();
+}
+
+function buildReceiptHTML(data) {
+  const players = Array.isArray(data.players) ? data.players : [];
+  const totals = Calculator.summarizePlayers(data.totalCost, players);
+  const difference = totals.difference;
+  const rows = players.map(player => {
+    const count = player.count || 1;
+    const name = String(player.name).replace(/\s*\(x\d+\)$/, '');
+    return `<div class="result-player">
+      <div class="result-player-name"><strong>${escapeHTML(name)}</strong>
+        ${count > 1 ? `<span>${count} người · Tổng ${formatMoney(player.amount)}</span>` : ''}</div>
+      <div class="result-player-price"><strong>${formatMoney(player.amount / count)}</strong>
+        <span>${count > 1 ? 'mỗi người' : 'cần đóng'}</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="result-context">${escapeHTML(data.date)} · ${data.mode === 'away' ? 'Sân khách' : 'Sân nhà'} · ${totals.playerCount} người</div>
+    <div class="result-cost"><span>Tổng chi phí</span><strong>${formatMoney(data.totalCost)}</strong></div>
+    <h3 class="result-section-title">Mỗi người đóng</h3>
+    <div class="result-players">${rows}</div>
+    <div class="result-reconciliation">
+      <div><span>Tổng cần thu</span><strong>${formatMoney(totals.totalCollected)}</strong></div>
+      <div class="${difference < 0 ? 'result-shortfall' : ''}"><span>${difference < 0 ? 'Còn thiếu' : 'Tiền dư'}</span><strong>${formatMoney(Math.abs(difference))}</strong></div>
+      <p>${difference < 0 ? 'Mức thu cố định chưa đủ chi phí. Hãy điều chỉnh cách chia trước khi thu tiền.' : difference > 0 ? 'Khoản dư sau khi áp dụng cách chia và làm tròn lên 1.000đ.' : 'Đã chia đủ tổng chi phí.'}</p>
+    </div>
+    <details class="result-details"><summary>Chi phí và cách chia</summary>
+      <div class="receipt-item"><span>Tiền sân</span><strong>${formatMoney(data.san)}</strong></div>
+      <div class="receipt-item"><span>Tiền cầu</span><strong>${formatMoney(data.cau)}</strong></div>
+      <p>${escapeHTML(data.ruleLabel || 'Theo cách chia đã chọn.')}</p>
+    </details>`;
+}
+
 async function processData() {
+  if (isCalculating) return;
+  isCalculating = true;
+  const calculateButton = document.getElementById('calculateBtn');
+  if (calculateButton) calculateButton.disabled = true;
+  document.getElementById('formError').hidden = true;
+  try {
   let dateInput = document.getElementById('dateInput');
   let dateRaw = dateInput ? dateInput.value : '';
   if (!dateRaw) {
-    showToast('Vui lòng chọn ngày chơi.');
+    showFormError('Vui lòng chọn ngày chơi.');
     dateInput?.focus();
     return;
   }
@@ -1104,35 +1154,36 @@ async function processData() {
   let san = tienSanEl ? parseMoney(tienSanEl.value) : 0;
   
   let cau = 0;
-  let cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
   let teleCauStr = `🏸 Cầu: ${formatMoney(cau)}`;
 
   if (isCauDetailMode) {
     let items = [];
-    document.querySelectorAll('.cau-item').forEach(item => {
+    for (const item of document.querySelectorAll('.cau-item')) {
       let giaInput = item.querySelector('.giaCau');
       let slInput = item.querySelector('.slCau');
       let giaTup = giaInput ? parseMoney(giaInput.value) : 0;
       let soQua = slInput ? (parseInt(slInput.value, 10) || 0) : 0;
+      if ((giaTup > 0) !== (soQua > 0)) {
+        showFormError('Nhập đủ giá một ống và số quả cầu đã dùng.', giaTup ? slInput : giaInput);
+        return;
+      }
       items.push({ giaTup, soQua });
-    });
+    }
     if(typeof Calculator !== 'undefined') {
       let cauResult = Calculator.calcCauDetail(items);
       cau = cauResult.total;
       let detailText = cauResult.detailText;
-      cauDisplay = `<div style="text-align:right"><strong>${formatMoney(cau)}</strong><div class="receipt-sub" style="margin-top:0">${detailText}</div></div>`;
       teleCauStr = `🏸 Cầu: ${formatMoney(cau)} (${detailText})`;
     }
   } else {
     let tienCauEl = document.getElementById('tienCau');
     cau = tienCauEl ? parseMoney(tienCauEl.value) : 0;
-    cauDisplay = `<strong>${formatMoney(cau)}</strong>`;
     teleCauStr = `🏸 Cầu: ${formatMoney(cau)}`;
   }
 
   let totalCost = san + cau;
   if (totalCost <= 0) {
-    showToast('Nhập tiền sân hoặc tiền cầu trước khi chia.');
+    showFormError('Nhập tiền sân hoặc tiền cầu trước khi tính.');
     tienSanEl?.focus();
     return;
   }
@@ -1152,13 +1203,7 @@ async function processData() {
   };
   currentReceiptMode = mode;
 
-  let html = `
-    <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">💎 Tiền Sân:</span> <strong>${formatMoney(san)}</strong></div>
-    <div class="receipt-item"><span style="color:var(--text-sub); font-weight:600;">🏸 Tiền Cầu:</span> ${cauDisplay}</div>
-    <div class="divider-dash"></div>
-    <div class="receipt-item"><span><strong>TỔNG CHI PHÍ:</strong></span> <strong style="color:var(--accent); font-size: 20px;">${formatMoney(totalCost)}</strong></div>
-    <div class="divider"></div>
-  `;
+  let html;
   let teleStr = `<b>🏸 BẢNG TÍNH ${mode === 'away' ? 'SÂN KHÁCH' : 'SÂN NHÀ'} (${dateStr})</b>\\n💎 Sân: ${formatMoney(san)} | ${teleCauStr}\\n------------------\\n`;
 
   let settings = typeof Storage !== 'undefined' ? Storage.getSettings() : {};
@@ -1175,33 +1220,33 @@ async function processData() {
       let namCD = namCDEl ? parseInt(namCDEl.value, 10) || 0 : 0;
       let nuCD = nuCDEl ? parseInt(nuCDEl.value, 10) || 0 : 0;
       let totalP = namCD + nuCD + namGL + nuGL;
-      if (totalP === 0) { showToast('Hãy nhập số lượng người chơi.'); return; }
+      if (totalP === 0) { showFormError('Nhập số người tham gia trước khi tính.', namGLEl); return; }
 
       let result = Calculator.calcSanNhaRule(totalCost, namCD, nuCD, namGL, nuGL, settings);
       
       resultData = result;
 
       if (namCD) {
-        html += `<div class="receipt-item"><span>🏅 Nam Cố định x${namCD}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(result.pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(result.pNam * namCD)}</div></div></div>`;
+
         teleStr += `🏅 Nam CD (${namCD}): <b>${formatMoney(result.pNam * namCD)}</b> (${formatMoney(result.pNam)}/ng)\\n`;
         playersList.push({ name: `Nam Cố định (x${namCD})`, amount: result.pNam * namCD, count: namCD, isGuest: false });
       }
       if (nuCD) {
-        html += `<div class="receipt-item"><span>🏅 Nữ Cố định x${nuCD}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(result.pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(result.pNu * nuCD)}</div></div></div>`;
+
         teleStr += `🏅 Nữ CD (${nuCD}): <b>${formatMoney(result.pNu * nuCD)}</b> (${formatMoney(result.pNu)}/ng)\\n`;
         playersList.push({ name: `Nữ Cố định (x${nuCD})`, amount: result.pNu * nuCD, count: nuCD, isGuest: false });
       }
       if (namGL || nuGL) {
-        html += `<div class="divider-dash" style="margin-top:8px"></div>`;
+
         teleStr += `------------------\\n`;
       }
       if (namGL) {
-        html += `<div class="receipt-item"><span>👤 Nam Giao lưu x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(result.pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(result.pNamGL * namGL)}</div></div></div>`;
+
         teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(result.pNamGL * namGL)}</b> (${formatMoney(result.pNamGL)}/ng)\\n`;
         playersList.push({ name: `Nam Giao lưu (x${namGL})`, amount: result.pNamGL * namGL, count: namGL, isGuest: true });
       }
       if (nuGL) {
-        html += `<div class="receipt-item"><span>👤 Nữ Giao lưu x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(result.pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(result.pNuGL * nuGL)}</div></div></div>`;
+
         teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(result.pNuGL * nuGL)}</b> (${formatMoney(result.pNuGL)}/ng)\\n`;
         playersList.push({ name: `Nữ Giao lưu (x${nuGL})`, amount: result.pNuGL * nuGL, count: nuGL, isGuest: true });
       }
@@ -1214,7 +1259,7 @@ async function processData() {
 
     } else {
       let totalP = namGL + nuGL;
-      if (totalP === 0) { showToast('Hãy nhập số lượng người chơi.'); return; }
+      if (totalP === 0) { showFormError('Nhập số người tham gia trước khi tính.', namGLEl); return; }
 
       let pNam = 0, pNu = 0;
 
@@ -1235,12 +1280,12 @@ async function processData() {
       }
 
       if (namGL) {
-        html += `<div class="receipt-item"><span>🤵🏻‍♂️ Nam x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNam)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNam * namGL)}</div></div></div>`;
+
         teleStr += `🤵🏻‍♂️ Nam (${namGL}): <b>${formatMoney(pNam * namGL)}</b> (${formatMoney(pNam)}/ng)\\n`;
         playersList.push({ name: `Nam (x${namGL})`, amount: pNam * namGL, count: namGL, isGuest: true });
       }
       if (nuGL) {
-        html += `<div class="receipt-item"><span>👩🏻‍💼 Nữ x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNu)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNu * nuGL)}</div></div></div>`;
+
         teleStr += `👩🏻‍💼 Nữ (${nuGL}): <b>${formatMoney(pNu * nuGL)}</b> (${formatMoney(pNu)}/ng)\\n`;
         playersList.push({ name: `Nữ (x${nuGL})`, amount: pNu * nuGL, count: nuGL, isGuest: true });
       }
@@ -1265,7 +1310,7 @@ async function processData() {
     });
 
     let totalP = activeMembers.length + namGL + nuGL;
-    if (totalP === 0) { showToast('Hãy chọn ít nhất một người tham gia.'); return; }
+    if (totalP === 0) { showFormError('Chọn thành viên hoặc nhập số khách tham gia.'); return; }
 
     let sanNhaNuGL = document.getElementById('sanNhaNuGL');
     let sanNhaGLOffset = document.getElementById('sanNhaGLOffset');
@@ -1284,40 +1329,23 @@ async function processData() {
     let pNuCD = result.pNuCD;
     let pNamGL = result.pNamGL;
     let pNuGL = result.pNuGL;
-
-    let fixedMembersHtml = "";
     result.memberResults.forEach(mr => {
       let icon = mr.gender === 'nam' ? '🤵🏻‍♂️' : '👩🏻‍💼';
-      fixedMembersHtml += `<div class="receipt-item fixed-member"><span>${escapeHTML(mr.name)}</span> <strong class="price-badge">${formatMoney(mr.price)}</strong></div>`;
       teleStr += `${icon} ${String(mr.name).replace(/[<>]/g, '')}: <b>${formatMoney(mr.price)}</b>\\n`;
       playersList.push({ name: mr.name, amount: mr.price, count: 1, isGuest: false });
     });
 
-    if (fixedMembersHtml !== "") {
-      html += `
-      <div class="fixed-team-receipt-header" onclick="triggerHaptic('light'); this.classList.toggle('collapsed'); this.nextElementSibling.classList.toggle('collapsed');">
-          <span>Nội bộ Sân Nhà</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-      <div class="fixed-team-receipt-content">
-          <div class="fixed-team-receipt-inner">
-              ${fixedMembersHtml}
-          </div>
-      </div>
-      `;
-    }
-
     if (namGL || nuGL) {
-      html += `<div class="divider-dash" style="margin-top:8px"></div>`;
+
       teleStr += `------------------\\n`;
     }
     if (namGL) {
-      html += `<div class="receipt-item"><span>Nam GL x${namGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNamGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNamGL * namGL)}</div></div></div>`;
+
       teleStr += `👤 Nam GL (${namGL}): <b>${formatMoney(pNamGL * namGL)}</b> (${formatMoney(pNamGL)}/ng)\\n`;
       playersList.push({ name: `Nam Giao lưu (x${namGL})`, amount: pNamGL * namGL, count: namGL, isGuest: true });
     }
     if (nuGL) {
-      html += `<div class="receipt-item"><span>Nữ GL x${nuGL}</span> <div style="text-align:right"><strong class="price-badge">${formatMoney(pNuGL)}/ng</strong><div class="receipt-sub">Tổng: ${formatMoney(pNuGL * nuGL)}</div></div></div>`;
+
       teleStr += `👤 Nữ GL (${nuGL}): <b>${formatMoney(pNuGL * nuGL)}</b> (${formatMoney(pNuGL)}/ng)\\n`;
       playersList.push({ name: `Nữ Giao lưu (x${nuGL})`, amount: pNuGL * nuGL, count: nuGL, isGuest: true });
     }
@@ -1325,10 +1353,7 @@ async function processData() {
     if (result && result.difference !== undefined) {
       let diff = result.difference;
       let diffLabel = diff >= 0 ? 'Dư' : 'Thiếu';
-      let diffColor = diff >= 0 ? '#10b981' : '#f43f5e';
-      let diffBg = diff >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)';
-      html += `<div class="divider"></div><div class="receipt-item"><span style="font-weight:700;">💰 Thu được:</span><strong>${formatMoney(result.totalCollected)}</strong></div>`;
-      html += `<div class="receipt-item"><span style="font-weight:700;">📊 Chênh lệch:</span><span class="price-badge" style="background:${diffBg}; color:${diffColor};">${diffLabel} ${formatMoney(Math.abs(diff))}</span></div>`;
+
       teleStr += `------------------\\n💰 Thu: ${formatMoney(result.totalCollected)} | ${diffLabel}: ${formatMoney(Math.abs(diff))}\\n`;
     }
 
@@ -1343,6 +1368,12 @@ async function processData() {
     currentReceiptData.difference = result.difference;
   }
 
+  const totals = Calculator.summarizePlayers(totalCost, playersList);
+  Object.assign(resultData, totals);
+  Object.assign(currentReceiptData, totals, { players: playersList, ruleLabel: getCurrentRuleLabel() });
+  html = buildReceiptHTML(currentReceiptData);
+  if (mode === 'away') teleStr += `------------------\\nTổng cần thu: ${formatMoney(totals.totalCollected)}\\n${totals.difference < 0 ? 'Còn thiếu' : 'Tiền dư'}: ${formatMoney(Math.abs(totals.difference))}\\n`;
+  document.activeElement?.blur();
   triggerHaptic('success');
   isShowingQR = false;
   lastTeleStr = teleStr;
@@ -1358,12 +1389,7 @@ async function processData() {
   if(qrContainer) qrContainer.style.display = 'none';
   if (!isPublicMode && currentReceiptMode === 'home' && qrBtn) qrBtn.innerHTML = '💳 QR Chủ sân';
 
-  if(receiptContainer && contentInner) {
-    receiptContainer.classList.remove('anim-pop');
-    void receiptContainer.offsetWidth;
-    contentInner.innerHTML = html;
-    receiptContainer.classList.add('anim-pop');
-  }
+  if (contentInner) contentInner.innerHTML = html;
 
   let shareActions = document.getElementById('shareActions');
   let shareBtn = document.getElementById('shareBtn');
@@ -1373,7 +1399,13 @@ async function processData() {
     else shareBtn.style.display = '';
   }
 
+  currentSessionId = null;
+  document.getElementById('paymentTrackingSection').style.display = 'none';
   switchReceiptTab('receipt');
+  const receiptCard = resultSheet?.querySelector('.sheet-card');
+  if (receiptCard) receiptCard.scrollTop = 0;
+  const paymentDetails = document.getElementById('paymentTrackingSection');
+  if (paymentDetails) paymentDetails.open = false;
   setOverlayState(resultSheet, true);
 
   if(typeof Storage !== 'undefined') {
@@ -1408,18 +1440,19 @@ async function processData() {
     };
     
     if (Storage.createSession) {
-      let savedSession = currentSessionId ? await Storage.getSession(currentSessionId) : null;
+      let savedSession = editingSessionId ? await Storage.getSession(editingSessionId) : null;
       if (savedSession && savedSession.status === 'open') {
         const previousPlayers = Array.isArray(savedSession.players) ? savedSession.players : [];
         sessionData.players = sessionData.players.map(player => {
           const previous = previousPlayers.find(item => item.name === player.name && item.amount === player.amount);
           return previous ? { ...player, paid: previous.paid, paidAt: previous.paidAt || null } : player;
         });
-        savedSession = await Storage.updateSession(currentSessionId, sessionData);
+        savedSession = await Storage.updateSession(editingSessionId, sessionData);
       } else {
         savedSession = await Storage.createSession(sessionData);
-        currentSessionId = savedSession.id;
       }
+      editingSessionId = savedSession.id;
+      currentSessionId = savedSession.id;
       if (Storage.upsertHistory) {
         Storage.upsertHistory({
           sessionId: currentSessionId,
@@ -1438,7 +1471,16 @@ async function processData() {
   if(statusEl) {
     statusEl.style.display = 'block';
     statusEl.style.color = '#10b981';
-    statusEl.innerText = 'Đã lưu an toàn trên thiết bị này.';
+    statusEl.innerText = 'Đã lưu trên thiết bị này.';
+  }
+  } catch (error) {
+    console.error('Không lưu được buổi chơi:', error);
+    const status = document.getElementById('syncStatus');
+    if (status) status.textContent = 'Chưa lưu được buổi này. Hãy sao chép kết quả để giữ lại.';
+    showToast('Chưa lưu được buổi chơi. Vui lòng sao chép kết quả.', 4000);
+  } finally {
+    isCalculating = false;
+    if (calculateButton) calculateButton.disabled = false;
   }
 }
 
@@ -1866,6 +1908,11 @@ async function openSessionDetail(sessionId) {
     totalCollected: Number(session.totalCollected) || 0,
     difference: Number(session.difference) || 0
   };
+  currentReceiptData = { ...currentReceiptData, players: session.players || [] };
+  Object.assign(currentReceiptData, Calculator.summarizePlayers(currentReceiptData.totalCost, currentReceiptData.players));
+  if (contentInner && currentReceiptData.players.length) contentInner.innerHTML = buildReceiptHTML(currentReceiptData);
+  const trackingDetails = document.getElementById('paymentTrackingSection');
+  if (trackingDetails) trackingDetails.open = false;
   
   lastTeleStr = session.teleStr || '';
   const status = document.getElementById('syncStatus');
@@ -1881,6 +1928,8 @@ async function openSessionDetail(sessionId) {
   switchReceiptTab('receipt');
   
   let resultSheet = document.getElementById('resultSheet');
+  const card = resultSheet?.querySelector('.sheet-card');
+  if (card) card.scrollTop = 0;
   setOverlayState(resultSheet, true);
   
   let shareActions = document.getElementById('shareActions');
@@ -2186,6 +2235,8 @@ function closeImgPreview() {
 // ======================== 26. Initialization ==============================
 
 document.addEventListener("DOMContentLoaded", async () => {
+  configureNumericFields();
+  document.getElementById('cauMode2Wrap')?.setAttribute('inert', '');
   applyTheme(typeof Storage !== 'undefined' ? Storage.getTheme() : 'light');
 
   // Date
@@ -2258,6 +2309,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Public mode
   if (isPublicMode) {
     document.body.classList.add('public-mode');
+    document.getElementById('sanNhaConfigWrap').style.display = 'none';
     let mainTabs = document.getElementById('mainTabContainer');
     if(mainTabs) mainTabs.classList.add('public-mode-hidden');
     let tabContainer = document.getElementById('tabContainer');
@@ -2285,7 +2337,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Start on the private dashboard or the public calculator.
-  switchMainTab(isPublicMode ? 'calc' : 'dashboard');
+  switchMainTab('calc');
   if (isPublicMode) {
     const backButton = document.getElementById('headerBackBtn');
     if (backButton) backButton.style.display = 'none';
@@ -2296,12 +2348,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ======================== 27. Global click handlers ==============================
 
 document.addEventListener('click', function (event) {
-  let wrapper = document.getElementById('customSelectWrapper');
-  if (wrapper && !wrapper.contains(event.target)) { 
-    wrapper.classList.remove('open');
-    wrapper.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
-  }
-
   const overlayClosers = {
     customPromptOverlay: () => closeCustomPrompt(false),
     profileOverlay: closeProfile,
@@ -2332,4 +2378,50 @@ document.addEventListener('keydown', function (event) {
   if (active) active[1]();
 });
 
-document.getElementById('calcView')?.addEventListener('input', updateLiveSummary);
+function configureNumericFields(root = document) {
+  root.querySelectorAll('input[inputmode="numeric"]').forEach(input => {
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.enterKeyHint = input.id === 'tienSan' ? 'next' : 'done';
+    input.setAttribute('autocorrect', 'off');
+    input.maxLength = input.matches('.slCau, #namGL, #nuGL, #namCD, #nuCD') ? 3 : 18;
+    if (input.classList.contains('giaCau')) input.setAttribute('aria-label', 'Giá một ống cầu (12 quả)');
+    if (input.classList.contains('slCau')) input.setAttribute('aria-label', 'Số quả cầu đã dùng');
+  });
+  root.querySelectorAll('.guest-stepper').forEach(stepper => {
+    const input = stepper.querySelector('input');
+    const buttons = stepper.querySelectorAll('button');
+    if (input && buttons.length === 2) {
+      buttons[0].setAttribute('aria-label', 'Giảm ' + (input.getAttribute('aria-label') || 'số người').toLowerCase());
+      buttons[1].setAttribute('aria-label', 'Tăng ' + (input.getAttribute('aria-label') || 'số người').toLowerCase());
+    }
+  });
+}
+
+document.getElementById('calcView')?.addEventListener('input', event => {
+  if (event.target.matches('.slCau, #namGL, #nuGL, #namCD, #nuCD')) {
+    event.target.value = event.target.value.replace(/\D/g, '').slice(0, 3);
+  }
+  document.getElementById('formError').hidden = true;
+  updateLiveSummary();
+}, true);
+
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Enter' || !event.target.matches('#calcView input[inputmode="numeric"]')) return;
+  event.preventDefault();
+  if (event.target.id === 'tienSan') {
+    const next = isCauDetailMode ? document.querySelector('.giaCau') : document.getElementById('tienCau');
+    next?.focus();
+  } else event.target.blur();
+});
+
+// Keep the bottom action from obscuring the field when the iPhone keyboard opens.
+function updateKeyboardState() {
+  const viewport = window.visualViewport;
+  const editing = document.activeElement?.matches('input[type="text"], textarea');
+  const keyboardVisible = editing && viewport && viewport.scale <= 1.05 && window.innerHeight - viewport.height > 150;
+  document.body.classList.toggle('keyboard-open', Boolean(keyboardVisible));
+}
+window.visualViewport?.addEventListener('resize', updateKeyboardState);
+document.addEventListener('focusin', updateKeyboardState);
+document.addEventListener('focusout', () => requestAnimationFrame(updateKeyboardState));

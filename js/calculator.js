@@ -20,6 +20,28 @@ const Calculator = (() => {
     roundUp1k,
     formatCurrencyValue,
 
+    // Count digits before the caret so grouping separators do not move it to the end.
+    formatCurrencyEdit(value, caret = String(value).length) {
+      const raw = String(value);
+      const digitsBefore = raw.slice(0, caret).replace(/\D/g, '').length;
+      const digits = raw.replace(/\D/g, '');
+      const trimmed = digits.replace(/^0+(?=\d)/, '');
+      const formatted = trimmed.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      const target = Math.max(0, digitsBefore - (digits.length - trimmed.length));
+      let position = 0, seen = 0;
+      while (position < formatted.length && seen < target) {
+        if (/\d/.test(formatted[position])) seen++;
+        position++;
+      }
+      return { value: formatted, caret: position };
+    },
+
+    summarizePlayers(totalCost, players) {
+      const totalCollected = players.reduce((sum, player) => sum + player.amount, 0);
+      const playerCount = players.reduce((sum, player) => sum + (player.count || 1), 0);
+      return { totalCollected, difference: totalCollected - totalCost, playerCount };
+    },
+
     /**
      * Sân Nhà - Hỗ trợ cả 2 chế độ:
      * 1. Nữ GL 1 giá (isNuGLMode = true): Nữ GL = nuGLPrice, Nữ CĐ = max(0, Nữ GL - glOffset). Nam gánh phần còn lại, Nam GL = Nam CĐ + glOffset.
@@ -41,7 +63,7 @@ const Calculator = (() => {
         const totalNamCount = cM + namGL;
         if (totalNamCount > 0) {
           const remainingForNam = Math.max(0, totalCost - totalNu);
-          const baseNam = (remainingForNam - (glOffset * namGL)) / totalNamCount;
+          const baseNam = Math.max(0, remainingForNam - (glOffset * namGL)) / totalNamCount;
           pNamCD = roundUp1k(baseNam);
           pNamGL = pNamCD + glOffset;
         }

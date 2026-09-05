@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="light dark">
   <title>Cầu Lông Pro — Quản lý chi phí CLB</title>
   <meta name="description" content="Ứng dụng quản lý CLB cầu lông - Tính tiền, theo dõi thu chi, QR thanh toán">
-  <link rel="stylesheet" href="css/style.css?v=2.0.0">
+  <link rel="stylesheet" href="css/style.css?v=2.1.0">
 </head>
 <body>
   <!-- Toast -->
@@ -109,7 +109,7 @@
       </div>
       <div class="settings-group">
         <label for="qrAccountNo">Số tài khoản</label>
-        <input type="text" id="qrAccountNo" placeholder="Nhập số tài khoản" inputmode="numeric" oninput="updateQRPreview()">
+        <input type="text" id="qrAccountNo" placeholder="Nhập số tài khoản" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" oninput="updateQRPreview()">
       </div>
       <div class="settings-group">
         <label for="qrAccountName">Tên chủ tài khoản</label>
@@ -176,7 +176,7 @@
             </button>
             <div class="date-chip" id="dateChip" style="display: none;" onclick="try{document.getElementById('dateInput').showPicker()}catch(e){}">
               <span id="displayDate">00/00/0000</span>
-              <input type="date" id="dateInput" required>
+              <input type="date" id="dateInput" aria-label="Ngày chơi" required>
             </div>
           </div>
         </div>
@@ -195,10 +195,10 @@
         <section class="dashboard-view" id="dashboardView" role="tabpanel" aria-labelledby="mainTabDashboard">
           <div class="dashboard-heading">
             <div>
-              <p class="eyebrow">TỔNG QUAN CÂU LẠC BỘ</p>
-              <h1>Hôm nay mình đánh thế nào?</h1>
+              
+              <h1>Tổng quan</h1>
             </div>
-            <p class="dashboard-copy">Theo dõi tiền chưa thu, thành viên và các buổi gần nhất ngay tại đây.</p>
+            <p class="dashboard-copy">Buổi chơi, thành viên và tiền chưa thu.</p>
           </div>
 
           <!-- Stats Cards -->
@@ -268,8 +268,8 @@
         <section class="calc-view" id="calcView" style="display: none;" role="tabpanel" aria-labelledby="mainTabCalc">
 
           <div class="calc-heading">
-            <div><p class="eyebrow">BUỔI CHƠI MỚI</p><h1>Chia chi phí</h1></div>
-            <p>Nhập tổng chi phí, chọn người tham gia rồi kiểm tra kết quả trước khi thu tiền.</p>
+            <div><h1>Tính tiền buổi chơi</h1></div>
+            <p>Nhập chi phí → chọn người → xem số tiền cần đóng.</p>
           </div>
 
           <div class="fluid-tabs" id="tabContainer" role="tablist" aria-label="Loại sân">
@@ -283,9 +283,9 @@
             <div class="money-display-zone">
               <div class="money-input-group">
                 <div class="money-header">
-                   <label class="money-label" for="tienSan"><span class="step-number">1</span> Tổng tiền sân</label>
+                   <label class="money-label" for="tienSan"><span class="step-number">1</span> Tiền sân (đ)</label>
                 </div>
-                <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
+                <input type="text" id="tienSan" placeholder="0 ₫" inputmode="numeric" enterkeyhint="next" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienSan');">
                 <div class="quick-chips">
                   <button type="button" class="chip chip-clear" onclick="clearMoney('tienSan')">✕ Xóa</button>
                   <button type="button" class="chip chip-undo disabled" id="undo_tienSan" onclick="undoMoney('tienSan')">↺ Lùi</button>
@@ -299,9 +299,9 @@
 
               <div class="money-input-group" style="padding-bottom: 16px;">
                 <div class="money-header">
-                   <label class="money-label" for="tienCau"><span class="step-number">2</span> Tiền cầu</label>
+                   <label class="money-label" for="tienCau"><span class="step-number">2</span> Tiền cầu (đ)</label>
                    <div class="switch-small-wrap">
-                     <span>CHI TIẾT</span>
+                     <span>Tính theo quả</span>
                      <label class="switch-small">
                        <input type="checkbox" id="cauToggleSwitch" onchange="toggleCauMode()" aria-label="Nhập chi tiết giá và số lượng cầu">
                        <span class="slider-small"></span>
@@ -311,7 +311,7 @@
                 
                 <div class="mode-grid" id="cauMode1Wrap" style="grid-template-rows: 1fr;">
                   <div class="mode-inner" style="opacity: 1;">
-                    <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienCau');">
+                    <input type="text" id="tienCau" placeholder="0 ₫" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); clearUndo('tienCau');">
                     <div class="quick-chips">
                       <button type="button" class="chip chip-clear" onclick="clearMoney('tienCau')">✕ Xóa</button>
                       <button type="button" class="chip chip-undo disabled" id="undo_tienCau" onclick="undoMoney('tienCau')">↺ Lùi</button>
@@ -328,13 +328,13 @@
                     <div id="cauListContainer" style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
                         <div class="cau-detail-flex cau-item">
                           <div class="cau-col">
-                            <span>GIÁ 1 TÚP (12 QUẢ)</span>
-                            <input type="text" class="giaCau" placeholder="0 ₫" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
+                            <span>Giá 1 ống (12 quả)</span>
+                            <input type="text" class="giaCau" aria-label="Giá một ống cầu (12 quả)" placeholder="0 ₫" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this); updateCauTotal();">
                           </div>
                           <div class="divider-vert"></div>
                           <div class="cau-col">
-                            <span>SỐ QUẢ</span>
-                            <input type="text" class="slCau" placeholder="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
+                            <span>Số quả đã dùng</span>
+                            <input type="text" class="slCau" aria-label="Số quả cầu đã dùng" placeholder="0" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)" oninput="updateCauTotal();">
                           </div>
                           <div class="cau-action-col"></div> 
                         </div>
@@ -358,9 +358,9 @@
                     <!-- Rendered from Storage -->
                   </div>
                   
-                  <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;">
-                    <button type="button" class="chip" style="background: rgba(99,102,241,0.05);" onclick="addCustomMember('nam')">+ Thêm Nam cố định</button>
-                    <button type="button" class="chip" style="background: rgba(244,63,94,0.05); color: #f43f5e; border-color: rgba(244,63,94,0.15);" onclick="addCustomMember('nu')">+ Thêm Nữ cố định</button>
+                  <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 0; flex-wrap: wrap;">
+                    <button type="button" class="chip" style="background: rgba(99,102,241,0.05);" onclick="addCustomMember('nam')">+ Thành viên nam</button>
+                    <button type="button" class="chip" style="background: rgba(244,63,94,0.05); color: #f43f5e; border-color: rgba(244,63,94,0.15);" onclick="addCustomMember('nu')">+ Thành viên nữ</button>
                   </div>
                 </div>
               </div>
@@ -369,40 +369,41 @@
               <div class="fixed-team-wrapper" id="sanNhaConfigWrap" style="margin-top: 8px;">
                 <div class="fixed-team-inner">
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                     <span style="font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">⚙️ TÙY CHỈNH LUẬT SÂN NHÀ</span>
+                     <label class="rule-heading" for="sanNhaCustomToggle">Điều chỉnh cách chia</label>
                      <label class="switch-small">
-                       <input type="checkbox" id="sanNhaCustomToggle" onchange="document.getElementById('sanNhaCustomOptions').style.display = this.checked ? 'flex' : 'none';">
+                       <input type="checkbox" id="sanNhaCustomToggle" aria-label="Mở điều chỉnh cách chia" onchange="document.getElementById('sanNhaCustomOptions').style.display = this.checked ? 'flex' : 'none';">
                        <span class="slider-small"></span>
                      </label>
                   </div>
                   
+                  <p class="section-help rule-summary" id="homeRuleSummary"></p>
                   <div id="sanNhaCustomOptions" style="display: none; flex-direction: column; gap: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
-                      <span class="guest-label">💸 Nữ Giao Lưu thu một giá</span>
+                      <span class="guest-label">Nữ giao lưu đóng mức cố định</span>
                       <label class="switch-small">
-                        <input type="checkbox" id="sanNhaNuGLToggle" onchange="toggleSanNhaNuGL()">
+                        <input type="checkbox" id="sanNhaNuGLToggle" aria-label="Nữ giao lưu đóng mức cố định" onchange="toggleSanNhaNuGL()">
                         <span class="slider-small"></span>
                       </label>
                     </div>
                     
                     <div id="sanNhaNuGLInputWrap" style="display: none; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                      <span class="guest-label" style="font-size: 12px; color: var(--text-sub); padding-left: 12px;">↳ Giá Nữ GL (₫)</span>
-                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                        <input type="text" class="guest-val" id="sanNhaNuGL" placeholder="50.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                      <span class="guest-label" style="font-size: 12px; color: var(--text-sub); padding-left: 12px;">Nữ giao lưu (đ/người)</span>
+                      <div class="amount-field">
+                        <input type="text" class="guest-val" id="sanNhaNuGL" aria-label="Giá nữ giao lưu" placeholder="50.000" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" >
                       </div>
                     </div>
 
                     <div id="sanNhaNamHonNuWrap" style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                      <span class="guest-label">🏅 Nam nộp hơn Nữ (₫)</span>
-                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                        <input type="text" class="guest-val" id="sanNhaNamOffset" placeholder="20.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                      <span class="guest-label">Nam cao hơn nữ (đ)</span>
+                      <div class="amount-field">
+                        <input type="text" class="guest-val" id="sanNhaNamOffset" aria-label="Nam cao hơn nữ" placeholder="20.000" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" >
                       </div>
                     </div>
 
                     <div style="display: flex; align-items: center; justify-content: space-between;" class="guest-row anim-pop">
-                      <span class="guest-label">🏷️ Giao lưu đắt hơn CĐ (₫)</span>
-                      <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                        <input type="text" class="guest-val" id="sanNhaGLOffset" placeholder="5.000" inputmode="numeric" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 4px 8px; color: #10b981;">
+                      <span class="guest-label">Giao lưu cao hơn cố định (đ)</span>
+                      <div class="amount-field">
+                        <input type="text" class="guest-val" id="sanNhaGLOffset" aria-label="Giao lưu cao hơn cố định" placeholder="5.000" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" >
                       </div>
                     </div>
                   </div>
@@ -414,26 +415,19 @@
                 <div class="zone-title" id="guestTitle">KHÁCH GIAO LƯU</div>
                 
                 <div class="split-method-container" id="splitMethodContainer" style="display: none;">
-                  <div class="custom-select-wrapper" id="customSelectWrapper">
-                    <button type="button" class="custom-select-trigger" onclick="toggleDropdown()" aria-haspopup="listbox" aria-expanded="false">
-                      <span id="splitMethodText">Nam trả hơn Nữ 20.000đ</span>
-                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                    </button>
-                    <div class="custom-select-options" role="listbox" aria-label="Cách chia chi phí">
-                      <button type="button" class="custom-option selected" id="opt-nam20k" onclick="selectMethod('nam20k', 'Nam trả hơn Nữ 20.000đ')">Nam trả hơn Nữ 20.000đ</button>
-                      <button type="button" class="custom-option" id="opt-chiaDeu" onclick="selectMethod('chiaDeu', 'Chia đều cho mọi người')">Chia đều cho mọi người</button>
-                      <button type="button" class="custom-option" id="opt-nuCoDinh" onclick="selectMethod('nuCoDinh', 'Nữ trả mức cố định')">Nữ trả mức cố định</button>
-                      <button type="button" class="custom-option" id="opt-sanNha" onclick="selectMethod('sanNha', 'Áp dụng luật sân nhà')">Áp dụng luật sân nhà</button>
-                    </div>
-                  </div>
+                  <label class="split-method-label" for="splitMethodSelect">Cách chia</label>
+                  <select id="splitMethodSelect" class="split-method-select" onchange="selectMethod(this.value, this.options[this.selectedIndex].text)">
+                    <option value="nam20k">Nam cao hơn nữ 20.000đ</option>
+                    <option value="chiaDeu">Chia đều cho mọi người</option>
+                    <option value="nuCoDinh">Nữ trả mức cố định</option>
+                    <option value="sanNha">Áp dụng luật sân nhà</option>
+                  </select>
                 </div>
                 
                 <div class="guest-row anim-pop" id="nuCoDinhWrap" style="display: none; margin-bottom: 10px; background: rgba(99,102,241,0.05); border-color: rgba(99,102,241,0.2);">
-                  <span class="guest-label">💸 Mức thu Nữ (₫)</span>
-                  <div class="guest-stepper" style="background: transparent; box-shadow: none;">
-                    <input type="text" class="guest-val" id="nuCoDinhGia" value="50.000" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" style="width: 80px; text-align: right; background: rgba(99, 102, 241, 0.1); border-radius: 8px; padding: 4px 8px; color: var(--accent);">
+                  <span class="guest-label">Nữ đóng (đ/người)</span>
+                  <div class="amount-field">
+                    <input type="text" class="guest-val" id="nuCoDinhGia" aria-label="Mức thu nữ" value="50.000" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputEmpty(this)" oninput="formatCurrency(this)" >
                   </div>
                 </div>
                 
@@ -441,7 +435,7 @@
                   <span class="guest-label">🏅 Nam Cố định</span>
                   <div class="guest-stepper">
                     <button type="button" class="step-btn" onclick="stepVal('namCD', -1)">-</button>
-                    <input type="text" class="guest-val" id="namCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <input type="text" class="guest-val" id="namCD" aria-label="Số nam cố định" value="0" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
                     <button type="button" class="step-btn" onclick="stepVal('namCD', 1)">+</button>
                   </div>
                 </div>
@@ -450,7 +444,7 @@
                   <span class="guest-label">🏅 Nữ Cố định</span>
                   <div class="guest-stepper">
                     <button type="button" class="step-btn" onclick="stepVal('nuCD', -1)">-</button>
-                    <input type="text" class="guest-val" id="nuCD" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <input type="text" class="guest-val" id="nuCD" aria-label="Số nữ cố định" value="0" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
                     <button type="button" class="step-btn" onclick="stepVal('nuCD', 1)">+</button>
                   </div>
                 </div>
@@ -459,7 +453,7 @@
                   <span class="guest-label" id="labelNamGL">🤵🏻‍♂️ Số Nam</span>
                   <div class="guest-stepper">
                     <button type="button" class="step-btn" onclick="stepVal('namGL', -1)">-</button>
-                    <input type="text" class="guest-val" id="namGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <input type="text" class="guest-val" id="namGL" aria-label="Số nam giao lưu" value="0" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
                     <button type="button" class="step-btn" onclick="stepVal('namGL', 1)">+</button>
                   </div>
                 </div>
@@ -467,7 +461,7 @@
                   <span class="guest-label" id="labelNuGL">👩🏻‍💼 Số Nữ</span>
                   <div class="guest-stepper">
                     <button type="button" class="step-btn" onclick="stepVal('nuGL', -1)">-</button>
-                    <input type="text" class="guest-val" id="nuGL" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
+                    <input type="text" class="guest-val" id="nuGL" aria-label="Số nữ giao lưu" value="0" inputmode="numeric" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]*" onfocus="handleInputFocus(this)" onblur="validateInputZero(this)">
                     <button type="button" class="step-btn" onclick="stepVal('nuGL', 1)">+</button>
                   </div>
                 </div>
@@ -481,10 +475,12 @@
             <div><span>Người tham gia</span><strong id="livePlayerCount">0</strong></div>
           </div>
 
+          <p class="form-error" id="formError" role="alert" hidden></p>
           <div class="calc-action-bar">
-            <button type="button" class="btn-massive" onclick="processData()">
+            <span id="actionSummary" class="action-summary">0 ₫ · 0 người</span>
+            <button type="button" id="calculateBtn" class="btn-massive" onclick="processData()">
               <svg class="icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-              Chia chi phí
+              Tính tiền
             </button>
           </div>
 
@@ -498,17 +494,18 @@
           <div class="receipt-header-flex">
             <div class="receipt-title" id="receiptTitle">Kết quả chia tiền</div>
             <div style="display: flex; gap: 8px;">
-              <button type="button" class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">💳 QR Chủ sân</button>
+              <button type="button" class="privacy-btn" id="qrBtn" onclick="toggleQR()" style="display: none;">QR</button>
+              <button type="button" class="receipt-close" onclick="closeSheet()" aria-label="Đóng kết quả">✕</button>
             </div>
           </div>
           
           <!-- Receipt/History Tabs -->
           <div class="receipt-tabs" role="tablist" aria-label="Nội dung kết quả">
-            <button type="button" class="receipt-tab active" id="tabReceipt" onclick="switchReceiptTab('receipt')" role="tab" aria-selected="true">🧾 Biên lai</button>
-            <button type="button" class="receipt-tab" id="tabHistory" onclick="switchReceiptTab('history')" role="tab" aria-selected="false">📋 Lịch sử</button>
+            <button type="button" class="receipt-tab active" id="tabReceipt" onclick="switchReceiptTab('receipt')" role="tab" aria-selected="true">Kết quả</button>
+            <button type="button" class="receipt-tab" id="tabHistory" onclick="switchReceiptTab('history')" role="tab" aria-selected="false">Lịch sử</button>
           </div>
 
-          <div id="syncStatus">Trạng thái đồng bộ...</div>
+          <div id="syncStatus" role="status"></div>
           
           <div id="receiptContainer">
             <div id="receiptContent">
@@ -516,15 +513,15 @@
                  <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
                  </svg>
-                 <div class="empty-text">Chưa có dữ liệu tính toán.<br>Hãy nhập số tiền và thực hiện cú <strong>Smash "Phân Bổ"</strong> ngay nhé! 🏸</div>
+                 <div class="empty-text">Nhập chi phí và chọn người tham gia để xem kết quả.</div>
                </div>
             </div>
           </div>
 
           <!-- Payment Tracking Section -->
-          <div id="paymentTrackingSection" style="display: none;">
-            <div class="divider"></div>
-            <div class="zone-title">THEO DÕI THANH TOÁN</div>
+          <details id="paymentTrackingSection" class="payment-details" style="display: none;">
+            <summary>Đánh dấu người đã đóng tiền</summary>
+            <p class="section-help">Với nhóm nhiều người, đánh dấu khi đã thu đủ cả nhóm.</p>
             <div id="paymentList"></div>
             <div class="payment-progress" id="paymentProgress" style="display: none;">
               <div class="payment-progress-bar" id="paymentProgressBar" style="width: 0%;"></div>
@@ -533,14 +530,14 @@
             <div style="display: flex; gap: 8px; margin-top: 12px;">
               <button class="share-btn share-btn-share" style="flex: 1;" id="btnCloseSession" onclick="closeCurrentSession()">✅ Chốt buổi</button>
             </div>
-          </div>
+          </details>
 
           <!-- Share Actions -->
           <div class="share-actions" id="shareActions" style="display: none;">
-            <button class="share-btn share-btn-copy" id="copyBtn" onclick="copyReceipt()">📋 Copy Text</button>
-            <button class="share-btn share-btn-copy" id="copyImgBtn" onclick="copyReceiptImage()">🖼️ Copy Ảnh</button>
-            <button class="share-btn share-btn-share" id="downloadImgBtn" onclick="downloadReceiptImage()">📥 Tải Ảnh</button>
-            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceiptImage()">📤 Chia Sẻ</button>
+            <button class="share-btn share-btn-copy" id="copyBtn" onclick="copyReceipt()">Sao chép nội dung</button>
+            <button class="share-btn share-btn-copy" id="copyImgBtn" onclick="copyReceiptImage()">Sao chép ảnh</button>
+            <button class="share-btn share-btn-share" id="downloadImgBtn" onclick="downloadReceiptImage()">Lưu ảnh</button>
+            <button class="share-btn share-btn-share" id="shareBtn" onclick="shareReceiptImage()">Chia sẻ</button>
           </div>
 
           <!-- Export Actions for this session -->
@@ -560,16 +557,16 @@
             <div style="font-size: 14px; color: var(--text-sub); margin-top: 12px; font-weight: 600;">Quét mã để thanh toán cho Chủ Sân</div>
           </div>
           
-          <button type="button" class="btn-close" onclick="closeSheet()">Đóng Lại</button>
+          <button type="button" class="btn-close" onclick="closeSheet()">Quay lại nhập</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="js/storage.js?v=2.0.0"></script>
-  <script src="js/calculator.js?v=2.0.0"></script>
-  <script src="js/vietqr.js?v=2.0.0"></script>
-  <script src="js/pdf-export.js?v=2.0.0"></script>
-  <script src="js/app.js?v=2.0.0"></script>
+  <script src="js/storage.js?v=2.1.0"></script>
+  <script src="js/calculator.js?v=2.1.0"></script>
+  <script src="js/vietqr.js?v=2.1.0"></script>
+  <script src="js/pdf-export.js?v=2.1.0"></script>
+  <script src="js/app.js?v=2.1.0"></script>
 </body>
 </html>

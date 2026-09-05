@@ -12,6 +12,16 @@
 - Xuất biên lai ảnh, in PDF, báo cáo tháng và sao lưu/khôi phục JSON.
 - Giao diện responsive, chế độ sáng/tối và điều khiển bằng bàn phím.
 
+## Cải tiến 2.1 — nhập và xem kết quả trên điện thoại
+
+- Mở trực tiếp màn hình tính tiền. Ô nhập có chữ từ 16px trở lên, không có hiệu ứng phóng/co khi focus; vẫn cho phép người dùng phóng to bằng hai ngón tay.
+- Bàn phím số, ô tùy chỉnh rộng hơn, giữ con trỏ khi sửa giữa số tiền. Enter ở tiền sân chuyển đến tiền cầu; Enter ở các ô còn lại kết thúc nhập.
+- Kết quả ưu tiên số tiền mỗi người đóng, phân biệt giá/người với tổng của nhóm và hiển thị tổng cần thu, dư hoặc thiếu cho mọi cách chia.
+- Theo dõi thanh toán được thu gọn; mở lịch sử không thay đổi buổi đang nhập.
+- Các tài nguyên dùng phiên bản `2.1.0` để trình duyệt tải bản CSS/JS mới sau khi cập nhật website.
+
+Khi kiểm tra trên iPhone, thử nhập/sửa tiền sân, tiền cầu, số người và mức thu tùy chỉnh; mở/đóng bàn phím rồi tính lại. Kiểm thử trên máy tính với viewport nhỏ không thay thế hoàn toàn Safari và bàn phím iPhone thật.
+
 ## Chạy trên máy
 
 Không cần cài thư viện. Tại thư mục dự án, chạy:
